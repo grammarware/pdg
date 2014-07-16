@@ -1,6 +1,7 @@
 module Utils::List
 import List;
 
+
 //catenate([1,2], 3) = [<1, 3>, <2, 3>]
 public lrel[int, int] catenate(list[int] ls, int m){
 	return [<l, m> | l <- ls];
