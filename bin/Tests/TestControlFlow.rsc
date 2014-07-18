@@ -15,8 +15,7 @@ test bool testBasicLast(){
 
 test bool testIfCF(){
 	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
-	return cf.cflow ==   [
-							<0,1>,
+	return cf.cflow ==   [	<0,1>,
 							<1,2>,
 							<2,3>,
 							<1,4>,
@@ -34,8 +33,7 @@ test bool testIfLast(){
 
 test bool testForCF(){
 	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[3]);
-	return cf.cflow == [
-					    <0,1>,
+	return cf.cflow == [<0,1>,
 					    <1,2>,
 					    <2,3>,
 					    <3,4>,
@@ -50,8 +48,7 @@ test bool testForLast(){
 
 test bool testWhileCF(){
 	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[5]);
-	return cf.cflow == [
-					    <0,1>,
+	return cf.cflow == [<0,1>,
 					    <1,2>,
 					    <2,3>,
 					    <3,1>,
