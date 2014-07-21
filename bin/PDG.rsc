@@ -2,9 +2,11 @@ module PDG
 
 import lang::java::m3::AST;
 import List;
+import Map;
 import ADT;
 import IO;
 import ControlDependence::ControlFlow;
+import ControlDependence::Dominance;
 
 public Declaration getAST(loc project){
 	//loc project = |project://JavaTest/src/Main.java|;
@@ -21,10 +23,17 @@ public list[Declaration] getMethodAST(loc project){
 	return  [meth | meth <- getClassAST(project).body && isMethodType(meth)];
 }
 
-//cf = buildFlow(getMethodAST(|project://JavaTest/src/Basic.java|)[0]);
+//cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[0]);
 public CF buildFlow(Declaration method){
 	str name = method.name;
 	return getControlFlow(method.impl);	
+}
+
+//cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
+public list[int] buildDominatorTree(Declaration method){
+	CF cf = buildFlow(method);
+	map[int preorder, Statement stat] statements = getStatements();
+	return getDominator(cf, size(statements));
 }
 
 private bool isClassType(Declaration::\class(_,_,_,_)) = true;

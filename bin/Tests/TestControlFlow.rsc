@@ -67,7 +67,7 @@ test bool testComStatCF(){
 }
 
 test bool testComStatLast(){
-	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/ComStatements.java|)[0]);
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDƒG/controlFlow/ComStatements.java|)[0]);
 	return cf.lastStatements == [10];;
 }
 

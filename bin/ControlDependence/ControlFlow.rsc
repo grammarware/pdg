@@ -8,17 +8,21 @@ import Relation;
 import Type;
 import IO;
 import ADT;
-import Utils::List;
+import Utils::ListRelation;
 
-//mark every statement with its preorder number
-public map[int preorder, Statement stat] statements = ();
+//mark every statement with analyzing sequence number
+private map[int preorder, Statement stat] statements = ();
 
-//'counting' is used for counting the preorder
-public int counting;
+//'counting' is used to mark each statement
+private int counting;
 
 public CF getControlFlow(Statement stat){
 	counting = 0;
 	return statementCF(stat);
+}
+
+public map[int preorder, Statement stat] getStatements(){
+	return statements;
 }
 
 //analyze each statement

@@ -1,6 +1,6 @@
-module Utils::List
+module Utils::ListRelation
 import List;
-
+import IO;
 
 //catenate([1,2], 3) = [<1, 3>, <2, 3>]
 public lrel[int, int] catenate(list[int] ls, int m){
@@ -11,4 +11,13 @@ public lrel[int, int] catenate(list[int] ls, int m){
 public lrel[int, int] toLRel(list[int] ls){
 	if(size(ls) > 1)	return [<ls[i], ls[i+1]> | i <- [0..size(ls) - 1]];
 	else return [];
+}
+
+public map[int, list[int]] toMap(lrel[int, int] lr){
+	map[int, list[int]] m = ();
+	for(<num1, num2> <- lr){
+		if(num1 notin m) m[num1] = [num2];
+		else m[num1] += [num2];
+	}
+	return m;
 }
