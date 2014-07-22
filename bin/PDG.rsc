@@ -33,7 +33,7 @@ public CF buildFlow(Declaration method){
 public map[int, int] buildDominatorTree(Declaration method){
 	CF cf = buildFlow(method);
 	map[int preorder, Statement stat] statements = getStatements();
-	return getDominator(cf, statements);
+	return buildDominance(cf.cflow, cf.firstStatement, size(statements));
 }
 
 private bool isClassType(Declaration::\class(_,_,_,_)) = true;

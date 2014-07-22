@@ -8,15 +8,11 @@ import Utils::ListRelation;
 import ADT;
 import IO;
 
-public map[int, int] getDominator(CF cf, map[int preorder, Statement stat] statements){
-	list[int] postOrder = toPostOrder(toMap(cf.cflow), cf.firstStatement, size(statements));
-	return buildDominance(cf.cflow, cf.firstStatement, postOrder);
-}
-
 //flow = [<6, 5>, <6, 4>, <4, 3>, <4, 2>, <5, 1>, <1, 2>, <2, 1>, <2, 3>, <3, 2>];
 //getDominator(flow, 6, 6);
-public map[int, int] buildDominance(lrel[int, int] flow, int first, list[int] postOrder){
+public map[int, int] buildDominance(lrel[int, int] flow, int first, int totalAmount){
 	map[int, list[int]] predecessor = getPredecessors(flow);
+	list[int] postOrder = toPostOrder(toMap(flow), first, totalAmount);
 	map[int, int] doms = ();
 	//initialize the dominators array, -1 means undefined
 	for(s <- postOrder) 
