@@ -30,10 +30,10 @@ public CF buildFlow(Declaration method){
 }
 
 //cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
-public list[int] buildDominatorTree(Declaration method){
+public map[int, int] buildDominatorTree(Declaration method){
 	CF cf = buildFlow(method);
 	map[int preorder, Statement stat] statements = getStatements();
-	return getDominator(cf, size(statements));
+	return getDominator(cf, statements);
 }
 
 private bool isClassType(Declaration::\class(_,_,_,_)) = true;

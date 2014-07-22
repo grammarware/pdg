@@ -21,3 +21,12 @@ public map[int, list[int]] toMap(lrel[int, int] lr){
 	}
 	return m;
 }
+
+public map[int, list[int]] getPredecessors(lrel[int, int] lr){
+	map[int, list[int]] m = ();
+	for(<num1, num2> <- lr){
+		if(num2 notin m) m[num2] = [num1];
+		else m[num2] += [num1];
+	}
+	return m;
+}

@@ -21,12 +21,10 @@ private list[int] DFS(map[int, list[int]] flow, list[int] postOrder, list[int] v
 	}else{
 		current = visitStack[0];
 		if(current notin flow){
-			println(current);
 			postOrder += current;
 			visitStack = tail(visitStack);
 			return DFS(flow, postOrder, visitStack, visited);
 		}else if(all(int n <- flow[current], visited[n] == true)){
-			println(current);
 			postOrder += current;
 			visitStack = tail(visitStack);
 			return DFS(flow, postOrder, visitStack, visited);
