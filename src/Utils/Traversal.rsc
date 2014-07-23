@@ -3,12 +3,12 @@ module Utils::Traversal
 import List;
 import IO;
 
-public list[int] toPostOrder(map[int, list[int]] flow, int first, int numbers){
+public list[int] toPostOrder(map[int, list[int]] flow, int first, list[int] nodes){
 	int current = first;
 	list[int] postOrder = [];
 	list[int] visitStack = [current]; 
 	map[int, bool] visited = (current: true);
-	for(i <- [1..numbers]){
+	for(i <- (nodes - first)){
 		visited[i] = false;
 	}
 	

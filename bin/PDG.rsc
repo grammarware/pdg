@@ -32,8 +32,8 @@ public CF buildFlow(Declaration method){
 //cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
 public map[int, int] buildDominatorTree(Declaration method){
 	CF cf = buildFlow(method);
-	map[int preorder, Statement stat] statements = getStatements();
-	return buildDominance(cf.cflow, cf.firstStatement, size(statements));
+	map[int number, Statement stat] statements = getStatements();
+	return buildDominance(cf.cflow, cf.firstStatement, domain(statements));
 }
 
 private bool isClassType(Declaration::\class(_,_,_,_)) = true;

@@ -11,7 +11,7 @@ import ADT;
 import Utils::ListRelation;
 
 //mark every statement with analyzing sequence number
-private map[int preorder, Statement stat] statements = ();
+private map[int number, Statement stat] statements = ();
 
 //'counting' is used to mark each statement
 private int counting;
@@ -21,7 +21,7 @@ public CF getControlFlow(Statement stat){
 	return statementCF(stat);
 }
 
-public map[int preorder, Statement stat] getStatements(){
+public map[int number, Statement stat] getStatements(){
 	return statements;
 }
 
