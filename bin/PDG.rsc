@@ -2,6 +2,7 @@ module PDG
 
 import lang::java::m3::AST;
 import List;
+import Set;
 import Map;
 import ADT;
 import IO;
@@ -33,7 +34,7 @@ public CF buildFlow(Declaration method){
 public map[int, int] buildDominatorTree(Declaration method){
 	CF cf = buildFlow(method);
 	map[int number, Statement stat] statements = getStatements();
-	return buildDominance(cf.cflow, cf.firstStatement, domain(statements));
+	return buildDominance(cf.cflow, cf.firstStatement, toList(domain(statements)));
 }
 
 private bool isClassType(Declaration::\class(_,_,_,_)) = true;

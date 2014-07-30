@@ -21,6 +21,18 @@ public map[int, list[int]] getDominators(map[int, int] idom, int first, list[int
 	return doms;
 }
 
+public map[int, list[int]] dominatorTree(map[int, int] idom, list[int] nodes){
+	map[int, list[int]] dominatorTree = ();
+	for(n <- nodes){
+		//idom[firstNode] = firstNode, so delete self-loop
+		if(idom[n] != n){
+			if(idom[n] notin dominatorTree) dominatorTree[idom[n]] = [n];
+			else dominatorTree[idom[n]] += [n];
+		}
+	}
+	return dominatorTree;
+}
+
 //flow = [<6, 5>, <6, 4>, <4, 3>, <4, 2>, <5, 1>, <1, 2>, <2, 1>, <2, 3>, <3, 2>];
 //buildDominance(flow, 6, 6);
 public map[int, int] buildDominance(lrel[int, int] flow, int first, list[int] nodes){
