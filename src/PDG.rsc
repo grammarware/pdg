@@ -14,7 +14,6 @@ public Declaration getAST(loc project){
 	return createAstFromFile(project, false, javaVersion = "1.8");
 }
 
-
 public Declaration getClassAST(loc project){
 	return  head([cl | cl <- getAST(project).types && isClassType(cl)]);
 }
@@ -27,7 +26,8 @@ public list[Declaration] getMethodAST(loc project){
 //cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[0]);
 public CF buildFlow(Declaration method){
 	str name = method.name;
-	return getControlFlow(method.impl);	
+	Environment environment = env(());
+	return getControlFlow(method.impl, environment);	
 }
 
 //cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);

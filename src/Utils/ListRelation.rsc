@@ -30,3 +30,7 @@ public map[int, list[int]] getPredecessors(lrel[int, int] lr){
 	}
 	return m;
 }
+
+public bool equals(list[value] l1, list[value] l2){
+	return toSet(l1) == toSet(l2);	
+}

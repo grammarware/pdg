@@ -18,29 +18,39 @@ public void displaceTestCDG(){
 }
 
 private Figure buildCDG(map[int, rel[int, str]] dependences, list[int] nodes, int regionNum){
-	list[Figure] nodes = buildNodes(nodes, regionNum);
 	//list[Edge] edges = [edge("1", "4", toArrow(ellipse(size(5),fillColor("black"))), label(text("aaa")), gap(5))];
-	list[Edge] edges = buildEdges(dependences)[0..15];
-	return graph(nodes, edges, hint("layered"), vgap(20), hgap(40));
+	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(dependences);
+	list[Figure] nodes = buildNodes(nodes, regionNum) + labelEdges.labelNodes;
+	return graph(nodes, labelEdges.edges, hint("layered"), vgap(20), hgap(30));
 }
 
 private list[Figure] buildNodes(list[int] nodes, int regionNum){
 	list[Figure] nodes = [box(text("<n>"), id("<n>"), size(10), fillColor("lightgreen"), gap(10)) | n <- nodes];
 	Figure entryNode = box(text("Entry"), id("-3"), size(10), fillColor("red"), gap(10));
-	Figure stopNode = box(text("Stop"), id("-2"), size(10), fillColor("red"), gap(10));
-	Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
+	//Figure stopNode = box(text("Stop"), id("-2"), size(10), fillColor("red"), gap(10));
+	//Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
 	list[Figure] regionNodes = [box(text("R<n*(-1)>"), id("<n>"), size(10), fillColor("green"), gap(10)) | n <- [regionNum..-3]];
 	
-	return [entryNode, stopNode, startNode] + nodes + regionNodes;
+	//return [entryNode, stopNode, startNode] + nodes + regionNodes;
+	return [entryNode] + nodes + regionNodes;
 }
 
-private list[Edge] buildEdges(map[int, rel[int, str]] dependences){
+private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel[int, str]] dependences){
 	list[Edge] edges = [];
+	list[Figure] labelNodes = [];
+	int labelNum = 0;
 	for(n <- dependences){
-		for(<post, predicate> <- dependences[n]){
-			edges += [edge("<n>", "<post>", toArrow(ellipse(size(5),fillColor("black"))), label(text(predicate)), gap(5))];			
+		for(<post, predicate> <- dependences[n] && post != -2 && post != -1){
+			if(predicate != ""){
+				labelNodes += box(text("<predicate>", fontSize(10)), id("l<labelNum>"), lineColor("white"));
+				edges += [edge("<n>", "l<labelNum>", gap(10))];	
+				edges += [edge("l<labelNum>", "<post>", toArrow(ellipse(size(5),fillColor("black"))))];
+			}else{
+				edges += [edge("<n>", "<post>", toArrow(ellipse(size(5),fillColor("black"))))];				
+			}
+			println("<n> ---- <post>---<predicate>");	
+			labelNum = labelNum + 1;	
 		}
 	}
-	
-	return edges;
+	return <labelNodes, edges>;
 }

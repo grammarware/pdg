@@ -15,20 +15,6 @@ private int START = -1;
 private int STOP = -2;
 //ENTRY is a predict node with one edge labeled "T" going to START and another labeled "F" going to STOP;
 private int ENTRY = -3;
-//
-//public void aaa(){
-//	flow = [<1, 2>, <1, 3>, <2, 4>, <2, 5>, <3, 5>, <3, 7>, <4, 6>, <5, 6>, <6, 7>];
-//	CF cf = controlFlow(flow, 1, [7]);
-//	nodes = [1, 2, 3, 4, 5, 6, 7];
-//	
-//	flow = addCommonNodestoFlow(cf);
-//	nodes = nodes + START + STOP + ENTRY;
-//	map[int, int] postDominance = buildDominance(invert(flow), STOP, nodes);
-//	map[int, rel[int, str]] dependence = determineDependence(flow, nodes, postDominance);
-//	map[int, rel[int, str]] cdp = getControlDependencePred(dependence);
-//	map[int, rel[int, str]] irn = insertRegionNode(cdp, postDominance, nodes);
-//	println(irn);
-//}
 
 public tuple[map[int, rel[int, str]] dependences, int regionNum] buildDependence(CF cf, list[int] nodes){
 	flow = addCommonNodestoFlow(cf);
@@ -95,9 +81,12 @@ private tuple[map[int, rel[int, str]] nodesWithRegion, int regionNum] insertRegi
 			if(n in postDominatorTree){
 				for(child <- postDominatorTree[n]){
 					if(cd <= controlDependencePred[child]){
+						childRegion = regionNodes[controlDependencePred[child]];
 						//modify the concatination
-						dependenceWithRegion = modifyRegionNode(n, controlDependencePred[child], regionNodes[controlDependencePred[child]], regionNodes[cd], dependenceWithRegion);
-						regionNodes[controlDependencePred[child]] = regionNodes[cd];
+						dependenceWithRegion = modifyPredecessors(cd, childRegion, regionNodes[cd], dependenceWithRegion);
+						afterReplace = controlDependencePred[child] - cd + <regionNodes[cd], "">;
+						regionNodes[afterReplace] = childRegion;
+						regionNodes = delete(regionNodes, controlDependencePred[child]);
 					}	
 					if(controlDependencePred[child] <= cd){
 						childRegion = regionNodes[controlDependencePred[child]];
@@ -111,7 +100,7 @@ private tuple[map[int, rel[int, str]] nodesWithRegion, int regionNum] insertRegi
 		}else dependenceWithRegion = concateRegionNode(n, cd, regionNodes[cd], dependenceWithRegion);
 	}
 	
-	return filterRegionNode(dependenceWithRegion, regionCounting + 1);
+	return filterRegionNode(dependenceWithRegion, regionCounting);
 }
 
 private tuple[map[int, rel[int, str]] filteredRegion, int regionNum] filterRegionNode(map[int, rel[int, str]] dwr, int regionCounting){
@@ -134,7 +123,7 @@ private tuple[map[int, rel[int, str]] filteredRegion, int regionNum] filterRegio
 			for(n <- nodes["T"]) dwr[regionNode] += {<n, "">};
 		}
 	}
-	return <dwr, regionCounting>;
+	return <dwr, regionCounting + 1>;
 }
 
 private map[int, rel[int, str]] concateRegionNode(int n, rel[int, str] cd, int r, map[int, rel[int, str]] dwr){
@@ -144,15 +133,6 @@ private map[int, rel[int, str]] concateRegionNode(int n, rel[int, str] cd, int r
 		if(pre notin dwr) dwr[pre] = {<r, label>};
 		else dwr[pre] += {<r, label>};
 	}
-	return dwr;
-}
-
-private map[int, rel[int, str]] modifyRegionNode(int n, rel[int, str] cd, int rO, int rN, map[int, rel[int, str]] dwr){
-	for(<pre, label> <- cd){
-		dwr[pre] = dwr[pre] - <rO, label> + <rN, label>;
-	}
-	dwr[rO] = dwr[rO] - <n, "">;
-	dwr[rN] = dwr[rN] + <n, "">;
 	return dwr;
 }
 
