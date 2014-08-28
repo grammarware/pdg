@@ -132,3 +132,16 @@ test bool testComStatLast(){
 	list[int] expectedLast = [10];
 	return equals(cf.lastStatements, expectedLast);
 }
+
+test bool testComStatCF2(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/ComStatements.java|)[1]);
+	lrel[int, int] expectedFlow = [<0,1>, <1,2>, <2,3>, <2,7>, <3,4>,
+    								<3,5>, <5,6>, <2,8>, <8,9>];
+	return equals(cf.cflow, expectedFlow);
+}
+
+test bool testComStatLast2(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/ComStatements.java|)[1]);
+	list[int] expectedLast = [4,6,7,9];
+	return equals(cf.lastStatements, expectedLast);
+}
