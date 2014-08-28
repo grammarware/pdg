@@ -267,7 +267,6 @@ private tuple[lrel[int, int] cflow, list[int] rStatements] combineTwoFlows(list[
 			cflow += [<l, f>];
 		}
 	}
-	//cflow += cf2.cflow;
 	return <cflow, rStatements>;
 }
 
