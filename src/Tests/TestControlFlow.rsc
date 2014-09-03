@@ -119,7 +119,77 @@ test bool testReturnLast2(){
 	return equals(cf.lastStatements, expectedLast);
 }
 
+test bool testBreakCF1(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[0]);
+	lrel[int, int] expectedFlow = [<0,1>, <1,2>, <1,6>, <2,3>,
+								    <2,4>, <3,6>, <4,5>, <5,1>];
+	return equals(cf.cflow, expectedFlow);
+}
+
+test bool testBreakLast1(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[0]);
+	list[int] expectedLast = [6];
+	return equals(cf.lastStatements, expectedLast);
+}
  
+test bool testContinueCF1(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[1]);
+	lrel[int, int] expectedFlow = [<0,1>, <1,2>, <1,6>, <2,3>,
+								    <2,4>, <3,5>, <4,5>, <5,1>];
+	return equals(cf.cflow, expectedFlow);
+}
+
+test bool testContinueLast1(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[1]);
+	list[int] expectedLast = [6];
+	return equals(cf.lastStatements, expectedLast);
+}
+
+test bool testBreakContinueCF1(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[2]);
+	lrel[int, int] expectedFlow = [<0,1>,
+								    <1,2>,
+								    <1,6>,
+								    <2,3>,
+								    <2,4>,
+								    <3,1>,
+								    <4,5>,
+								    <4,6>,
+								    <5,1>];
+	return equals(cf.cflow, expectedFlow);
+}
+
+test bool testBreakContinueLast1(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[2]);
+	list[int] expectedLast = [6];
+	return equals(cf.lastStatements, expectedLast);
+}
+
+test bool testBreakContinueCF2(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[3]);
+	lrel[int, int] expectedFlow = [<0,1>,
+								    <1,2>,
+								    <2,3>,
+								    <3,4>,
+								    <3,6>,
+								    <4,5>,
+								    <4,6>,
+								    <5,3>,
+								    <6,7>,
+								    <6,8>,
+								    <7,10>,
+								    <8,9>,
+								    <9,10>,
+								    <10,1>];
+	return equals(cf.cflow, expectedFlow);
+}
+
+test bool testBreakContinueLast2(){
+	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/BreakContinue.java|)[3]);
+	list[int] expectedLast = [1, 8];
+	return equals(cf.lastStatements, expectedLast);
+}
+
 test bool testComStatCF(){
 	CF cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/ComStatements.java|)[0]);
 	lrel[int, int] expectedFlow = [<0,1>, <1,2>, <2,3>, <3,4>, <4,5>, <5,3>,

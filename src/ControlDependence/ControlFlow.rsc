@@ -9,6 +9,7 @@ import Type;
 import IO;
 import ADT;
 import Utils::ListRelation;
+import Utils::List;
 
 //mark every statement with analyzing sequence number
 private map[int number, Statement stat] statements = ();
@@ -17,11 +18,24 @@ private map[int number, Statement stat] statements = ();
 private int counting = 0;
 
 //keey all the return statements
-public list[int] returnStatements = [];
+private list[int] returnStatements = [];
+
+//for break and continue;
+private int loop = 0;
+//the statements followed by break or statement inside each loop
+//-3 is break, -4 is continue; 'if' may have both
+private map[int loop, map[int, list[int]] stat] breakOrContinue = ();
+//condition followed by break or continue;
+//becasue normal statements followed by bc dont have branch and compute seperately
+//for condition followed by bc, it need to do separately and also connect to the following firststatement
+private list[int] condFollowdByBC = [];
 
 public CF getControlFlow(Statement stat, Environment environment){
 	counting = 0;
+	loop = 0;
 	returnStatements = [];
+	breakOrContinue[0] = ();
+	condFollowdByBC = [];
 	return statementCF(stat);
 }
 
@@ -41,8 +55,13 @@ private CF statementCF(Statement stat){
 		case \switch(_, _): return switchCF(stat);
 		
 		//firstStatement is -2: means it is a break
+		case \break(): return controlFlow([], -2, []);
 		case \break(_): return controlFlow([], -2, []);
-		//firstStatement is -3: means it is a return
+		
+		//firstStatement is -3: means it is a break
+		case \continue(): return controlFlow([], -3, []);
+		case \continue(_): return controlFlow([], -3, []);
+		
 		case \return(): return returnCF(stat);
 		case \return(_): return returnCF(stat);
 		//default: {
@@ -91,17 +110,23 @@ public CF ifCF(Statement stat){
 	//add the condition statement to the statement map and set it as the start of this sub-flow 
 	statements += (cond: Statement::\expressionStatement(stat.condition));
 	counting += 1;
-	CF thenBranchCF = statementCF(stat.thenBranch);
-	lrel[int, int] cflow = [<cond, thenBranchCF.firstStatement>] + thenBranchCF.cflow; 
-	list[int] lastStatements = thenBranchCF.lastStatements;
+	//CF thenBranchCF = statementCF(stat.thenBranch);
+	combinedThen = concatCF(controlFlow([], cond, [cond]), [stat.thenBranch]);
+	//lrel[int, int] cflow = [<cond, thenBranchCF.firstStatement>] + thenBranchCF.cflow; 
+	lrel[int, int] cflow = combinedThen.cflow;
+	list[int] lastStatements = combinedThen.lastStatements;
+	if(isBreak(stat.thenBranch) || isContinue(stat.thenBranch)) condFollowdByBC += cond;
+	
 	if(Statement::\if(_,_) := stat) lastStatements += cond;
 	else{
-		CF elseBranchCF = statementCF(stat.elseBranch);
-		cflow += [<cond, elseBranchCF.firstStatement>] + elseBranchCF.cflow;
-		lastStatements += elseBranchCF.lastStatements;
+		//CF elseBranchCF = statementCF(stat.elseBranch);
+		combinedElse = concatCF(controlFlow([], cond, [cond]), [stat.elseBranch]);
+		cflow += combinedElse.cflow;
+		lastStatements += combinedElse.lastStatements;
 		
 	}
-	return controlFlow(cflow, cond, lastStatements);	
+	
+	return controlFlow(cflow, cond, dup(lastStatements));	
 }
 
 
@@ -112,6 +137,9 @@ public CF forCF(Statement stat){
 	list[int] lastStatements = [];
 	list[int] initializers = [];
 	list[int] updaters = [];
+	loop += 1;
+	breakOrContinue[loop] = (); 
+	
 	for(initializer <- stat.initializers){
 		statements += (counting: Statement::\expressionStatement(initializer));
 		initializers += counting;
@@ -120,33 +148,44 @@ public CF forCF(Statement stat){
 	currentLast = counting - 1;
 	loopStart = counting;
 	//add the initializer sequence to the flow
-	lrel[int, int] cflow = toLRel(initializers);
+	initCFlow = toLRel(initializers);
 	//if there is a condition
 	if(Statement::\for(_,_,_,_) := stat){
 		statements += (counting: Statement::\expressionStatement(stat.condition));
 		//catenate the last initializer with the condition
-		cflow += <last(initializers), counting>;
+		initCFlow += <last(initializers), counting>;
 		lastStatements += counting;
 		currentLast = counting;
 		loopStart = counting;
 		counting += 1;
 	}
-	
-	CF forBodyCF = statementCF(stat.body);
+	combinedForBody = concatCF(controlFlow(initCFlow, firstStatement, [currentLast]), [stat.body]);
+	//CF forBodyCF = statementCF(stat.body);
 	//catenate the condition or the last initializer(if no condition) with the forBody
-	cflow += [<currentLast, forBodyCF.firstStatement>] + forBodyCF.cflow;
-	
+	lrel[int, int] cflow = combinedForBody.cflow;
+
 	for(updater <- stat.updaters){
 		statements += (counting: Statement::\expressionStatement(updater));
 		updaters += counting;
 		counting += 1;
 	}
 	
+	//break or continue
+	for(l <- combinedForBody.lastStatements && l in breakOrContinue[loop]){
+		for(bc <- breakOrContinue[loop][l]){
+			if(bc == -2) lastStatements += l;
+			else cflow += [<l, updaters[0]>];
+		}
+	}
+	
 	//catenate the forBody with the updaters and the last updater with the loop start
-	combinedFlow = combineTwoFlows(forBodyCF.lastStatements, updaters[0]);
+	combinedFlow = combineTwoFlows(exclude(combinedForBody.lastStatements, breakOrContinue[loop], []), updaters[0]);
 	cflow += combinedFlow.cflow + toLRel(updaters) + <last(updaters), loopStart>;
 	lastStatements += combinedFlow.rStatements;
-	return controlFlow(cflow, firstStatement, lastStatements);
+	
+	//clear 
+	breakOrContinue[loop] = ();
+	return controlFlow(cflow, firstStatement, dup(lastStatements));
 }
 
 
@@ -155,10 +194,23 @@ public CF whileCF(Statement stat){
 	int cond = counting;
 	statements += (cond: Statement::\expressionStatement(stat.condition));
 	counting += 1;
-	CF bodyCF = statementCF(stat.body);
-	combinedFlow = combineTwoFlows(bodyCF.lastStatements, cond);
-	lrel[int, int] cflow = [<cond, bodyCF.firstStatement>] + bodyCF.cflow + combinedFlow.cflow;
+	loop += 1;
+	breakOrContinue[loop] = (); 
+	
+	combinedWhileBody = concatCF(controlFlow([], cond, [cond]), [stat.body]);
+	combinedFlow = combineTwoFlows(exclude(combinedWhileBody.lastStatements, breakOrContinue[loop], []), cond);
+	lrel[int, int] cflow = combinedWhileBody.cflow + combinedFlow.cflow;
 	list[int] lastStatements = [cond] + combinedFlow.rStatements;
+	
+	//break or continue
+	for(l <- combinedWhileBody.lastStatements && l in breakOrContinue[loop]){
+		for(bc <- breakOrContinue[loop][l]){
+			if(bc == -2) lastStatements += l;
+			else cflow += [<l, cond>];
+		}
+	}
+	
+	breakOrContinue[loop] = ();	
 	return controlFlow(cflow, cond, lastStatements);
 }
 
@@ -217,23 +269,33 @@ public CF returnCF(Statement stat){
 }
 
 //concatenate relation lists (recursion)
-public CF concatCF (CF mainCF, list[Statement] restStatements){ 
+public CF concatCF(CF mainCF, list[Statement] restStatements){
 	if(size(restStatements) == 0) return mainCF;
 	else{
 		CF firstCF = statementCF(restStatements[0]);
+		//println(firstCF.firstStatement);
 		//not an empty block or break or return
 		//if(firstCF.firstStatement != -1 && firstCF.firstStatement != -2 && firstCF.firstStatement notin returnStatements){
-		if(firstCF.firstStatement != -1 && firstCF.firstStatement != -2){
+		if(firstCF.firstStatement == -2 || firstCF.firstStatement == -3){
+			for(l <- mainCF.lastStatements){
+				if(l notin breakOrContinue[loop]) breakOrContinue[loop][l] = [firstCF.firstStatement];
+				breakOrContinue[loop][l] += [firstCF.firstStatement];
+			}
+			return mainCF;
+		}else if(firstCF.firstStatement != -1){
 			int firstStatement = mainCF.firstStatement;
 			CF restCF = concatCF(firstCF, tail(restStatements));
-			combinedFlow = combineTwoFlows(mainCF.lastStatements, firstCF.firstStatement);
+			combinedFlow = combineTwoFlows(exclude(mainCF.lastStatements, breakOrContinue[loop], condFollowdByBC), firstCF.firstStatement);
 			lrel[int, int] cflow = mainCF.cflow + combinedFlow.cflow + restCF.cflow;
 			lastStatements = combinedFlow.rStatements + restCF.lastStatements;
+			
+			for(l <- mainCF.lastStatements, l in breakOrContinue[loop]) lastStatements += l;
+			
 			//lrel[int, int] cflow = mainCF.cflow + [<l, firstCF.firstStatement> | l <- mainCF.lastStatements] + restCF.cflow;
 			return controlFlow(cflow, firstStatement, lastStatements);
 		}
 		//if the following statement is an empty block, then ignore it
-		if(firstCF.firstStatement == -1 && size(restStatements) > 1) return concatCF (mainCF, tail(restStatements));
+		if(firstCF.firstStatement == -1 && size(restStatements) > 1) return concatCF(mainCF, tail(restStatements));
 		//if there is only one element in the statement list and it is an empty block; or it is a break
 		else return mainCF;
 	}
@@ -277,6 +339,11 @@ private bool isCase(Statement stat){
 
 private bool isBreak(Statement stat){
 	if(Statement::\break(_) := stat || Statement::\break() := stat) return true;
+	else return false;
+}
+
+private bool isContinue(Statement stat){
+	if(Statement::\continue(_) := stat || Statement::\continue() := stat) return true;
 	else return false;
 }
 
