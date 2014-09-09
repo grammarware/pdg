@@ -10,7 +10,8 @@ import IO;
 import ADT;
 import Utils::ListRelation;
 import Utils::List;
-
+import Utils::Map;
+import Statement::Definition;
 //mark every statement with analyzing sequence number
 private map[int number, Statement stat] statements = ();
 
@@ -30,17 +31,30 @@ private map[int loop, map[int, list[int]] stat] breakOrContinue = ();
 //for condition followed by bc, it need to do separately and also connect to the following firststatement
 private list[int] condFollowdByBC = [];
 
-public CF getControlFlow(Statement stat, Environment environment){
+map[str, set[int]] defs = ();
+map[int, set[str]] gens = ();
+
+public CF getControlFlow(Statement stat){
 	counting = 0;
 	loop = 0;
 	returnStatements = [];
 	breakOrContinue[0] = ();
 	condFollowdByBC = [];
+	defs = ();
+	gens = ();
 	return statementCF(stat);
 }
 
 public map[int number, Statement stat] getStatements(){
 	return statements;
+}
+
+public map[str, set[int]] getDefs(){
+	return defs;
+}
+
+public map[int, set[str]] getGens(){
+	return gens;
 }
 
 //analyze each statement
@@ -64,19 +78,14 @@ private CF statementCF(Statement stat){
 		
 		case \return(): return returnCF(stat);
 		case \return(_): return returnCF(stat);
-		//default: {
-		//	statements += (counting: stat);
-		//	firstStatement = counting;
-		//	lastStatements = [counting];
-		//	counting += 1;
-		//	
-		//	
-		//	return controlFlow([], first, last), dataFlow(dflow, environment)>;
-		//}
+
 		default: {	
 			statements += (counting: stat);
 			firstStatement = counting;
 			lastStatements = [counting];
+			
+			calDefGen(stat, counting);
+			
 			counting += 1;
 			return controlFlow([], firstStatement, lastStatements);
 		}
@@ -143,6 +152,7 @@ public CF forCF(Statement stat){
 	for(initializer <- stat.initializers){
 		statements += (counting: Statement::\expressionStatement(initializer));
 		initializers += counting;
+		calDefGen(Statement::\expressionStatement(initializer), counting);
 		counting += 1;
 	}
 	currentLast = counting - 1;
@@ -167,6 +177,7 @@ public CF forCF(Statement stat){
 	for(updater <- stat.updaters){
 		statements += (counting: Statement::\expressionStatement(updater));
 		updaters += counting;
+		calDefGen(Statement::\expressionStatement(updater), counting);
 		counting += 1;
 	}
 	
@@ -273,7 +284,6 @@ public CF concatCF(CF mainCF, list[Statement] restStatements){
 	if(size(restStatements) == 0) return mainCF;
 	else{
 		CF firstCF = statementCF(restStatements[0]);
-		//println(firstCF.firstStatement);
 		//not an empty block or break or return
 		//if(firstCF.firstStatement != -1 && firstCF.firstStatement != -2 && firstCF.firstStatement notin returnStatements){
 		if(firstCF.firstStatement == -2 || firstCF.firstStatement == -3){
@@ -330,6 +340,12 @@ private tuple[lrel[int, int] cflow, list[int] rStatements] combineTwoFlows(list[
 		}
 	}
 	return <cflow, rStatements>;
+}
+
+private void calDefGen(Statement stat, int counting){
+	tuple[map[str, set[int]] defs, map[int, set[str]] gens] dg = extractDefGen(stat, counting, defs, gens);
+	defs = dg.defs;
+	gens = dg.gens;
 }
 
 private bool isCase(Statement stat){

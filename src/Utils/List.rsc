@@ -11,3 +11,7 @@ public list[int] exclude(list[int] ls, map[int, list[int]] bc, list[int] condFol
 	}
 	return rls;
 }
+
+public bool equals(list[value] l1, list[value] l2){
+	return toSet(l1) == toSet(l2);	
+}

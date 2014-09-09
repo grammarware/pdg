@@ -2,57 +2,50 @@ module DataDependence::DataFlow
 
 import lang::java::m3::AST;
 import ADT;
+import ControlDependence::ControlFlow;
+import Utils::Map;
+import Utils::ListRelation;
+import IO;
 
-public DF computeDataFlow(Statement stat, Environment environment){
-	lrel[int, int, str] dflow = [];
-	visit(stat){
-				case \variable(str name, int extraDimensions): {
-					environment.currentEnv += (name: stat);
-				}
-				case \variable(str name, int extraDimensions, Expression \initializer): {
-					environment.currentEnv += (name: stat);
-				}
-				case \simpleName(str name): {
-					statS = getStatFromEnv(name, environment);
-					if(Statement::\empty() != statS) {
-				 		dflow += <statS, stat, name>;
-				 	} 	
-				 }
-				 case \assignment(\simpleName(str name), _ , _): {
-					environment = updateEnv(name, environment, stat);
-				}
-				case \postfix(\simpleName(str name), _ ): {
-					environment = updateEnv(name, environment, stat);
-					println(environment);
-				}
-			}
+//map[str var, list[int] stats] defs = ();
+//map[int stat, list[str] vars] gens = ();
+
+public void buildDataFlow(CF cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens){
+	tuple[map[int, map[int, set[str]]] inputs, map[int, map[int, set[str]]] outputs] io = calculateInOut(cf, statements, defs, gens);
+}
+
+public tuple[map[int, map[int, set[str]]] inputs, map[int, map[int, set[str]]] outputs] calculateInOut(CF cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens){
+	map[int, map[int, set[str]]] kills = ();
+	map[int, map[int, set[str]]] outputs = ();
+	map[int, map[int, set[str]]] inputs = ();
 	
-	return dataFlow(dflow, environment);
-}
-
-
-private int getStatFromEnv(str name, Environment env){
-	if(name in env.currentEnv){
-		return env.currentEnv[name];
-	}else if(\env(_,_) := env){
-		return getStatFromEnv(name, env.parentEnv);
+	map[int, list[int]] preds = getPredecessors(cf.cflow);
+	for(s <- statements){
+		if(s in gens){
+			kills[s] = ();
+			for(var <- gens[s]){
+				for(stat <- defs[var])
+					kills[s] = insertInToMap(var, stat, kills[s]);
+			} 
+		}else{
+			gens[s] = {};
+			kills[s] = ();
+		}
+		//initialize outputs and inputs
+		outputs[s]= (s: gens[s]);
+		inputs[s] = ();
 	}
-	//}else{
-	//	return Statement::\empty();
-	//}
-}
-
-
-private Environment updateEnv(str name, Environment env, int stat){
-	if(name in env.currentEnv)
-		// if on this level, update
-		env.currentEnv[name] = stat;
-	else if(\env(_,_):=env)
-		// we need to go deeper
-		env.parentEnv = updateEnv(name, env.parentEnv, stat);
-	else
-		// if not found, introduce it
-		// NB: this should not happen
-		env.currentEnv[name] = stat;
-	return env;
+	
+	bool change = true;
+	while(change){
+		change = false;
+		for(s <- statements){
+			if(s in preds) inputs[s] = mergeMaps([outputs[p] | p <- preds[s]]);
+			oldOut = outputs[s];
+			outputs[s] = mergeMaps([(s: gens[s]), subtractMaps(inputs[s], kills[s])]);
+			if(outputs[s] != oldOut) change = true;
+		}
+	}
+	
+	return <inputs, outputs>;
 }

@@ -8,6 +8,7 @@ import ADT;
 import IO;
 import ControlDependence::ControlFlow;
 import ControlDependence::Dominance;
+import DataDependence::DataFlow;
 
 public Declaration getAST(loc project){
 	//loc project = |project://JavaTest/src/Main.java|;
@@ -24,15 +25,25 @@ public list[Declaration] getMethodAST(loc project){
 }
 
 //cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[0]);
-public CF buildFlow(Declaration method){
+public CF buildControlFlow(Declaration method){
 	str name = method.name;
-	Environment environment = env(());
-	return getControlFlow(method.impl, environment);	
+	return getControlFlow(method.impl);	
 }
 
+//buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/InOut.java|)[0]);
+public void buildPDG(Declaration method){
+	CF cf = getControlFlow(method.impl);
+	map[int number, Statement stat] statements = getStatements();
+	map[str, set[int]] defs = getDefs();
+	map[int, set[str]] gens = getGens();
+	buildDataFlow(cf, statements, defs, gens);
+	
+}
+
+//for test
 //cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
 public map[int, int] buildDominatorTree(Declaration method){
-	CF cf = buildFlow(method);
+	CF cf = buildControlFlow(method);
 	map[int number, Statement stat] statements = getStatements();
 	return buildDominance(cf.cflow, cf.firstStatement, toList(domain(statements)));
 }
