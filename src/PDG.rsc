@@ -7,8 +7,30 @@ import Map;
 import ADT;
 import IO;
 import ControlDependence::ControlFlow;
+import ControlDependence::ControlDependence;
 import ControlDependence::Dominance;
-import DataDependence::DataFlow;
+import DataDependence::DataDependence;
+
+//buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
+public tuple[ControlDependence, DataDependence] buildPDG(Declaration method){
+	CF cf = getControlFlow(method);
+	map[int number, Statement stat] statements = getStatements();
+	//control dependence
+	list[int] nodes = toList(domain(statements));
+	tuple[map[int, rel[int, str]] dependences, int regionNum] controlDependences = buildDependence(cf, nodes);
+	
+	//data dependence
+	map[str, set[int]] defs = getDefs();
+	map[int, set[str]] gens = getGens();
+	map[int, set[str]] uses = getUses();
+	map[int use, rel[int def, str name] defs] dataDependences = buildDataFlow(cf, statements, defs, gens, uses);	
+	
+	return <CD(controlDependences), DD(dataDependences)>;
+}
+
+public list[Declaration] getMethodAST(loc project){
+	return  [meth | meth <- getClassAST(project).body && isMethodType(meth)];
+}
 
 public Declaration getAST(loc project){
 	//loc project = |project://JavaTest/src/Main.java|;
@@ -20,25 +42,11 @@ public Declaration getClassAST(loc project){
 }
 
 
-public list[Declaration] getMethodAST(loc project){
-	return  [meth | meth <- getClassAST(project).body && isMethodType(meth)];
-}
-
-//cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[0]);
-public CF buildControlFlow(Declaration method){
-	str name = method.name;
-	return getControlFlow(method.impl);	
-}
-
-//buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/InOut.java|)[0]);
-public void buildPDG(Declaration method){
-	CF cf = getControlFlow(method.impl);
-	map[int number, Statement stat] statements = getStatements();
-	map[str, set[int]] defs = getDefs();
-	map[int, set[str]] gens = getGens();
-	buildDataFlow(cf, statements, defs, gens);
-	
-}
+////cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[0]);
+//public CF buildControlFlow(Declaration method){
+//	str name = method.name;
+//	return getControlFlow(method.impl);	
+//}
 
 //for test
 //cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);

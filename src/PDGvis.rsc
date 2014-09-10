@@ -1,19 +1,23 @@
-module Tests::TestCDG
+module PDGvis
 
 import ADT;
-import ControlDependence::ControlDependence;
+import PDG;
 import vis::Render;
 import vis::Figure;
 import vis::KeySym;
 import IO;
 import List;
+import Map;
+import Set;
 
-public void displaceTestCDG(){
-	flow = [<1, 2>, <1, 3>, <2, 4>, <2, 5>, <3, 5>, <3, 7>, <4, 6>, <5, 6>, <6, 7>];
-	CF cf = controlFlow(flow, 1, [7]);
-	nodes = [1..8];
-	tuple[map[int, rel[int, str]] dependences, int regionNum] controlDependences = buildDependence(cf, nodes);
-	render(buildCDG(controlDependences.dependences, nodes, controlDependences.regionNum));
+//displacePDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
+public void displacePDG(loc project){
+	meth = getMethodAST(project)[0];
+	tuple[ControlDependence cd, DataDependence dd] pd = buildPDG(meth);
+	map[int number, Statement stat] statements = getStatements();
+	list[int] nodes = toList(domain(statements));
+	//tuple[map[int, rel[int, str]] dependences, int regionNum] controlDependences = buildDependence(cf, nodes);
+	render(buildPDG(pd.cd.dependences, pd.dd.dependence, nodes, controlDependences.regionNum));
 	//println(buildCDG(dependences, -3));
 }
 
@@ -48,6 +52,7 @@ private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel
 			}else{
 				edges += [edge("<n>", "<post>", toArrow(ellipse(size(5),fillColor("black"))))];				
 			}
+			println("<n> ---- <post>---<predicate>");	
 			labelNum = labelNum + 1;	
 		}
 	}

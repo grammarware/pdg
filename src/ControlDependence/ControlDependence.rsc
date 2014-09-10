@@ -74,6 +74,7 @@ private tuple[map[int, rel[int, str]] nodesWithRegion, int regionNum] insertRegi
 	//for(n <- [4, 5, 2, 6]){
 		rel[int pre, str label] cd = controlDependencePred[n];
 		if(cd notin regionNodes){
+			//if(cd == {<3,"T">,<6,"T">}) println("!!!!");
 			regionNodes[cd] = regionCounting;
 			regionCounting = regionCounting - 1;
 			dependenceWithRegion = concateRegionNode(n, cd, regionNodes[cd], dependenceWithRegion);	
@@ -88,12 +89,15 @@ private tuple[map[int, rel[int, str]] nodesWithRegion, int regionNum] insertRegi
 						regionNodes[afterReplace] = childRegion;
 						regionNodes = delete(regionNodes, controlDependencePred[child]);
 					}	
-					if(controlDependencePred[child] <= cd){
+					if(controlDependencePred[child] < cd){
+						println(cd);
+						println(regionNodes);
 						childRegion = regionNodes[controlDependencePred[child]];
 						dependenceWithRegion = modifyPredecessors(controlDependencePred[child], regionNodes[cd], childRegion, dependenceWithRegion);
 						afterReplace = cd - controlDependencePred[child] + <childRegion, "">;
 						regionNodes[afterReplace] = regionNodes[cd];
 						regionNodes = delete(regionNodes, cd);
+						println(regionNodes);
 					}	
 				}
 			}		
@@ -144,7 +148,7 @@ private map[int, rel[int, str]] modifyPredecessors(rel[int, str] cd, int r, int 
 	return dwr;
 }
 
-private lrel[int, int] addCommonNodestoFlow(CF cf){
+public lrel[int, int] addCommonNodestoFlow(CF cf){
 	return [<ENTRY, START>, <ENTRY, STOP>, <START, cf.firstStatement>] + cf.cflow + [<s, STOP> | s <- cf.lastStatements];
 }
 

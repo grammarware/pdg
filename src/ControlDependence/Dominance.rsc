@@ -39,9 +39,9 @@ public map[int, int] buildDominance(lrel[int, int] flow, int first, list[int] no
 	map[int, list[int]] predecessor = getPredecessors(flow);
 	list[int] postOrder = toPostOrder(toMap(flow), first, nodes);
 	map[int, int] idom = ();
-	//initialize the dominators array, -1 means undefined
+	//initialize the dominators array, -5 means undefined
 	for(s <- postOrder) 
-		idom[s] = -1;
+		idom[s] = -5;
 		
 	idom[first] = first;
 	bool changed = true;
@@ -50,7 +50,7 @@ public map[int, int] buildDominance(lrel[int, int] flow, int first, list[int] no
 		for(b <- reverse(postOrder - first)){
 			newIdom = getProcessedPred(idom, b, predecessor);
 			if(size(predecessor[b]) > 1){
-				for(p <- (predecessor[b] - newIdom), idom[p] != -1)
+				for(p <- (predecessor[b] - newIdom), idom[p] != -5)
 					newIdom = intersect(p, newIdom, idom, postOrder);
 			}
 			
@@ -77,7 +77,7 @@ private int intersect(int b1, int b2, map[int, int] idom, list[int] postOrder){
 
 private int getProcessedPred(map[int, int] idom, int n, map[int, list[int]] predecessor){
 	list[int] processed = [];
-	for(i <- predecessor[n], idom[i] != -1) 
+	for(i <- predecessor[n], idom[i] != -5) 
 		processed += i;
 	return processed[0];
 }

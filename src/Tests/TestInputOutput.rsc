@@ -5,14 +5,14 @@ import IO;
 import PDG;
 import ADT;
 import ControlDependence::ControlFlow;
-import DataDependence::DataFlow;
+import DataDependence::ReachingDefs;
 
 test bool testInputs(){
-	CF cf = buildControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/InOut.java|)[0]);
+	CF cf = buildControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
 	map[int number, Statement stat] statements = getStatements();
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
-	inputs = calculateInOut(cf, statements, defs, gens).inputs;
+	inputs = getReachingDefs(cf, statements, defs, gens).inputs;
 	map[int, map[int, set[str]]] exptectedInputs = ();
 	exptectedInputs[0] = ();
 	exptectedInputs[1] = (0:{"n"});
@@ -31,11 +31,11 @@ test bool testInputs(){
 }
 
 test bool testOutputs(){
-	CF cf = buildControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/InOut.java|)[0]);
+	CF cf = buildControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
 	map[int number, Statement stat] statements = getStatements();
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
-	outputs = calculateInOut(cf, statements, defs, gens).outputs;
+	outputs = getReachingDefs(cf, statements, defs, gens).outputs;
 	map[int, map[int, set[str]]] exptectedOutputs = ();
 	exptectedOutputs[0] = (0:{"n"});
 	exptectedOutputs[1] = (1:{"i"},0:{"n"});

@@ -33,8 +33,9 @@ private list[int] condFollowdByBC = [];
 
 map[str, set[int]] defs = ();
 map[int, set[str]] gens = ();
+map[int, set[str]] uses = ();
 
-public CF getControlFlow(Statement stat){
+public CF getControlFlow(Declaration meth){
 	counting = 0;
 	loop = 0;
 	returnStatements = [];
@@ -42,7 +43,8 @@ public CF getControlFlow(Statement stat){
 	condFollowdByBC = [];
 	defs = ();
 	gens = ();
-	return statementCF(stat);
+	uses = ();
+	return statementCF(meth.impl);
 }
 
 public map[int number, Statement stat] getStatements(){
@@ -55,6 +57,10 @@ public map[str, set[int]] getDefs(){
 
 public map[int, set[str]] getGens(){
 	return gens;
+}
+
+public map[int, set[str]] getUses(){
+	return uses;
 }
 
 //analyze each statement
@@ -84,7 +90,7 @@ private CF statementCF(Statement stat){
 			firstStatement = counting;
 			lastStatements = [counting];
 			
-			calDefGen(stat, counting);
+			calDefGenUse(stat, counting);
 			
 			counting += 1;
 			return controlFlow([], firstStatement, lastStatements);
@@ -118,6 +124,7 @@ public CF ifCF(Statement stat){
 	int cond = counting;
 	//add the condition statement to the statement map and set it as the start of this sub-flow 
 	statements += (cond: Statement::\expressionStatement(stat.condition));
+	uses[counting] = extractUse(stat.condition);
 	counting += 1;
 	//CF thenBranchCF = statementCF(stat.thenBranch);
 	combinedThen = concatCF(controlFlow([], cond, [cond]), [stat.thenBranch]);
@@ -152,7 +159,7 @@ public CF forCF(Statement stat){
 	for(initializer <- stat.initializers){
 		statements += (counting: Statement::\expressionStatement(initializer));
 		initializers += counting;
-		calDefGen(Statement::\expressionStatement(initializer), counting);
+		calDefGenUse(Statement::\expressionStatement(initializer), counting);
 		counting += 1;
 	}
 	currentLast = counting - 1;
@@ -162,6 +169,7 @@ public CF forCF(Statement stat){
 	//if there is a condition
 	if(Statement::\for(_,_,_,_) := stat){
 		statements += (counting: Statement::\expressionStatement(stat.condition));
+		uses[counting] = extractUse(stat.condition);
 		//catenate the last initializer with the condition
 		initCFlow += <last(initializers), counting>;
 		lastStatements += counting;
@@ -177,7 +185,7 @@ public CF forCF(Statement stat){
 	for(updater <- stat.updaters){
 		statements += (counting: Statement::\expressionStatement(updater));
 		updaters += counting;
-		calDefGen(Statement::\expressionStatement(updater), counting);
+		calDefGenUse(Statement::\expressionStatement(updater), counting);
 		counting += 1;
 	}
 	
@@ -204,6 +212,7 @@ public CF forCF(Statement stat){
 public CF whileCF(Statement stat){
 	int cond = counting;
 	statements += (cond: Statement::\expressionStatement(stat.condition));
+	uses[counting] = extractUse(stat.condition);
 	counting += 1;
 	loop += 1;
 	breakOrContinue[loop] = (); 
@@ -229,6 +238,7 @@ public CF whileCF(Statement stat){
 public CF switchCF(Statement stat){
 	int expr = counting;
 	statements += (expr: Statement::\expressionStatement(stat.expression));
+	uses[counting] = extractUse(stat.expression);
 	counting += 1;
 	switchStatements = stat.statements;
 
@@ -275,6 +285,7 @@ public CF returnCF(Statement stat){
 	rStat = counting;
 	statements += (rStat: stat);
 	returnStatements += [rStat];
+	if(Statement::\return(Expression expression) := stat) uses[counting] = extractUse(stat.expression);
 	counting += 1;
 	return controlFlow([], rStat, [rStat]);
 }
@@ -342,10 +353,11 @@ private tuple[lrel[int, int] cflow, list[int] rStatements] combineTwoFlows(list[
 	return <cflow, rStatements>;
 }
 
-private void calDefGen(Statement stat, int counting){
-	tuple[map[str, set[int]] defs, map[int, set[str]] gens] dg = extractDefGen(stat, counting, defs, gens);
-	defs = dg.defs;
-	gens = dg.gens;
+private void calDefGenUse(Statement stat, int counting){
+	dgu = extractDefGenUse(stat, counting, defs, gens, uses);
+	defs = dgu.defs;
+	gens = dgu.gens;
+	uses = dgu.uses;
 }
 
 private bool isCase(Statement stat){

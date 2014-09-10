@@ -35,3 +35,17 @@ public map[int, set[str]] subtractMaps(map[int, set[str]] m1, map[int, set[str]]
 	}
 	return result;
 }
+
+public map[int, map[str, set[int]]] reverseKeyValue(map[int, map[int, set[str]]] m){
+	map[int, map[str, set[int]]] reversedMap = ();
+	for(key <- m){
+		reversedMap[key] = ();
+		for(key2 <- m[key]){
+			for(v <- m[key][key2]){
+				if(v notin reversedMap[key]) reversedMap[key][v] = {key2};
+				else reversedMap[key][v] += {key2};
+			}
+		}
+	}
+	return reversedMap;
+}
