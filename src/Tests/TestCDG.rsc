@@ -14,11 +14,9 @@ public void displaceTestCDG(){
 	nodes = [1..8];
 	tuple[map[int, rel[int, str]] dependences, int regionNum] controlDependences = buildDependence(cf, nodes);
 	render(buildCDG(controlDependences.dependences, nodes, controlDependences.regionNum));
-	//println(buildCDG(dependences, -3));
 }
 
 private Figure buildCDG(map[int, rel[int, str]] dependences, list[int] nodes, int regionNum){
-	//list[Edge] edges = [edge("1", "4", toArrow(ellipse(size(5),fillColor("black"))), label(text("aaa")), gap(5))];
 	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(dependences);
 	list[Figure] nodes = buildNodes(nodes, regionNum) + labelEdges.labelNodes;
 	return graph(nodes, labelEdges.edges, hint("layered"), vgap(20), hgap(30));
@@ -27,11 +25,8 @@ private Figure buildCDG(map[int, rel[int, str]] dependences, list[int] nodes, in
 private list[Figure] buildNodes(list[int] nodes, int regionNum){
 	list[Figure] nodes = [box(text("<n>"), id("<n>"), size(10), fillColor("lightgreen"), gap(10)) | n <- nodes];
 	Figure entryNode = box(text("Entry"), id("-3"), size(10), fillColor("red"), gap(10));
-	//Figure stopNode = box(text("Stop"), id("-2"), size(10), fillColor("red"), gap(10));
-	//Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
-	list[Figure] regionNodes = [box(text("R<n*(-1)>"), id("<n>"), size(10), fillColor("green"), gap(10)) | n <- [regionNum..-3]];
+	list[Figure] regionNodes = [box(text("R<(n*(-1))-4>"), id("<n>"), size(10), fillColor("green"), gap(10)) | n <- [regionNum..-3]];
 	
-	//return [entryNode, stopNode, startNode] + nodes + regionNodes;
 	return [entryNode] + nodes + regionNodes;
 }
 

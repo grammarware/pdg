@@ -12,7 +12,7 @@ import ControlDependence::Dominance;
 import DataDependence::DataDependence;
 
 //buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
-public tuple[ControlDependence, DataDependence] buildPDG(Declaration method){
+public tuple[ControlDependence, DataDependence, map[int, Statement]] buildPDG(Declaration method){
 	CF cf = getControlFlow(method);
 	map[int number, Statement stat] statements = getStatements();
 	//control dependence
@@ -23,9 +23,9 @@ public tuple[ControlDependence, DataDependence] buildPDG(Declaration method){
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
 	map[int, set[str]] uses = getUses();
-	map[int use, rel[int def, str name] defs] dataDependences = buildDataFlow(cf, statements, defs, gens, uses);	
+	map[int use, rel[int def, str name] defs] dataDependences = buildDataDependence(cf, statements, defs, gens, uses);	
 	
-	return <CD(controlDependences), DD(dataDependences)>;
+	return <CD(controlDependences.dependences, controlDependences.regionNum), DD(dataDependences), statements>;
 }
 
 public list[Declaration] getMethodAST(loc project){
@@ -41,20 +41,14 @@ public Declaration getClassAST(loc project){
 	return  head([cl | cl <- getAST(project).types && isClassType(cl)]);
 }
 
-
-////cf = buildFlow(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[0]);
-//public CF buildControlFlow(Declaration method){
-//	str name = method.name;
-//	return getControlFlow(method.impl);	
+//
+////for test
+////cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
+//public map[int, int] buildDominatorTree(Declaration method){
+//	CF cf = buildControlFlow(method);
+//	map[int number, Statement stat] statements = getStatements();
+//	return buildDominance(cf.cflow, cf.firstStatement, toList(domain(statements)));
 //}
-
-//for test
-//cf = buildDominatorTree(getMethodAST(|project://JavaTest/src/PDG/controlFlow/Basic.java|)[1]);
-public map[int, int] buildDominatorTree(Declaration method){
-	CF cf = buildControlFlow(method);
-	map[int number, Statement stat] statements = getStatements();
-	return buildDominance(cf.cflow, cf.firstStatement, toList(domain(statements)));
-}
 
 private bool isClassType(Declaration::\class(_,_,_,_)) = true;
 private bool isClassType(Declaration::\class(_)) = true;

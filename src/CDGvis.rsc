@@ -1,4 +1,4 @@
-module PDGvis
+module CDGvis
 
 import ADT;
 import PDG;
@@ -11,18 +11,18 @@ import List;
 import Map;
 import Set;
 
-//displacePDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
-public void displacePDG(loc project){
+//displaceCDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
+public void displaceCDG(loc project){
 	meth = getMethodAST(project)[0];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
 	list[int] nodes = toList(domain(pd.statements));
-	render(buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum));
+	render(buildCDG(pd.cd.dependences, nodes, pd.cd.regionNum));
 }
 
-private Figure buildPDG(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd, list[int] nodes, int regionNum){
-	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(cd, dd);
+private Figure buildCDG(map[int, rel[int, str]] cd, list[int] nodes, int regionNum){
+	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(cd);
 	list[Figure] nodes = buildNodes(nodes, regionNum) + labelEdges.labelNodes;
-	return graph(nodes, labelEdges.edges, hint("layered"), vgap(20), hgap(20));
+	return graph(nodes, labelEdges.edges, hint("layered"), vgap(40), hgap(40));
 }
 
 private list[Figure] buildNodes(list[int] nodes, int regionNum){
@@ -35,7 +35,7 @@ private list[Figure] buildNodes(list[int] nodes, int regionNum){
 	return [entryNode] + nodes + regionNodes;
 }
 
-private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd){
+private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel[int, str]] cd){
 	list[Edge] edges = [];
 	list[Figure] labelNodes = [];
 	int labelNum = 0;
@@ -49,15 +49,6 @@ private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel
 				edges += [edge("<n>", "<post>", toArrow(ellipse(size(5),fillColor("black"))))];				
 			}	
 			labelNum += 1;	
-		}
-	}
-	
-	for(use <- dd){
-		for(<def, name> <- dd[use]){
-			labelNodes += box(text("<name>", fontSize(15)), id("l<labelNum>"), lineColor("white"));
-			edges += [edge("<def>", "l<labelNum>", lineStyle("dashdot"), lineColor("Blue"))];	
-			edges += [edge("l<labelNum>", "<use>", lineStyle("dashdot"), lineColor("Blue"), toArrow(ellipse(size(5),fillColor("Blue"))))];
-			labelNum += 1;
 		}
 	}
 	return <labelNodes, edges>;

@@ -71,10 +71,8 @@ private tuple[map[int, rel[int, str]] nodesWithRegion, int regionNum] insertRegi
 	map[int, list[int]] postDominatorTree = dominatorTree(postDominance, nodes);
 	//post-order traverse post-dominator tree
 	for(n <- toPostOrder(postDominatorTree, STOP, nodes), n in controlDependencePred){
-	//for(n <- [4, 5, 2, 6]){
 		rel[int pre, str label] cd = controlDependencePred[n];
 		if(cd notin regionNodes){
-			//if(cd == {<3,"T">,<6,"T">}) println("!!!!");
 			regionNodes[cd] = regionCounting;
 			regionCounting = regionCounting - 1;
 			dependenceWithRegion = concateRegionNode(n, cd, regionNodes[cd], dependenceWithRegion);	
@@ -88,16 +86,15 @@ private tuple[map[int, rel[int, str]] nodesWithRegion, int regionNum] insertRegi
 						afterReplace = controlDependencePred[child] - cd + <regionNodes[cd], "">;
 						regionNodes[afterReplace] = childRegion;
 						regionNodes = delete(regionNodes, controlDependencePred[child]);
+						cd = afterReplace;
 					}	
 					if(controlDependencePred[child] < cd){
-						println(cd);
-						println(regionNodes);
 						childRegion = regionNodes[controlDependencePred[child]];
 						dependenceWithRegion = modifyPredecessors(controlDependencePred[child], regionNodes[cd], childRegion, dependenceWithRegion);
 						afterReplace = cd - controlDependencePred[child] + <childRegion, "">;
 						regionNodes[afterReplace] = regionNodes[cd];
 						regionNodes = delete(regionNodes, cd);
-						println(regionNodes);
+						cd = afterReplace;
 					}	
 				}
 			}		

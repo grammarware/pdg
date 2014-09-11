@@ -34,7 +34,6 @@ public void displayPDT(loc project){
 }
 
 private Figure buildPDT(map[int, int] pd, list[int] nodes){
-	//list[Edge] edges = [edge("1", "4", toArrow(ellipse(size(5),fillColor("black"))), label(text("aaa")), gap(5))];
 	list[Edge] edges = buildEdges(pd);
 	Figure exitNode = box(text("Exit"), id("-2"), size(10), fillColor("red"), gap(10));
 	Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
