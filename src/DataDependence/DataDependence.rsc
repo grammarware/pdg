@@ -14,7 +14,7 @@ import DataDependence::DefUsePairs;
 
 public map[int use, rel[int def, str name] defs] buildDataDependence(CF cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens, map[int, set[str]] uses){
 	io = getReachingDefs(cf, statements, defs, gens);
-	duPairs = computeDefUsePairs(statements, reverseKeyValue(io.inputs), uses);
+	duPairs = computeDefUsePairs(reverseKeyValue(io.inputs), uses);
 	return duPairs;
 }
 

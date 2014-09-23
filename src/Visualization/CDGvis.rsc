@@ -1,4 +1,4 @@
-module CDGvis
+module Visualization::CDGvis
 
 import ADT;
 import PDG;
@@ -11,8 +11,8 @@ import List;
 import Map;
 import Set;
 
-//displaceCDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
-public void displaceCDG(loc project){
+//displayCDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
+public void displayCDG(loc project){
 	meth = getMethodAST(project)[0];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
 	list[int] nodes = toList(domain(pd.statements));
@@ -32,7 +32,7 @@ private list[Figure] buildNodes(list[int] nodes, int regionNum){
 	//Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
 	list[Figure] regionNodes = [box(text("R<(n*(-1))-4>"), id("<n>"), size(10), fillColor("green"), gap(10)) | n <- [regionNum..-3]];
 
-	return [entryNode] + nodes + regionNodes;
+	return nodes + regionNodes + entryNode;
 }
 
 private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel[int, str]] cd){

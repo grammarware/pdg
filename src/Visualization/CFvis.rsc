@@ -1,4 +1,4 @@
-module CFvis
+module Visualization::CFvis
 
 import ADT;
 import PDG;

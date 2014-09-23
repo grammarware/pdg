@@ -1,4 +1,4 @@
-module DDGvis
+module Visualization::DDGvis
 
 import ADT;
 import PDG;
@@ -11,8 +11,8 @@ import List;
 import Map;
 import Set;
 
-//displaceDDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
-public void displaceDDG(loc project){
+//displayDDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
+public void displayDDG(loc project){
 	meth = getMethodAST(project)[0];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
 	render(buildDDG(pd.dd.dependences));

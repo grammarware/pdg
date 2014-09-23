@@ -8,7 +8,7 @@ import ControlDependence::ControlFlow;
 import DataDependence::ReachingDefs;
 
 test bool testInputs(){
-	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
+	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/Sum.java|)[0]);
 	map[int number, Statement stat] statements = getStatements();
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
@@ -31,7 +31,7 @@ test bool testInputs(){
 }
 
 test bool testOutputs(){
-	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
+	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/Sum.java|)[0]);
 	map[int number, Statement stat] statements = getStatements();
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();

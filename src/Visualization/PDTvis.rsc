@@ -1,4 +1,4 @@
-module PostDominatorTreeVis
+module Visualization::PDTvis
 
 import ADT;
 import PDG;
@@ -21,14 +21,13 @@ import Utils::Relation;
 ////ENTRY is a predict node with one edge labeled "T" going to START and another labeled "F" going to STOP;
 //private int ENTRY = -3;
 
-//displayPDT(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
+//displayPDT(|project://JavaTest/src/PDG/Sum.java|);
 public void displayPDT(loc project){
 	meth = getMethodAST(project)[0];
 	CF cf = getControlFlow(meth);
 	statements = getStatements();
 	list[int] nodes = toList(domain(statements)) + [-1, -2, -3];
 	flow = addCommonNodestoFlow(cf);
-	println(flow);
 	map[int, int] postDominance = buildDominance(invert(flow), -2, nodes);
 	render(buildPDT(postDominance, nodes));
 }
@@ -47,5 +46,5 @@ private list[Figure] buildNodes(list[int] nodes){
 }
 
 private list[Edge] buildEdges(map[int, int] pd){
-	return [edge("<k>", "<pd[k]>", toArrow(ellipse(size(5),fillColor("black")))) | k <- pd];					
+	return [edge("<pd[k]>", "<k>", toArrow(ellipse(size(5),fillColor("black")))) | k <- pd];					
 }

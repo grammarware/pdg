@@ -1,4 +1,4 @@
-module PDGvis
+module Visualization::PDGvis
 
 import ADT;
 import PDG;
@@ -11,18 +11,19 @@ import List;
 import Map;
 import Set;
 
-//displacePDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
-public void displacePDG(loc project){
+//displayPDG(|project://JavaTest/src/PDG/Sum.java|);
+public void displayPDG(loc project){
 	meth = getMethodAST(project)[0];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
 	list[int] nodes = toList(domain(pd.statements));
-	render(buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum));
+	//renderSave(buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum), |file:///Users/Lulu/Desktop/pdg.png|);
+	render("PDG", buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum));
 }
 
 private Figure buildPDG(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd, list[int] nodes, int regionNum){
 	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(cd, dd);
 	list[Figure] nodes = buildNodes(nodes, regionNum) + labelEdges.labelNodes;
-	return graph(nodes, labelEdges.edges, hint("layered"), vgap(20), hgap(20));
+	return graph(nodes, labelEdges.edges, hint("layered"), vgap(10), hgap(10));
 }
 
 private list[Figure] buildNodes(list[int] nodes, int regionNum){

@@ -7,8 +7,8 @@ import ADT;
 import ControlDependence::ControlFlow;
 import DataDependence::DataDependence;
 
-test bool testInputs(){
-	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
+test bool testDD(){
+	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/Sum.java|)[0]);
 	map[int number, Statement stat] statements = getStatements();
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
