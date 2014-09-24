@@ -10,29 +10,31 @@ import IO;
 import List;
 import Map;
 import Set;
+import String;
+import Utils::Figure;
 
-//displayDDG(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|);
-public void displayDDG(loc project){
-	meth = getMethodAST(project)[0];
+public str HEADER = "\n";
+
+//displayDDG(|project://JavaTest/src/PDG/Sum.java|, 0);
+public void displayDDG(loc project, int methNum){
+	meth = getMethodAST(project)[methNum];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
-	render(buildDDG(pd.dd.dependences));
+	render("Data Dependence Graph", buildDDG(pd.dd.dependences, pd.statements));
 }
 
-private Figure buildDDG(map[int, rel[int, str]] dd){
+private Figure buildDDG(map[int, rel[int, str]] dd, map[int, Statement] statements){
+	str getHeader() { return HEADER; }
 	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(dd);
-	list[Figure] nodes = buildNodes(dd) + labelEdges.labelNodes;
-	return graph(nodes, labelEdges.edges, hint("layered"), vgap(10), hgap(10));
+	list[Figure] nodes = [statementNode(n, statements[n]) | n <- nodes(dd)] + labelEdges.labelNodes;
+	return vcat([text(getHeader,font("monaco"),fontSize(13)),
+			graph(nodes, labelEdges.edges, hint("layered"), vgap(10), hgap(10))], gap(5));
 }
 
-private list[Figure] buildNodes(map[int, rel[int, str]] dd){
-	set[int] nodes = {};
-	for(use <- dd){
-		nodes += use;
-		for(<def, name> <- dd[use]){
-			nodes += def;
-		}
-	}
-	return [box(text("<n>"), id("<n>"), size(10), fillColor("lightgreen"), gap(10)) | n <- nodes];
+private Figure statementNode(int n, Statement stat){
+	loc location = getLoc(stat);
+	return box(text("<n>"), id("<n>"), size(10), fillColor("lightgreen"), gap(10),
+			onMouseEnter(void() {setBrowserHeader(location);}),
+			onMouseDown(goToSource(location)));
 }
 
 private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel[int, str]] dd){
@@ -48,4 +50,19 @@ private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel
 		}
 	}
 	return <labelNodes, edges>;
+}
+
+private set[int] nodes(map[int, rel[int, str]] dd){
+	set[int] nodes = {};
+	for(use <- dd){
+		nodes += use;
+		for(<def, name> <- dd[use]){
+			nodes += def;
+		}
+	}
+	return nodes;
+}
+
+private void setBrowserHeader(loc location) {
+	HEADER = "<center("<location>", 30)>";
 }

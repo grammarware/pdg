@@ -10,30 +10,40 @@ import IO;
 import List;
 import Map;
 import Set;
+import String;
+import Utils::Figure;
 
-//displayPDG(|project://JavaTest/src/PDG/Sum.java|);
-public void displayPDG(loc project){
-	meth = getMethodAST(project)[0];
+public str HEADER = "\n";
+
+//displayPDG(|project://JavaTest/src/PDG/Sum.java|, 0);
+public void displayPDG(loc project, int methNum){
+	meth = getMethodAST(project)[methNum];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
 	list[int] nodes = toList(domain(pd.statements));
-	//renderSave(buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum), |file:///Users/Lulu/Desktop/pdg.png|);
-	render("PDG", buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum));
+	render("Program Dependence Graph", buildPDG(pd.cd.dependences, pd.dd.dependences, nodes, pd.cd.regionNum, pd.statements));
 }
 
-private Figure buildPDG(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd, list[int] nodes, int regionNum){
+private Figure buildPDG(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd, list[int] nodes, int regionNum, map[int, Statement] statements){
+	str getHeader() { return HEADER; }
 	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(cd, dd);
-	list[Figure] nodes = buildNodes(nodes, regionNum) + labelEdges.labelNodes;
-	return graph(nodes, labelEdges.edges, hint("layered"), vgap(10), hgap(10));
+	list[Figure] nodes = buildNodes(nodes, regionNum, statements) + labelEdges.labelNodes;
+	return vcat([text(getHeader,font("monaco"),fontSize(13)),
+			graph(nodes, labelEdges.edges, hint("layered"), vgap(10), hgap(10))], gap(5));
 }
 
-private list[Figure] buildNodes(list[int] nodes, int regionNum){
-	list[Figure] nodes = [box(text("<n>"), id("<n>"), size(10), fillColor("lightgreen"), gap(10)) | n <- nodes];
+private list[Figure] buildNodes(list[int] nodes, int regionNum, map[int, Statement] statements){
+	list[Figure] statementNodes = [statementNode(n, statements[n]) | n <- nodes];
 	Figure entryNode = box(text("Entry"), id("-3"), size(10), fillColor("red"), gap(10));
-	//Figure stopNode = box(text("Stop"), id("-2"), size(10), fillColor("red"), gap(10));
-	//Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
 	list[Figure] regionNodes = [box(text("R<(n*(-1))-4>"), id("<n>"), size(10), fillColor("green"), gap(10)) | n <- [regionNum..-3]];
 
-	return [entryNode] + nodes + regionNodes;
+	return [entryNode] + statementNodes + regionNodes;
+}
+
+private Figure statementNode(int n, Statement stat){
+	loc location = getLoc(stat);
+	return box(text("<n>"), id("<n>"), size(10), fillColor("lightgreen"), gap(10),
+			onMouseEnter(void() {setBrowserHeader(location);}),
+			onMouseDown(goToSource(location)));
 }
 
 private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd){
@@ -62,4 +72,8 @@ private tuple[list[Figure] labelNodes, list[Edge] edges] buildEdges(map[int, rel
 		}
 	}
 	return <labelNodes, edges>;
+}
+
+private void setBrowserHeader(loc location) {
+	HEADER = "<center("<location>", 30)>";
 }
