@@ -1,6 +1,7 @@
 #Program Dependence Graph
 ####UvA Software Engineering Master Project
 ####Lulu Zhang (10630856)
+----------
 
 This is the PDG library in Rascal. *PDG.rsc* is the main module which combines the information of control dependences and data dependences. Here are the packages/folders in this library:
 
@@ -14,4 +15,10 @@ This is the PDG library in Rascal. *PDG.rsc* is the main module which combines t
   
   - *Tests* : The modules inside cover some common and uncommon statement combinations to test the correctness of this library. All the tests here expect *TestCDG* use Rascal testing framework;
   
-  - *Visualization* : displays all the graphs. *Vis.rsc* is the main visualization module.
+  - *Visualization* : displays all the graphs. *Vis.rsc* is the main visualization module.  
+  
+----------
+
+Note: In order to run the tests successfully, [JavaTest](https://github.com/lulu516/JavaTest) should also be imported into Eclipse. You can start this project with a smile face via running `showGraphs(|project://JavaTest/src/PDG/Sum.java|, 0);` (first, `import Visualization::Vis;`)
+
+![smile face](smileface.png)
