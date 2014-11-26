@@ -6,7 +6,7 @@ import List;
 import Set;
 import Map;
 import IO;
-import ADT;
+import Types;
 import ControlDependence::Dominance;
 import Utils::Traversal;
 import Utils::Relation;

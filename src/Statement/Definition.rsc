@@ -1,16 +1,9 @@
 module Statement::Definition
 
 import lang::java::m3::AST;
-import ADT;
+import Types;
 import IO;
 import Set;
-
-alias DefGenUse
-	= tuple[
-			map[str, set[int]] defs,
-			map[int, set[str]] gens,
-			map[int, set[str]] uses
-		];
 
 public DefGenUse extractDefGenUse(Statement stat, int counting, DefGenUse s){
 	visit(stat){

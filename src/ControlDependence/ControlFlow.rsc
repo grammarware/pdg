@@ -7,7 +7,7 @@ import Map;
 import Relation;
 import Type;
 import IO;
-import ADT;
+import Types;
 import Utils::ListRelation;
 import Utils::List;
 import Utils::Map;

@@ -4,12 +4,12 @@ import lang::java::m3::AST;
 import List;
 import Set;
 import Map;
-import ADT;
+import Types;
 import IO;
 import ControlDependence::ControlFlow;
 import ControlDependence::ControlDependence;
 import ControlDependence::Dominance;
-import DataDependence::DataDependence;
+import DataDependence;
 
 //buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
 public tuple[ControlDependence, DataDependence, map[int, Statement]] buildPDG(Declaration method){

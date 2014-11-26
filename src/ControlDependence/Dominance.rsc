@@ -5,7 +5,7 @@ import Map;
 import lang::java::m3::AST;
 import Utils::Traversal;
 import Utils::ListRelation;
-import ADT;
+import Types;
 import IO;
 
 public map[int, list[int]] getDominators(map[int, int] idom, int first, list[int] nodes){

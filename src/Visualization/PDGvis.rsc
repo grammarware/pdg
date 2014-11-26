@@ -1,6 +1,6 @@
 module Visualization::PDGvis
 
-import ADT;
+import Types;
 import PDG;
 import lang::java::m3::AST;
 import vis::Render;

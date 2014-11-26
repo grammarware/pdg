@@ -1,10 +1,10 @@
-module TestAll
+module Tests
 
-import ADT;
+import Types;
 import ControlDependence::ControlDependence;
 import ControlDependence::ControlFlow;
 import ControlDependence::Dominance;
-import DataDependence::DataDependence;
+import DataDependence;
 import IO;
 import List;
 import ListRelation;

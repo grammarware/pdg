@@ -1,7 +1,7 @@
-module DataDependence::DataDependence
+module DataDependence
 
 import IO;
-import ADT;
+import Types;
 import lang::java::m3::AST;
 import Utils::Map;
 import Utils::ListRelation;

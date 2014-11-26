@@ -1,6 +1,6 @@
 module Visualization::CFGvis
 
-import ADT;
+import Types;
 import PDG;
 import vis::Render;
 import vis::Figure;
