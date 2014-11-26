@@ -1,0 +1,1 @@
+find src -name '*.rsc' | xargs wc -l

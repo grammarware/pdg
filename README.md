@@ -1,9 +1,12 @@
 #Program Dependence Graph
-####UvA Software Engineering Master Project
-####Lulu Zhang (10630856)
+#### [UvA](http://www.uva.nl/en/home) [Software Engineering Master](http://www.software-engineering-amsterdam.nl/) Project
+
+### Contributors:
+* [Lulu Zhang](http://github.com/lulu516)
+* [Vadim Zaytsev](http://github.com/grammarware)
 ----------
 
-This is the PDG library in Rascal. *PDG.rsc* is the main module which combines the information of control dependences and data dependences. Here are the packages/folders in this library:
+This is the PDG library in Rascal. **PDG.rsc** is the main module which combines the information of control dependences and data dependences. Here are the packages/folders in this library:
 
   - *ControlDependence* : generates control flow of the source code and computes control dependences based on control flow and its post-dominator tree;
   

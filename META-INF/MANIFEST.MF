@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: ProgramDependenceGraph
-Bundle-SymbolicName: ProgramDependenceGraph
+Bundle-SymbolicName: pdg
 Bundle-Version: 1.0.0
 Require-Bundle: org.eclipse.imp.pdb.values,
  rascal

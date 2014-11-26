@@ -63,39 +63,36 @@ public map[int, set[str]] getUses(){
 	return uses;
 }
 
-//analyze each statement
-private CF statementCF(Statement stat){
-	switch(stat){
-		case \block(_): return blockCF(stat.statements);
-		case \if(_, _): return ifCF(stat);
-		case \if(_, _, _): return ifCF(stat);
-		case \for(_, _, _): return forCF(stat);
-		case \for(_, _, _, _): return forCF(stat);
-		case \while(_, _): return whileCF(stat);
-		case \switch(_, _): return switchCF(stat);
-		
-		//firstStatement is -2: means it is a break
-		case \break(): return controlFlow([], -2, []);
-		case \break(_): return controlFlow([], -2, []);
-		
-		//firstStatement is -3: means it is a break
-		case \continue(): return controlFlow([], -3, []);
-		case \continue(_): return controlFlow([], -3, []);
-		
-		case \return(): return returnCF(stat);
-		case \return(_): return returnCF(stat);
+// Analyse each statement
+private CF statementCF(stat:\block(_)) = blockCF(stat.statements);
+private CF statementCF(stat:\if(_, _)) = ifCF(stat);
+private CF statementCF(stat:\if(_, _, _)) = ifCF(stat);
+private CF statementCF(stat:\for(_, _, _)) = forCF(stat);
+private CF statementCF(stat:\for(_, _, _, _)) = forCF(stat);
+private CF statementCF(stat:\while(_, _)) = whileCF(stat);
+private CF statementCF(stat:\switch(_, _)) = switchCF(stat);
 
-		default: {	
-			statements += (counting: stat);
-			firstStatement = counting;
-			lastStatements = [counting];
-			
-			calDefGenUse(stat, counting);
-			
-			counting += 1;
-			return controlFlow([], firstStatement, lastStatements);
-		}
-	}
+//firstStatement is -2: means it is a break
+private CF statementCF(\break()) = controlFlow([], -2, []);
+private CF statementCF(\break(_)) = controlFlow([], -2, []);
+
+//firstStatement is -3: means it is a break
+private CF statementCF(\continue()) = controlFlow([], -3, []);
+private CF statementCF(\continue(_)) = controlFlow([], -3, []);
+
+private CF statementCF(stat:\return()) = returnCF(stat);
+private CF statementCF(stat:\return(_)) = returnCF(stat);
+
+private default CF statementCF(Statement stat)
+{
+	statements += (counting: stat);
+	firstStatement = counting;
+	lastStatements = [counting];
+	
+	calDefGenUse(stat, counting);
+	
+	counting += 1;
+	return controlFlow([], firstStatement, lastStatements);
 }
 
 
@@ -360,22 +357,18 @@ private void calDefGenUse(Statement stat, int counting){
 	uses = dgu.uses;
 }
 
-private bool isCase(Statement stat){
-	if(Statement::\case(_) := stat || Statement::\defaultCase() := stat) return true;
-	else return false;
-}
+private bool isCase(\case(_)) = true;
+private bool isCase(\defaultCase()) = true;
+private default bool isCase(Statement stat) = false;
 
-private bool isBreak(Statement stat){
-	if(Statement::\break(_) := stat || Statement::\break() := stat) return true;
-	else return false;
-}
+private bool isBreak(\break(_)) = true;
+private bool isBreak(\break()) = true;
+private default bool isBreak(Statement stat) = false;
 
-private bool isContinue(Statement stat){
-	if(Statement::\continue(_) := stat || Statement::\continue() := stat) return true;
-	else return false;
-}
+private bool isContinue(\continue(_)) = true;
+private bool isContinue(\continue()) = true;
+private default bool isContinue(Statement stat) = false;
 
-private bool isReturn(Statement stat){
-	if(Statement::\return(_) := stat || Statement::\return() := stat) return true;
-	else return false;
-}
+private bool isReturn(\return(_)) = true;
+private bool isReturn(\return()) = true;
+private default bool isReturn(Statement stat) = false;
