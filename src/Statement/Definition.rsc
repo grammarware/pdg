@@ -5,55 +5,50 @@ import ADT;
 import IO;
 import Set;
 
-public tuple[map[str, set[int]] defs, map[int, set[str]] gens, map[int, set[str]] uses] extractDefGenUse(Statement stat, int counting, map[str, set[int]] defs, map[int, set[str]] gens, map[int, set[str]] uses){
+alias DefGenUse
+	= tuple[
+			map[str, set[int]] defs,
+			map[int, set[str]] gens,
+			map[int, set[str]] uses
+		];
+
+public DefGenUse extractDefGenUse(Statement stat, int counting, DefGenUse s){
 	visit(stat){
 		case \variable(str name, int extraDimensions): {
-			defs = insertDef(name, counting, defs);
-			gens = insertGen(name, counting, gens);
+			s.defs = insertDef(name, counting, s.defs);
+			s.gens = insertGen(name, counting, s.gens);
 		}
 		case \variable(str name, int extraDimensions, Expression initializer): {
-			defs = insertDef(name, counting, defs);
-			gens = insertGen(name, counting, gens);
-			uses = insertUse(extractUse(initializer), counting, uses);
+			s.defs = insertDef(name, counting, s.defs);
+			s.gens = insertGen(name, counting, s.gens);
+			s.uses = insertUse({name | /simpleName(str name) := initializer}, counting, s.uses);
 		}
 		case \assignment(\simpleName(str name), str operator, Expression rhs): {
-			defs = insertDef(name, counting, defs);
-			gens = insertGen(name, counting, gens);
-			uses = insertUse(extractUse(rhs), counting, uses);
+			s.defs = insertDef(name, counting, s.defs);
+			s.gens = insertGen(name, counting, s.gens);
+			s.uses = insertUse({name | /simpleName(str name) := rhs}, counting, s.uses);
 		}
 		case \postfix(\simpleName(str name), _ ): {
-			defs = insertDef(name, counting, defs);
-			gens = insertGen(name, counting, gens);
-			uses = insertUse({name}, counting, uses);
+			s.defs = insertDef(name, counting, s.defs);
+			s.gens = insertGen(name, counting, s.gens);
+			s.uses = insertUse({name}, counting, s.uses);
 		}	
 		case \prefix(str operator, \simpleName(str name)):{
-			defs = insertDef(name, counting, defs);
-			gens = insertGen(name, counting, gens);
-			uses = insertUse({name}, counting, uses);
+			s.defs = insertDef(name, counting, s.defs);
+			s.gens = insertGen(name, counting, s.gens);
+			s.uses = insertUse({name}, counting, s.uses);
 		}
 		case \methodCall(_, _, list[Expression] arguments): {
-			names = {};
-			for(argu <- arguments) names += extractUse(argu);
-			uses = insertUse(names, counting, uses);
+			s.uses = insertUse({name | argu <- arguments, /simpleName(str name) := argu}, counting, s.uses);
 		}
 		case \methodCall(_, _, _, list[Expression] arguments): {
-			names = {};
-			for(argu <- arguments) names += extractUse(argu);
-			uses = insertUse(names, counting, uses);
+			s.uses = insertUse({name | argu <- arguments, /simpleName(str name) := argu}, counting, s.uses);
 		}
 	}
-	return <defs, gens, uses>;
+	return s;
 }
 
-public set[str] extractUse(Expression expr){
-	set[str] names = {};
-	visit(expr){
-		case \simpleName(str name): {
-			names += name;
-		}
-	}
-	return names;
-}
+public set[str] extractUse(Expression expr) = {name | /simpleName(str name) := expr};
 
 private map[str, set[int]] insertDef(str name, int stat, map[str, set[int]] m){
 	if(name in m) m[name] += {stat};

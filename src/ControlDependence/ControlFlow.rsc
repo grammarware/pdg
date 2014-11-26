@@ -89,7 +89,7 @@ private default CF statementCF(Statement stat)
 	firstStatement = counting;
 	lastStatements = [counting];
 	
-	calDefGenUse(stat, counting);
+	callDefGenUse(stat, counting);
 	
 	counting += 1;
 	return controlFlow([], firstStatement, lastStatements);
@@ -156,7 +156,7 @@ public CF forCF(Statement stat){
 	for(initializer <- stat.initializers){
 		statements += (counting: Statement::\expressionStatement(initializer));
 		initializers += counting;
-		calDefGenUse(Statement::\expressionStatement(initializer), counting);
+		callDefGenUse(Statement::\expressionStatement(initializer), counting);
 		counting += 1;
 	}
 	currentLast = counting - 1;
@@ -182,7 +182,7 @@ public CF forCF(Statement stat){
 	for(updater <- stat.updaters){
 		statements += (counting: Statement::\expressionStatement(updater));
 		updaters += counting;
-		calDefGenUse(Statement::\expressionStatement(updater), counting);
+		callDefGenUse(Statement::\expressionStatement(updater), counting);
 		counting += 1;
 	}
 	
@@ -350,11 +350,11 @@ private tuple[lrel[int, int] cflow, list[int] rStatements] combineTwoFlows(list[
 	return <cflow, rStatements>;
 }
 
-private void calDefGenUse(Statement stat, int counting){
-	dgu = extractDefGenUse(stat, counting, defs, gens, uses);
-	defs = dgu.defs;
-	gens = dgu.gens;
-	uses = dgu.uses;
+private void callDefGenUse(Statement stat, int counting){
+	<defs, gens, uses> = extractDefGenUse(stat, counting, <defs, gens, uses>);
+	//defs = dgu.defs;
+	//gens = dgu.gens;
+	//uses = dgu.uses;
 }
 
 private bool isCase(\case(_)) = true;
