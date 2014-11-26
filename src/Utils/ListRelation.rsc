@@ -1,5 +1,6 @@
 module Utils::ListRelation
 import List;
+import ListRelation;
 import IO;
 
 //toLRel([1,2,3]) = [<1, 2>, <2, 3>]
