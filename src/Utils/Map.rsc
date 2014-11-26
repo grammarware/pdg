@@ -26,16 +26,6 @@ public map[int, set[str]] mergeMaps(list[map[int, set[str]]] maps){
 	return result;
 }
 
-//m1 - m2
-public map[int, set[str]] subtractMaps(map[int, set[str]] m1, map[int, set[str]] m2){
-	map[int, set[str]] result = ();
-	for(key <- m1){
-		if(key notin m2) result[key] = m1[key];
-		else if(m1[key] != m2[key]) result[key] = m1[key] - m2[key];
-	}
-	return result;
-}
-
 public map[int, map[str, set[int]]] reverseKeyValue(map[int, map[int, set[str]]] m){
 	map[int, map[str, set[int]]] reversedMap = ();
 	for(key <- m){

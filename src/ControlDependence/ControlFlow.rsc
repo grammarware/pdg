@@ -288,35 +288,33 @@ public CF returnCF(Statement stat){
 }
 
 //concatenate relation lists (recursion)
-public CF concatCF(CF mainCF, list[Statement] restStatements){
-	if(size(restStatements) == 0) return mainCF;
-	else{
-		CF firstCF = statementCF(restStatements[0]);
-		//not an empty block or break or return
-		//if(firstCF.firstStatement != -1 && firstCF.firstStatement != -2 && firstCF.firstStatement notin returnStatements){
-		if(firstCF.firstStatement == -2 || firstCF.firstStatement == -3){
-			for(l <- mainCF.lastStatements){
-				if(l notin breakOrContinue[loop]) breakOrContinue[loop][l] = [firstCF.firstStatement];
-				breakOrContinue[loop][l] += [firstCF.firstStatement];
-			}
-			return mainCF;
-		}else if(firstCF.firstStatement != -1){
-			int firstStatement = mainCF.firstStatement;
-			CF restCF = concatCF(firstCF, tail(restStatements));
-			combinedFlow = combineTwoFlows(exclude(mainCF.lastStatements, breakOrContinue[loop], condFollowdByBC), firstCF.firstStatement);
-			lrel[int, int] cflow = mainCF.cflow + combinedFlow.cflow + restCF.cflow;
-			lastStatements = combinedFlow.rStatements + restCF.lastStatements;
-			
-			for(l <- mainCF.lastStatements, l in breakOrContinue[loop]) lastStatements += l;
-			
-			//lrel[int, int] cflow = mainCF.cflow + [<l, firstCF.firstStatement> | l <- mainCF.lastStatements] + restCF.cflow;
-			return controlFlow(cflow, firstStatement, lastStatements);
+public CF concatCF(CF mainCF, []) = mainCF;
+public default CF concatCF(CF mainCF, list[Statement] restStatements){
+	CF firstCF = statementCF(restStatements[0]);
+	//not an empty block or break or return
+	//if(firstCF.firstStatement != -1 && firstCF.firstStatement != -2 && firstCF.firstStatement notin returnStatements){
+	if(firstCF.firstStatement == -2 || firstCF.firstStatement == -3){
+		for(l <- mainCF.lastStatements){
+			if(l notin breakOrContinue[loop]) breakOrContinue[loop][l] = [firstCF.firstStatement];
+			else breakOrContinue[loop][l] += [firstCF.firstStatement];
 		}
-		//if the following statement is an empty block, then ignore it
-		if(firstCF.firstStatement == -1 && size(restStatements) > 1) return concatCF(mainCF, tail(restStatements));
-		//if there is only one element in the statement list and it is an empty block; or it is a break
-		else return mainCF;
+		return mainCF;
+	}elseif(firstCF.firstStatement != -1){
+		int firstStatement = mainCF.firstStatement;
+		CF restCF = concatCF(firstCF, tail(restStatements));
+		combinedFlow = combineTwoFlows(exclude(mainCF.lastStatements, breakOrContinue[loop], condFollowdByBC), firstCF.firstStatement);
+		lrel[int, int] cflow = mainCF.cflow + combinedFlow.cflow + restCF.cflow;
+		lastStatements = combinedFlow.rStatements + restCF.lastStatements;
+		
+		for(l <- mainCF.lastStatements, l in breakOrContinue[loop]) lastStatements += l;
+		
+		//lrel[int, int] cflow = mainCF.cflow + [<l, firstCF.firstStatement> | l <- mainCF.lastStatements] + restCF.cflow;
+		return controlFlow(cflow, firstStatement, lastStatements);
 	}
+	//if the following statement is an empty block, then ignore it
+	if(firstCF.firstStatement == -1 && size(restStatements) > 1) return concatCF(mainCF, tail(restStatements));
+	//if there is only one element in the statement list and it is an empty block; or it is a break
+	else return mainCF;
 }
 
 private CF combineCFs(list[CF] cfs){

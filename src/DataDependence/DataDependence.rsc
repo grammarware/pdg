@@ -35,7 +35,7 @@ public tuple[map[int, map[int, set[str]]] inputs, map[int, map[int, set[str]]] o
 		for(s <- statements){
 			if(s in preds) inputs[s] = mergeMaps([outputs[p] | p <- preds[s]]);
 			oldOut = outputs[s];
-			outputs[s] = mergeMaps([(s: gens[s]), subtractMaps(inputs[s], kills[s])]);
+			outputs[s] = inputs[s] - kills[s] + (s: gens[s]);
 			if(outputs[s] != oldOut) change = true;
 		}
 	}

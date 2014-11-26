@@ -2,25 +2,13 @@ module Utils::ListRelation
 import List;
 import IO;
 
-//catenate([1,2], 3) = [<1, 3>, <2, 3>]
-public lrel[int, int] catenate(list[int] ls, int m){
-	return [<l, m> | l <- ls];
-}
-
 //toLRel([1,2,3]) = [<1, 2>, <2, 3>]
-public lrel[int, int] toLRel(list[int] ls){
-	if(size(ls) > 1)	return [<ls[i], ls[i+1]> | i <- [0..size(ls) - 1]];
-	else return [];
-}
+public lrel[int, int] toLRel([]) = [];
+public default lrel[int, int] toLRel(list[int] ls) = [<ls[i], ls[i+1]> | i <- [0..size(ls) - 1]];
 
-public map[int, list[int]] toMap(lrel[int, int] lr){
-	map[int, list[int]] m = ();
-	for(<num1, num2> <- lr){
-		if(num1 notin m) m[num1] = [num2];
-		else m[num1] += [num2];
-	}
-	return m;
-}
+// added to the Rascal library as well
+public map[&T0,list[&T1]] toMap(lrel[&T0,&T1] R) = isEmpty(R) ? ()
+	: (k:[v | <k,&T1 v> <- R] | &T0 k <- domain(R));
 
 public map[int, list[int]] getPredecessors(lrel[int, int] lr){
 	map[int, list[int]] m = ();
