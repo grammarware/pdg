@@ -38,10 +38,8 @@ public map[int, list[int]] dominatorTree(map[int, int] idom, list[int] nodes){
 public map[int, int] buildDominance(lrel[int, int] flow, int first, list[int] nodes){
 	map[int, list[int]] predecessor = getPredecessors(flow);
 	list[int] postOrder = toPostOrder(toMap(flow), first, nodes);
-	map[int, int] idom = ();
 	//initialize the dominators array, -5 means undefined
-	for(s <- postOrder) 
-		idom[s] = -5;
+	map[int, int] idom = (s:-5 | s <- postOrder);
 		
 	idom[first] = first;
 	bool changed = true;

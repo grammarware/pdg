@@ -1,5 +1,6 @@
 module Tests::TestInputOutput
 
+import Prelude;
 import lang::java::m3::AST;
 import IO;
 import PDG;
@@ -13,21 +14,21 @@ test bool testInputs(){
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
 	inputs = getReachingDefs(cf, statements, defs, gens).inputs;
-	map[int, map[int, set[str]]] exptectedInputs = ();
-	exptectedInputs[0] = ();
-	exptectedInputs[1] = (0:{"n"});
-	exptectedInputs[2] = (1:{"i"},0:{"n"});
-	exptectedInputs[3] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[4] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[5] = (10:{"i"},8:{"j"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[6] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[7] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[8] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},1:{"i"},0:{"n"});
-	exptectedInputs[9] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[10] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedInputs[11] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
+	map[int, map[int, set[str]]] expectedInputs = ();
+	expectedInputs[0] = ();
+	expectedInputs[1] = (0:{"n"});
+	expectedInputs[2] = (1:{"i"},0:{"n"});
+	expectedInputs[3] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[4] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[5] = (10:{"i"},8:{"j"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[6] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[7] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[8] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},1:{"i"},0:{"n"});
+	expectedInputs[9] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[10] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
+	expectedInputs[11] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
 	
-	return (inputs == exptectedInputs);
+	return (inputs == expectedInputs);
 }
 
 test bool testOutputs(){
@@ -36,19 +37,22 @@ test bool testOutputs(){
 	map[str, set[int]] defs = getDefs();
 	map[int, set[str]] gens = getGens();
 	outputs = getReachingDefs(cf, statements, defs, gens).outputs;
-	map[int, map[int, set[str]]] exptectedOutputs = ();
-	exptectedOutputs[0] = (0:{"n"});
-	exptectedOutputs[1] = (1:{"i"},0:{"n"});
-	exptectedOutputs[2] = (2:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[3] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[4] = (10:{"i"},8:{"j"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[5] = (10:{"i"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[6] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[7] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},1:{"i"},0:{"n"});
-	exptectedOutputs[8] = (10:{"i"},8:{"j"},7:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[9] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"});
-	exptectedOutputs[10] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},0:{"n"});
-	exptectedOutputs[11] = (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"});
-	return (outputs == exptectedOutputs);
+	outputs = (k1:(k2:outputs[k1][k2] | k2 <- outputs[k1], !isEmpty(outputs[k1][k2])) | k1 <- outputs);
+	map[int, map[int, set[str]]] expectedOutputs = (
+		0: (0:{"n"}),
+		1: (1:{"i"},0:{"n"}),
+		2: (2:{"sum"},1:{"i"},0:{"n"}),
+		3: (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"}),
+		4: (10:{"i"},8:{"j"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"}),
+		5: (10:{"i"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"}),
+		6: (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"}),
+		7: (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},1:{"i"},0:{"n"}),
+		8: (10:{"i"},8:{"j"},7:{"sum"},1:{"i"},0:{"n"}),
+		9: (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},1:{"i"},0:{"n"}),
+		10: (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},0:{"n"}),
+		11: (10:{"i"},8:{"j"},7:{"sum"},5:{"j"},4:{"sum"},2:{"sum"},1:{"i"},0:{"n"})
+	);
+	
+	return (outputs == expectedOutputs);
 }
 
