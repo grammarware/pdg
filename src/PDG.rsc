@@ -55,5 +55,5 @@ private bool isClassType(Declaration::\class(_)) = true;
 private default bool isClassType(Declaration _) = false;
 
 private bool isMethodType(Declaration::\method(_,_,_,_)) = true;
-private bool isMethodType(Declaration::\method(_,_,_,_,__)) = true;
+private bool isMethodType(Declaration::\method(_,_,_,_,_)) = true;
 private default bool isMethodType(Declaration _) = false;

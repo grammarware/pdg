@@ -352,9 +352,6 @@ private tuple[lrel[int, int] cflow, list[int] rStatements] combineTwoFlows(list[
 
 private void callDefGenUse(Statement stat, int counting){
 	<defs, gens, uses> = extractDefGenUse(stat, counting, <defs, gens, uses>);
-	//defs = dgu.defs;
-	//gens = dgu.gens;
-	//uses = dgu.uses;
 }
 
 private bool isCase(\case(_)) = true;

@@ -75,9 +75,4 @@ private int intersect(int b1, int b2, map[int, int] idom, list[int] postOrder){
 	return finger1;
 }
 
-private int getProcessedPred(map[int, int] idom, int n, map[int, list[int]] predecessor){
-	list[int] processed = [];
-	for(i <- predecessor[n], idom[i] != -5) 
-		processed += i;
-	return processed[0];
-}
+private int getProcessedPred(map[int, int] idom, int n, map[int, list[int]] predecessor) = [i | i <- predecessor[n], idom[i] != -5][0];

@@ -59,7 +59,6 @@ private map[int, rel[int, str]] getControlDependencePred(map[int key, rel[int no
 			}
 		}
 	}
-	
 	return controlDependencePred;
 }
 

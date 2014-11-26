@@ -5,7 +5,7 @@ import IO;
 import PDG;
 import ADT;
 import ControlDependence::ControlFlow;
-import DataDependence::ReachingDefs;
+import DataDependence::DataDependence;
 
 test bool testInputs(){
 	CF cf = getControlFlow(getMethodAST(|project://JavaTest/src/PDG/Sum.java|)[0]);
