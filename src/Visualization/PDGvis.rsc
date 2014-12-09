@@ -27,7 +27,7 @@ private Figure buildPDG(map[int, rel[int, str]] cd, map[int, rel[int, str]] dd, 
 	str getHeader() { return HEADER; }
 	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(cd, dd);
 	list[Figure] nodes = buildNodes(nodes, regionNum, statements) + labelEdges.labelNodes;
-	return vcat([text(getHeader,font("monaco"),fontSize(13)),
+	return vcat([text(getHeader,font("GillSans"),fontSize(13)),
 			graph(nodes, labelEdges.edges, hint("layered"), vgap(10), hgap(10))], gap(5));
 }
 

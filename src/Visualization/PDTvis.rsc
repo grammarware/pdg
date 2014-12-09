@@ -37,7 +37,7 @@ private Figure buildPDT(map[int, int] pd, list[int] nodes, map[int, Statement] s
 	Figure startNode = box(text("Start"), id("-1"), size(10), fillColor("red"), gap(10));
 	Figure entryNode = box(text("Entry"), id("-3"), size(10), fillColor("red"), gap(10));
 	list[Figure] boxes = [exitNode, startNode, entryNode] + [statementNode(n, statements[n]) | n <- (nodes - [-1, -2, -3])];
-	return vcat([text(getHeader,font("monaco"),fontSize(13)),
+	return vcat([text(getHeader,font("GillSans"),fontSize(13)),
 			graph(boxes, edges, hint("layered"), vgap(20), hgap(30))], gap(5));
 }
 

@@ -27,7 +27,7 @@ private Figure buildCDG(map[int, rel[int, str]] cd, list[int] nodes, int regionN
 	str getHeader() { return HEADER; }
 	tuple[list[Figure] labelNodes, list[Edge] edges] labelEdges = buildEdges(cd);
 	list[Figure] nodes = buildNodes(nodes, regionNum, statements) + labelEdges.labelNodes;
-	return vcat([text(getHeader,font("monaco"),fontSize(13)),
+	return vcat([text(getHeader,font("GillSans"),fontSize(13)),
 				graph(nodes, labelEdges.edges, hint("layered"), vgap(40), hgap(40))], gap(5));
 }
 

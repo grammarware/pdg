@@ -35,7 +35,7 @@ private Figure buildCFG(lrel[int, int] flow, list[int] nodes, map[int, Statement
 	Figure entryNode = box(text("Entry"), id("-3"), size(10), fillColor("red"), gap(10));
 	list[Figure] boxes = [statementNode(n, statements[n]) | n <- (nodes - [-1, -2, -3])] + exitNode + startNode + entryNode;
 	
-	return vcat([text(getHeader,font("monaco"),fontSize(13)),
+	return vcat([text(getHeader,font("GillSans"),fontSize(13)),
 				graph(boxes, edges, hint("layered"), vgap(20), hgap(30))], gap(5));
 }
 
