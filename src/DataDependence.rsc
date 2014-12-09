@@ -5,7 +5,7 @@ import Types;
 import lang::java::m3::AST;
 import Utils::Map;
 import Utils::ListRelation;
-import ControlDependence::ControlFlow;
+import ControlFlow;
 
 public tuple[map[int, map[int, set[str]]] inputs, map[int, map[int, set[str]]] outputs] getReachingDefs(CF cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens){
 	map[int, map[int, set[str]]] kills = ();

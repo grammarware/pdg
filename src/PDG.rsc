@@ -6,9 +6,9 @@ import Set;
 import Map;
 import Types;
 import IO;
-import ControlDependence::ControlFlow;
-import ControlDependence::ControlDependence;
-import ControlDependence::Dominance;
+import ControlFlow;
+import ControlDependence;
+import DominatorTree;
 import DataDependence;
 
 //buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);

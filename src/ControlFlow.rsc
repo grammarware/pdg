@@ -1,4 +1,4 @@
-module ControlDependence::ControlFlow
+module ControlFlow
 
 import lang::java::m3::AST;
 import Tuple;
@@ -11,7 +11,7 @@ import Types;
 import Utils::ListRelation;
 import Utils::List;
 import Utils::Map;
-import Statement::Definition;
+import Definitions;
 //mark every statement with analyzing sequence number
 private map[int number, Statement stat] statements = ();
 

@@ -1,9 +1,9 @@
 module Tests
 
 import Types;
-import ControlDependence::ControlDependence;
-import ControlDependence::ControlFlow;
-import ControlDependence::Dominance;
+import ControlDependence;
+import ControlFlow;
+import DominatorTree;
 import DataDependence;
 import IO;
 import List;

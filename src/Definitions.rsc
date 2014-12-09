@@ -1,4 +1,4 @@
-module Statement::Definition
+module Definitions
 
 import lang::java::m3::AST;
 import Types;

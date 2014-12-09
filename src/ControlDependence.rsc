@@ -1,4 +1,4 @@
-module ControlDependence::ControlDependence
+module ControlDependence
 
 import lang::java::m3::AST;
 import ListRelation;
@@ -7,7 +7,7 @@ import Set;
 import Map;
 import IO;
 import Types;
-import ControlDependence::Dominance;
+import DominatorTree;
 import Utils::Traversal;
 import Utils::Relation;
 

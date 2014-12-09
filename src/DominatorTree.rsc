@@ -1,4 +1,4 @@
-module ControlDependence::Dominance
+module DominatorTree
 
 import List;
 import Map;
