@@ -11,9 +11,9 @@ import List;
 import Map;
 import Set;
 import ListRelation;
-import ControlDependence::ControlFlow;
-import ControlDependence::Dominance;
-import ControlDependence::ControlDependence;
+import ControlFlow;
+import DominatorTree;
+import ControlDependence;
 import String;
 import Utils::Figure;
 

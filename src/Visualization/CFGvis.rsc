@@ -11,8 +11,8 @@ import List;
 import Map;
 import Set;
 import String;
-import ControlDependence::ControlFlow;
-import ControlDependence::ControlDependence;
+import ControlFlow;
+import ControlDependence;
 import Utils::Figure;
 
 public str HEADER = "\n";

@@ -1,6 +1,7 @@
 module Types
 
 import lang::java::m3::AST;
+import vis::KeySym;
 
 data CF = controlFlow(lrel[int stat1, int stat2] cflow, int firstStatement, list[int] lastStatements);
 
@@ -20,3 +21,5 @@ alias DefGenUse
 			map[int, set[str]] gens,
 			map[int, set[str]] uses
 		];
+
+alias Handler = bool(int button, map[KeyModifier,bool] modifiers);

@@ -10,26 +10,27 @@ import vis::Figure;
 import vis::KeySym;
 import Types;
 
-//showGraphs(|project://JavaTest/src/PDG/Sum.java|, 0);
+public void showGraphs() = showGraphs(|project://JavaTest/src/PDG/Sum.java|, 0);
+
 public void showGraphs(loc project, int methNum)
 {
-	Figure smile = box(overlay([ellipse(text("Program Dependence Graph", align(0.5, 0.94), fontSize(15)), shrink(0.6,0.9), fillColor("hotpink"), lineColor("white")),
-					ellipse(shrink(0.7,0.83), fillColor("white"), align(0.5, 0.0), lineColor("white"))]), 
-					hsize(600), vsize(200), resizable(false), lineColor("white"), onMouseDown(openGraph(project, methNum, PDG() )));
-	render ("Choose Graph", vcat([text("Which one do you want to see? ^-^\n",font("monaco"),fontSize(20)), graphs(project, methNum), smile], gap(10), resizable(false)));	
+	render("Choose", vcat([
+			box(text("Choose the graph to display:", font("GillSans"), fontSize(30), fontColor("white")), fillColor("black"), vresizable(false), vsize(75)),
+			grid([[
+					makeBox("Control Flow Graph", openGraph(project, methNum, CFG())),
+					makeBox("Post-Dominator Tree", openGraph(project, methNum, PDT()))
+				],[
+					makeBox("Control Dependence Graph", openGraph(project, methNum, CDG())),
+					makeBox("Data Dependence Graph", openGraph(project, methNum, DDG()))
+				]], gap(20)),
+			makeBox("Program Dependence Graph", openGraph(project, methNum, PDG()))
+		], gap(20), resizable(false)));	
 }
 
-private Figure graphs(loc project, int methNum)
-{
-	Figure ecliCFG = box(ellipse(text("Control Flow Graph", fontSize(15)), fillColor("lightskyblue"),lineColor("white"), onMouseDown(openGraph(project, methNum, CFG()))), lineColor("white"), vresizable(false), vsize(200));
-	Figure ecliPDT = box(ellipse(text("Post-Dominator Tree", fontSize(15)), fillColor("lightskyblue"), lineColor("white"), onMouseDown(openGraph(project, methNum, PDT()))), lineColor("white"), vresizable(false), vsize(200));
-	Figure ecliCDG = box(ellipse(text("Control Dependence Graph", fontSize(15)), fillColor("pink"), lineColor("white"), onMouseDown(openGraph(project, methNum, CDG())), vresizable(false), vsize(30)), lineColor("white"));
-	Figure ecliDDG = box(ellipse(text("Data Dependence Graph", fontSize(15)), fillColor("pink"), lineColor("white"), onMouseDown(openGraph(project, methNum, DDG())), vresizable(false), vsize(30)), lineColor("white"));
-	rows = grid([[ecliCFG, ecliPDT],[ecliCDG, ecliDDG]], lineColor("white"), vgap(10), hgap(50));
-	return box(rows, hsize(600), hresizable(false), lineColor("white"));
-}
+Figure makeBox(str title, Handler h)
+	= box(text(title, font("GillSans"), fontSize(30), fontColor("white")), fillColor("darkblue"), onMouseDown(h), vresizable(false), vsize(75), gap(10));
 
-private bool(int button, map[KeyModifier,bool] modifiers) openGraph(loc project, int methNum, KindOfGraph graphType) =
+private Handler openGraph(loc project, int methNum, KindOfGraph graphType) =
 	bool(int button, map[KeyModifier,bool] modifiers)
 	{ 
 		if(button == 1) 
