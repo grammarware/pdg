@@ -2,9 +2,10 @@ module Utils::Figure
 
 import vis::KeySym;
 import util::Editors;
-import ControlDependence::ControlFlow;
+import ControlFlow;
 import lang::java::m3::AST;
 import util::Editors;
+
 // Returns a bool function to use in onMouseDown that links edits a given location
 // when the left button is pressed.
 // @param f: location (of a file);
@@ -13,7 +14,7 @@ public bool(int button, map[KeyModifier,bool] modifiers) goToSource(loc location
 bool(int button, map[KeyModifier,bool] modifiers)
 { 
     if(button == 1) {
-        edit(location);
+        edit(location,[]);
         return true;
     }
     return false;
