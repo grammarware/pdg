@@ -6,14 +6,14 @@ import Set;
 import Map;
 import Types;
 import IO;
-import ControlFlow;
+import graph::control::Flow;
 import ControlDependence;
 import DominatorTree;
 import DataDependence;
 
 //buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
 public tuple[ControlDependence, DataDependence, map[int, Statement]] buildPDG(Declaration method){
-	CF cf = getControlFlow(method);
+	ControlFlow cf = getControlFlow(method);
 	map[int number, Statement stat] statements = getStatements();
 	//control dependence
 	list[int] nodes = toList(domain(statements));

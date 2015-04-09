@@ -16,7 +16,7 @@ private int STOP = -2;
 //ENTRY is a predict node with one edge labeled "T" going to START and another labeled "F" going to STOP;
 private int ENTRY = -3;
 
-public tuple[map[int, rel[int, str]] dependences, int regionNum] buildDependence(CF cf, list[int] nodes){
+public tuple[map[int, rel[int, str]] dependences, int regionNum] buildDependence(ControlFlow cf, list[int] nodes){
 	flow = addCommonNodestoFlow(cf);
 	nodes = nodes + START + STOP + ENTRY;
 	map[int, int] postDominance = buildDominance(invert(flow), STOP, nodes);
@@ -144,8 +144,8 @@ private map[int, rel[int, str]] modifyPredecessors(rel[int, str] cd, int r, int 
 	return dwr;
 }
 
-public lrel[int, int] addCommonNodestoFlow(CF cf){
-	return [<ENTRY, START>, <ENTRY, STOP>, <START, cf.firstStatement>] + cf.cflow + [<s, STOP> | s <- cf.lastStatements];
+public lrel[int, int] addCommonNodestoFlow(ControlFlow cf){
+	return [<ENTRY, START>, <ENTRY, STOP>, <START, cf.startStatement>] + cf.edges + [<s, STOP> | s <- cf.endStatements];
 }
 
 //the nodes on the path to LCA (not including LCA)

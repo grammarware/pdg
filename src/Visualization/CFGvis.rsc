@@ -11,16 +11,16 @@ import List;
 import Map;
 import Set;
 import String;
-import ControlFlow;
+import graph::control::Flow;
 import ControlDependence;
 import Utils::Figure;
 
 public str HEADER = "\n";
 
-//displayCFG(|project://JavaTest/src/PDG/Sum.java|, 0);
+//displayCFG(|project://pdg-JavaTest/src/PDG/Sum.java|, 0);
 public void displayCFG(loc project, int methNum){
 	meth = getMethodAST(project)[methNum];
-	CF cf = getControlFlow(meth);
+	ControlFlow cf = getControlFlow(meth);
 	statements = getStatements();
 	list[int] nodes = toList(domain(statements)) + [-1, -2, -3];
 	flow = addCommonNodestoFlow(cf);

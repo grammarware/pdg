@@ -15,7 +15,7 @@ import Utils::Figure;
 
 public str HEADER = "\n";
 
-//displayCDG(|project://JavaTest/src/PDG/Sum.java|, 0);
+//displayCDG(|project://pdg-JavaTest/src/PDG/Sum.java|, 0);
 public void displayCDG(loc project, int methNum){
 	meth = getMethodAST(project)[methNum];
 	tuple[ControlDependence cd, DataDependence dd, map[int, Statement] statements] pd = buildPDG(meth);
