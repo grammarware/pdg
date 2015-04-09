@@ -211,8 +211,8 @@ public CF forCF(Statement stat) {
 	
 	//catenate the forBody with the updaters and the last updater with the loop start
 	combinedFlow = combineTwoFlows(exclude(combinedForBody.lastStatements, breakOrContinue[loop], []), updaters[0]);
-	cflow += combinedFlow.cflow + toLRel(updaters) + <last(updaters), loopStart>;
-	lastStatements += combinedFlow.rStatements;
+	cflow += combinedFlow.flowEdges + toLRel(updaters) + <last(updaters), loopStart>;
+	lastStatements += combinedFlow.returns;
 	
 	//clear 
 	breakOrContinue[loop] = ();
@@ -233,8 +233,8 @@ public CF whileCF(Statement stat) {
 	
 	combinedWhileBody = concatCF(controlFlow([], cond, [cond]), [stat.body]);
 	combinedFlow = combineTwoFlows(exclude(combinedWhileBody.lastStatements, breakOrContinue[loop], []), cond);
-	lrel[int, int] cflow = combinedWhileBody.cflow + combinedFlow.cflow;
-	list[int] lastStatements = [cond] + combinedFlow.rStatements;
+	lrel[int, int] cflow = combinedWhileBody.cflow + combinedFlow.flowEdges;
+	list[int] lastStatements = [cond] + combinedFlow.returns;
 	
 	//break or continue
 	for(l <- combinedWhileBody.lastStatements && l in breakOrContinue[loop]) {
@@ -337,8 +337,8 @@ public default CF concatCF(CF mainCF, list[Statement] restStatements) {
 		int firstStatement = mainCF.firstStatement;
 		CF restCF = concatCF(firstCF, tail(restStatements));
 		combinedFlow = combineTwoFlows(exclude(mainCF.lastStatements, breakOrContinue[loop], condFollowdByBC), firstCF.firstStatement);
-		lrel[int, int] cflow = mainCF.cflow + combinedFlow.cflow + restCF.cflow;
-		lastStatements = combinedFlow.rStatements + restCF.lastStatements;
+		lrel[int, int] cflow = mainCF.cflow + combinedFlow.flowEdges + restCF.cflow;
+		lastStatements = combinedFlow.returns + restCF.lastStatements;
 		
 		for(l <- mainCF.lastStatements, l in breakOrContinue[loop]) { 
 			lastStatements += l;
@@ -364,8 +364,8 @@ private CF combineCFs(list[CF] cfs) {
 	if(size(cfs) > 1) {
 		for(i <- [0..size(cfs) - 1]) {
 			combinedFlow = combineTwoFlows(cfs[i].lastStatements, cfs[i+1].firstStatement);
-			cflow += cfs[i].cflow + combinedFlow.cflow;
-			lastStatements += combinedFlow.rStatements;
+			cflow += cfs[i].cflow + combinedFlow.flowEdges;
+			lastStatements += combinedFlow.returns;
 		}
 	}
 	
@@ -376,19 +376,19 @@ private CF combineCFs(list[CF] cfs) {
 }
 
 //catenate the last statements with the first statement of the next CF
-private tuple[lrel[int, int] cflow, list[int] rStatements] combineTwoFlows(list[int] ls, int f) {
-	list[int] rStatements = [];
-	lrel[int, int] cflow = [];
+private tuple[lrel[int, int] flowEdges, list[int] returns] combineTwoFlows(list[int] endStatements, int startStatement) {
+	list[int] returns = [];
+	lrel[int, int] flowEdges = [];
 	
-	for(l <- ls) {
-		if(l in returnStatements) {
-			rStatements += l;
+	for(endStatement <- endStatements) {
+		if(endStatement in returnStatements) {
+			returns += endStatement;
 		} else {
-			cflow += [<l, f>];
+			flowEdges += [<endStatement, startStatement>];
 		}
 	}
 	
-	return <cflow, rStatements>;
+	return <flowEdges, returns>;
 }
 
 private void callDefGenUse(Statement stat, int counting) {

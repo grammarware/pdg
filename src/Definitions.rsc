@@ -41,25 +41,40 @@ public DefGenUse extractDefGenUse(Statement stat, int counting, DefGenUse s){
 	return s;
 }
 
-public set[str] extractUse(Expression expr) = {name | /simpleName(str name) := expr};
+public set[str] extractUse(Expression expr) {
+	return { name | /simpleName(str name) := expr };
+}
 
 private map[str, set[int]] insertDef(str name, int stat, map[str, set[int]] m){
-	if(name in m) m[name] += {stat};
-	else m[name] = {stat};
+	if(name in m) {
+		m[name] += {stat};
+	} else {
+		m[name] = {stat};
+	}
+	
 	return m;
 }
 
 private map[int, set[str]] insertGen(str name, int stat, map[int, set[str]] m){
-	if(stat in m) m[stat] += {name};
-	else m[stat] = {name};
+	if(stat in m) {
+		m[stat] += {name};
+	} else {
+		m[stat] = {name};
+	}
+	
 	return m;
 }
 
 private map[int, set[str]] insertUse(set[str] names, int stat, map[int, set[str]] m){
-	if(size(names) == 0) return m;
-	else{
-		if(stat in m) m[stat] += names;
-		else m[stat] = names;
+	if(size(names) == 0) {
 		return m;
 	}
+
+	if(stat in m) {
+		m[stat] += names;
+	} else {
+		m[stat] = names;
+	}
+	
+	return m;
 }
