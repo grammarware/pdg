@@ -89,6 +89,7 @@ test bool testIfCF(){
 test bool testIfLast(){
 	ControlFlow controlFlow = getControlFlow(getMethodAST(|project://pdg-JavaTest/src/PDG/controlFlow/If.java|)[1]);
 	list[int] expectedLast = [3, 5, 6];
+	print(controlFlow.startStatement);
 	return equals(controlFlow.endStatements, expectedLast);
 }
 
@@ -287,8 +288,6 @@ test bool testDD(){
 	expectedDP[9] = {<4, "sum">, <7, "sum">, <1, "i">, <10, "i">};
 	expectedDP[10] = {<1, "i">, <10, "i">};
 	expectedDP[11] = {<4, "sum">, <7, "sum">, <2, "sum">, <1, "i">, <10, "i">};
-	println(dp);
-	println(expectedDP);
 	return (dp == expectedDP);
 }
 
