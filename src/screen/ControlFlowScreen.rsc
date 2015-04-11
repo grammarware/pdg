@@ -7,7 +7,7 @@ import vis::Figure;
 import vis::Render;
 
 import extractors::Project;
-import graph::control::Flow;
+import graph::control::flow::CFG;
 
 @doc {
 	To run a test:
@@ -37,7 +37,7 @@ private list[Edge] createEdges(FlowGraph flowGraph) {
 	list[Edge] edges = [];
 	
 	for(graphEdge <- flowGraph.edges) {
-		edges += edge("<graphEdge.from>", "<graphEdge.to>");
+		edges += edge("<graphEdge.from>", "<graphEdge.to>", toArrow(box(size(10), fillColor("black"))));
 	}
 	
 	return edges;

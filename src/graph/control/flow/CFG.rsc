@@ -1,4 +1,4 @@
-module graph::control::Flow
+module graph::control::flow::CFG
 
 import Prelude;
 import analysis::m3::AST;
@@ -33,8 +33,8 @@ public FlowGraph createControlFlowGraph(node tree) {
 		case ifNode: \if(condition, thenBranch): {
 			flowGraph = processIf(condition, thenBranch);
 		}
-		case ifElseNode: \if(_, _, _): {
-			flowGraph = processIfElse(ifElseNode);
+		case ifElseNode: \if(condition, thenBranch, elseBranch): {
+			flowGraph = processIfElse(condition, thenBranch, elseBranch);
 		}
 		case forNode: \for(_, _, _): {
 			flowGraph = processFor(forNode);
@@ -137,6 +137,14 @@ private FlowGraph processBlock(list[Statement] body) {
 	return connectFlowGraphs(flowGraphs);
 }
 
+private FlowGraph createConditionalBranchFlow(Statement branch) {
+	if(\block(body) := branch) {
+		return processBlock(body);
+	}
+	
+	return createControlFlowGraph(branch);
+}
+
 private FlowGraph processIf(Expression condition, Statement thenBranch) {
 	FlowGraph ifFlow = FlowGraph({}, 0, {});
 	
@@ -147,13 +155,7 @@ private FlowGraph processIf(Expression condition, Statement thenBranch) {
 	// The condition is an exit node on false.
 	ifFlow.exitNodes += {identifier};
 	
-	FlowGraph thenFlow;
-	
-	if(\block(body) := thenBranch) {
-		thenFlow = processBlock(body);
-	} else {
-		thenFlow = createFlowGraph(thenBranch);
-	}
+	FlowGraph thenFlow = createConditionalBranchFlow(thenBranch);
 	
 	ifFlow.edges += thenFlow.edges + createConnectionEdges(ifFlow, thenFlow);
 	ifFlow.exitNodes += thenFlow.exitNodes;
@@ -161,10 +163,27 @@ private FlowGraph processIf(Expression condition, Statement thenBranch) {
 	return ifFlow;
 }
 
-private FlowGraph processIfElse(Statement ifElseNode) {
-	println(ifElseNode);
+private FlowGraph processIfElse(Expression condition, Statement thenBranch, Statement elseBranch) {
+	FlowGraph ifElseFlow = FlowGraph({}, 0, {});
 	
-	return FlowGraph({}, 0, {});
+	int identifier = getIdentifier();
+	nodeEnvironment[identifier] = condition;
+	
+	ifElseFlow.entryNode = identifier;
+	// The condition is an exit node on false.
+	ifElseFlow.exitNodes += {identifier};
+	
+	FlowGraph thenFlow = createConditionalBranchFlow(thenBranch);
+	
+	ifElseFlow.edges += thenFlow.edges + createConnectionEdges(ifElseFlow, thenFlow);
+	
+	FlowGraph elseFlow = createConditionalBranchFlow(elseBranch);
+	
+	ifElseFlow.edges += elseFlow.edges + createConnectionEdges(ifElseFlow, elseFlow);
+	ifElseFlow.exitNodes += elseFlow.exitNodes + thenFlow.exitNodes;
+	ifElseFlow.exitNodes -= {identifier};
+	
+	return ifElseFlow;
 }
 
 private FlowGraph processFor(Statement forNode) {
