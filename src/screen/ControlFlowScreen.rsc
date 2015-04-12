@@ -53,7 +53,7 @@ private Figures createBoxes(FlowGraph flowGraph) {
 	Figures boxes = [];
 	
 	for(treeNode <- getNodeIdentifiers()) {
-		boxes += box(text("<treeNode>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
+		boxes += box(text("<treeNode>: <getNodeName(treeNode)>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
 	}
 	
 	boxes += box(text("Entry"), id("ENTRY"), size(50), fillColor("lightblue"));

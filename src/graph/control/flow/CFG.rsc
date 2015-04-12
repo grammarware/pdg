@@ -30,6 +30,14 @@ public set[int] getNodeIdentifiers() {
 	return domain(nodeEnvironment);
 }
 
+public str getNodeName(int identifier) {
+	if(/^<name:\w*>/ := "<nodeEnvironment[identifier]>") {
+		return name;
+	}
+	
+	return "";
+}
+
 public FlowGraph createCFG(node tree) {
 	nodeEnvironment = ();
 	nodeIdentifier = 0;
