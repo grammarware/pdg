@@ -1,6 +1,6 @@
 module screen::ControlFlowScreen
 
-import IO;
+import Prelude;
 import lang::java::jdt::m3::Core;
 import analysis::graphs::Graph;
 import vis::Figure;
@@ -18,7 +18,7 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	FlowGraph flowGraph = createControlFlowGraph(methodAST);
+	FlowGraph flowGraph = createCFG(methodAST);
 	
 	render(graph(createBoxes(flowGraph), createEdges(flowGraph), hint("layered"), gap(100)));
 }
@@ -35,9 +35,15 @@ private loc getMethodLocation(str methodName, M3 projectModel) {
 
 private list[Edge] createEdges(FlowGraph flowGraph) {
 	list[Edge] edges = [];
-	
+
 	for(graphEdge <- flowGraph.edges) {
 		edges += edge("<graphEdge.from>", "<graphEdge.to>", toArrow(box(size(10), fillColor("black"))));
+	}
+	
+	edges += edge("ENTRY", "<flowGraph.entryNode>", toArrow(box(size(10), fillColor("black"))));
+	
+	for(exitNode <- flowGraph.exitNodes) {
+		edges += edge("<exitNode>", "EXIT", toArrow(box(size(10), fillColor("black"))));
 	}
 	
 	return edges;
@@ -46,9 +52,12 @@ private list[Edge] createEdges(FlowGraph flowGraph) {
 private Figures createBoxes(FlowGraph flowGraph) {
 	Figures boxes = [];
 	
-	for(treeNode <- order(flowGraph.edges)) {
+	for(treeNode <- getNodeIdentifiers()) {
 		boxes += box(text("<treeNode>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
 	}
+	
+	boxes += box(text("Entry"), id("ENTRY"), size(50), fillColor("lightblue"));
+	boxes += box(text("Exit"), id("EXIT"), size(50), fillColor("lightblue"));
 	
 	return boxes;
 }
