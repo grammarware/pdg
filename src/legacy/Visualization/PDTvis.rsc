@@ -1,7 +1,7 @@
-module Visualization::PDTvis
+module legacy::Visualization::PDTvis
 
-import Types;
-import PDG;
+import legacy::Types;
+import legacy::PDG;
 import vis::Render;
 import vis::Figure;
 import vis::KeySym;
@@ -11,11 +11,11 @@ import List;
 import Map;
 import Set;
 import ListRelation;
-import ControlFlow;
-import DominatorTree;
-import ControlDependence;
+import legacy::graph::control::Flow;
+import legacy::DominatorTree;
+import legacy::ControlDependence;
 import String;
-import Utils::Figure;
+import legacy::Utils::Figure;
 
 public str HEADER = "\n";
 

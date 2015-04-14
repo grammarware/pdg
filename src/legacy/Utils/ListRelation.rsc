@@ -1,4 +1,4 @@
-module Utils::ListRelation
+module legacy::Utils::ListRelation
 
 import List;
 import ListRelation;

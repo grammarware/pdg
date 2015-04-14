@@ -1,11 +1,11 @@
-module DominatorTree
+module legacy::DominatorTree
 
 import List;
 import Map;
 import lang::java::m3::AST;
-import Utils::Traversal;
-import Utils::ListRelation;
-import Types;
+import legacy::Utils::Traversal;
+import legacy::Utils::ListRelation;
+import legacy::Types;
 import IO;
 
 public map[int, list[int]] getDominators(map[int, int] idom, int first, list[int] nodes){
@@ -37,7 +37,7 @@ public map[int, list[int]] dominatorTree(map[int, int] idom, list[int] nodes){
 //buildDominance(flow, 6, 6);
 public map[int, int] buildDominance(lrel[int, int] flow, int first, list[int] nodes){
 	map[int, list[int]] predecessor = getPredecessors(flow);
-	list[int] postOrder = toPostOrder(Utils::ListRelation::toMap(flow), first, nodes);
+	list[int] postOrder = toPostOrder(legacy::Utils::ListRelation::toMap(flow), first, nodes);
 	//initialize the dominators array, -5 means undefined
 	map[int, int] idom = (s:-5 | s <- postOrder);
 		

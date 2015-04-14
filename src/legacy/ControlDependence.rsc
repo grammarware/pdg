@@ -1,4 +1,4 @@
-module ControlDependence
+module legacy::ControlDependence
 
 import lang::java::m3::AST;
 import ListRelation;
@@ -6,17 +6,17 @@ import List;
 import Set;
 import Map;
 import IO;
-import Types;
-import DominatorTree;
-import Utils::Traversal;
-import Utils::Relation;
+import legacy::Types;
+import legacy::DominatorTree;
+import legacy::Utils::Traversal;
+import legacy::Utils::Relation;
 
 private int START = -1;
 private int STOP = -2;
 //ENTRY is a predict node with one edge labeled "T" going to START and another labeled "F" going to STOP;
 private int ENTRY = -3;
 
-public tuple[map[int, rel[int, str]] dependences, int regionNum] buildDependence(ControlFlow cf, list[int] nodes){
+public tuple[map[int, rel[int, str]] dependences, int regionNum] buildDependence(CF cf, list[int] nodes){
 	flow = addCommonNodestoFlow(cf);
 	nodes = nodes + START + STOP + ENTRY;
 	map[int, int] postDominance = buildDominance(invert(flow), STOP, nodes);
@@ -144,8 +144,8 @@ private map[int, rel[int, str]] modifyPredecessors(rel[int, str] cd, int r, int 
 	return dwr;
 }
 
-public lrel[int, int] addCommonNodestoFlow(ControlFlow cf){
-	return [<ENTRY, START>, <ENTRY, STOP>, <START, cf.startStatement>] + cf.edges + [<s, STOP> | s <- cf.endStatements];
+public lrel[int, int] addCommonNodestoFlow(CF cf){
+	return [<ENTRY, START>, <ENTRY, STOP>, <START, cf.firstStatement>] + cf.cflow + [<s, STOP> | s <- cf.lastStatements];
 }
 
 //the nodes on the path to LCA (not including LCA)

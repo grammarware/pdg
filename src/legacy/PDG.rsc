@@ -1,15 +1,15 @@
-module PDG
+module legacy::PDG
 
 import lang::java::m3::AST;
 import List;
 import Set;
 import Map;
-import Types;
+import legacy::Types;
 import IO;
-import graph::control::Flow;
-import ControlDependence;
-import DominatorTree;
-import DataDependence;
+import legacy::graph::control::Flow;
+import legacy::ControlDependence;
+import legacy::DominatorTree;
+import legacy::DataDependence;
 
 //buildPDG(getMethodAST(|project://JavaTest/src/PDG/dataFlow/DataDependence.java|)[0]);
 public tuple[ControlDependence, DataDependence, map[int, Statement]] buildPDG(Declaration method){

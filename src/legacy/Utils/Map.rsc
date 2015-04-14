@@ -1,8 +1,8 @@
-module Utils::Map
+module legacy::Utils::Map
 
 import Map;
 import List;
-import Utils::List;
+import legacy::Utils::List;
 
 public map[str, set[int]] insertStrToMap(str name, int stat, map[str, set[int]] m){
 	if(name in m) m[name] += stat;

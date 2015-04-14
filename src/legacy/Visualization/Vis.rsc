@@ -1,14 +1,14 @@
-module Visualization::Vis
+module legacy::Visualization::Vis
 
-import Visualization::CDGvis;
-import Visualization::CFGvis;
-import Visualization::DDGvis;
-import Visualization::PDGvis;
-import Visualization::PDTvis;
+import legacy::Visualization::CDGvis;
+import legacy::Visualization::CFGvis;
+import legacy::Visualization::DDGvis;
+import legacy::Visualization::PDGvis;
+import legacy::Visualization::PDTvis;
 import vis::Render;
 import vis::Figure;
 import vis::KeySym;
-import Types;
+import legacy::Types;
 
 public void showGraphs() = showGraphs(|project://JavaTest/src/PDG/Sum.java|, 0);
 

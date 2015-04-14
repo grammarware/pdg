@@ -1,8 +1,8 @@
-module Utils::Figure
+module legacy::Utils::Figure
 
 import vis::KeySym;
 import util::Editors;
-import ControlFlow;
+import legacy::graph::control::Flow;
 import lang::java::m3::AST;
 import util::Editors;
 

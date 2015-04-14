@@ -1,4 +1,4 @@
-module Utils::Relation
+module legacy::Utils::Relation
 
 import List;
 import Relation;

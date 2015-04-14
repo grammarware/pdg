@@ -1,7 +1,7 @@
-module Definitions
+module legacy::Definitions
 
 import lang::java::m3::AST;
-import Types;
+import legacy::Types;
 import IO;
 import Set;
 

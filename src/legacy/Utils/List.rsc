@@ -1,4 +1,4 @@
-module Utils::List
+module legacy::Utils::List
 
 import List;
 import Map;

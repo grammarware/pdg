@@ -1,4 +1,4 @@
-module Utils::Traversal
+module legacy::Utils::Traversal
 
 import List;
 import IO;

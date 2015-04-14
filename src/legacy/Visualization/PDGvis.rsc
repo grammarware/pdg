@@ -1,7 +1,7 @@
-module Visualization::PDGvis
+module legacy::Visualization::PDGvis
 
-import Types;
-import PDG;
+import legacy::Types;
+import legacy::PDG;
 import lang::java::m3::AST;
 import vis::Render;
 import vis::Figure;
@@ -11,7 +11,7 @@ import List;
 import Map;
 import Set;
 import String;
-import Utils::Figure;
+import legacy::Utils::Figure;
 
 public str HEADER = "\n";
 

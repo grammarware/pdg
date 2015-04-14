@@ -1,18 +1,18 @@
-module DataDependence
+module legacy::DataDependence
 
 import IO;
-import Types;
+import legacy::Types;
 import lang::java::m3::AST;
-import Utils::Map;
-import Utils::ListRelation;
-import graph::control::Flow;
+import legacy::Utils::Map;
+import legacy::Utils::ListRelation;
+import legacy::graph::control::Flow;
 
-public tuple[map[int, map[int, set[str]]] inputs, map[int, map[int, set[str]]] outputs] getReachingDefs(ControlFlow cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens){
+public tuple[map[int, map[int, set[str]]] inputs, map[int, map[int, set[str]]] outputs] getReachingDefs(CF cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens){
 	map[int, map[int, set[str]]] kills = ();
 	map[int, map[int, set[str]]] outputs = ();
 	map[int, map[int, set[str]]] inputs = ();
 	
-	map[int, list[int]] preds = getPredecessors(cf.edges);
+	map[int, list[int]] preds = getPredecessors(cf.cflow);
 	for(s <- statements){
 		if(s in gens){
 			kills[s] = ();
@@ -55,7 +55,7 @@ public map[int use, rel[int def, str name] defs] computeDefUsePairs(map[int, map
 	return duPairs;
 }
 
-public map[int use, rel[int def, str name] defs] buildDataDependence(ControlFlow cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens, map[int, set[str]] uses){
+public map[int use, rel[int def, str name] defs] buildDataDependence(CF cf, map[int number, Statement stat] statements, map[str, set[int]] defs, map[int, set[str]] gens, map[int, set[str]] uses){
 	io = getReachingDefs(cf, statements, defs, gens);
 	duPairs = computeDefUsePairs(reverseKeyValue(io.inputs), uses);
 	return duPairs;

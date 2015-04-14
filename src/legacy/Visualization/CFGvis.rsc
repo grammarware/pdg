@@ -1,7 +1,7 @@
 module Visualization::CFGvis
 
-import Types;
-import PDG;
+import legacy::Types;
+import legacy::PDG;
 import vis::Render;
 import vis::Figure;
 import vis::KeySym;
@@ -11,9 +11,9 @@ import List;
 import Map;
 import Set;
 import String;
-import graph::control::Flow;
-import ControlDependence;
-import Utils::Figure;
+import legacy::graph::control::Flow;
+import legacy::ControlDependence;
+import legacy::Utils::Figure;
 
 public str HEADER = "\n";
 
