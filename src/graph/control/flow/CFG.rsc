@@ -5,12 +5,12 @@ import List;
 
 import analysis::m3::AST;
 import analysis::graphs::Graph;
+import lang::java::m3::AST;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
+import graph::control::DataStructures;
 import graph::control::flow::JumpEnvironment;
-
-data FlowGraph = FlowGraph(Graph[int] edges, int entryNode, set[int] exitNodes);
 
 // A counter to identify nodes.
 private int nodeIdentifier = 0;
@@ -28,6 +28,10 @@ private int getIdentifier() {
 
 public set[int] getNodeIdentifiers() {
 	return domain(nodeEnvironment);
+}
+
+public node resolveIdentifier(int identifier) {
+	return nodeEnvironment[identifier];
 }
 
 public str getNodeName(int identifier) {
@@ -49,54 +53,77 @@ public FlowGraph createCFG(node tree) {
 	return controlFlowGraph;
 }
 
+private int storeNode(node treeNode) {
+	int identifier = getIdentifier();
+
+	nodeEnvironment[identifier] = treeNode;
+	
+	return identifier;
+}
+
 private FlowGraph createControlFlowGraph(node tree) {
 	FlowGraph flowGraph;
+	int identifier;
 	
 	top-down-break visit(tree) {
-		case \block(body): {
+		case blockNode: \block(body): {
 			flowGraph = processBlock(body); 
 		}
-		case \if(condition, thenBranch): {
-			flowGraph = processIf(condition, thenBranch);
+		case ifNode: \if(condition, thenBranch): {
+			identifier = storeNode(ifNode);
+			flowGraph = processIf(identifier, condition, thenBranch);
 		}
-		case \if(condition, thenBranch, elseBranch): {
-			flowGraph = processIfElse(condition, thenBranch, elseBranch);
+		case ifNode: \if(condition, thenBranch, elseBranch): {
+			identifier = storeNode(ifNode);
+			flowGraph = processIfElse(identifier, condition, thenBranch, elseBranch);
 		}
 		case forNode: \for(_, _, _): {
-			flowGraph = processFor(forNode);
+			identifier = storeNode(forNode);
+			flowGraph = processFor(identifier, forNode);
 		}
 		case forNode: \for(_, _, _, _): {
-			flowGraph = processFor(forNode);
+			identifier = storeNode(forNode);
+			flowGraph = processFor(identifier, forNode);
 		}
-		case \while(condition, body): {
-			flowGraph = processWhile(condition, body);
+		case whileNode: \while(condition, body): {
+			identifier = storeNode(whileNode);
+			flowGraph = processWhile(identifier, condition, body);
 		}
-		case \do(body, condition): {
-			flowGraph = processDoWhile(body, condition);
+		case doNode: \do(body, condition): {
+			identifier = storeNode(doNode);
+			flowGraph = processDoWhile(identifier, body, condition);
 		}
-		case \switch(expression, statements): {
-			flowGraph = processSwitch(expression, statements);
+		case switchNode: \switch(expression, statements): {
+			identifier = storeNode(switchNode);
+			flowGraph = processSwitch(identifier, expression, statements);
 		}
 		case breakNode: \break(): {
-			flowGraph = processBreak(breakNode);
+			identifier = storeNode(breakNode);
+			flowGraph = processBreak(identifier, breakNode);
 		}
 		case breakNode: \break(_): {
-			flowGraph = processBreak(breakNode);
+			identifier = storeNode(breakNode);
+			flowGraph = processBreak(identifier, breakNode);
 		}
 		case continueNode: \continue(): {
-			flowGraph = processContinue(continueNode);
+			identifier = storeNode(continueNode);
+			flowGraph = processContinue(identifier, continueNode);
 		}
 		case continueNode: \continue(_): {
-			flowGraph = processContinue(continueNode);
+			identifier = storeNode(continueNode);
+			flowGraph = processContinue(identifier, continueNode);
 		}
 		case returnNode: \return(): {
-			flowGraph = processReturn(returnNode);
+			identifier = storeNode(returnNode);
+			flowGraph = processReturn(identifier, returnNode);
 		}
 		case returnNode: \return(_): {
-			flowGraph = processReturn(returnNode);
+			identifier = storeNode(returnNode);
+			flowGraph = processReturn(identifier, returnNode);
 		}
 		case Statement statement: {
-			flowGraph = processStatement(statement);
+			identifier = storeNode(statement);
+			flowGraph = processStatement(identifier, statement);
 		}
 	}
 	
@@ -171,11 +198,8 @@ private FlowGraph createConditionalBranchFlow(Statement branch) {
 	return createControlFlowGraph(branch);
 }
 
-private FlowGraph processIf(Expression condition, Statement thenBranch) {
+private FlowGraph processIf(int identifier, Expression condition, Statement thenBranch) {
 	FlowGraph ifFlow = FlowGraph({}, 0, {});
-	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = condition;
 	
 	ifFlow.entryNode = identifier;
 	// The condition is an exit node on false.
@@ -189,11 +213,8 @@ private FlowGraph processIf(Expression condition, Statement thenBranch) {
 	return ifFlow;
 }
 
-private FlowGraph processIfElse(Expression condition, Statement thenBranch, Statement elseBranch) {
+private FlowGraph processIfElse(int identifier, Expression condition, Statement thenBranch, Statement elseBranch) {
 	FlowGraph ifElseFlow = FlowGraph({}, 0, {});
-	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = condition;
 	
 	ifElseFlow.entryNode = identifier;
 	// The condition is an exit node on false.
@@ -212,16 +233,15 @@ private FlowGraph processIfElse(Expression condition, Statement thenBranch, Stat
 	return ifElseFlow;
 }
 
-private FlowGraph processFor(Statement forNode) {
+private FlowGraph processFor(int identifier, Statement forNode) {
 	FlowGraph forFlow = FlowGraph({}, 0, {});
-	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = forNode;
 	
 	forFlow.entryNode = identifier;
 	forFlow.exitNodes += {identifier};
 	
 	FlowGraph bodyFlow;
+	
+	scopeDown();
 	
 	if(\for(_, _, _,body) := forNode) {
 		bodyFlow = createControlFlowGraph(body);
@@ -237,17 +257,18 @@ private FlowGraph processFor(Statement forNode) {
 		
 	forFlow.exitNodes += getBreakNodes();
 	
+	scopeUp();
+	
 	return forFlow;
 }
 
-private FlowGraph processWhile(Expression condition, Statement body) {
+private FlowGraph processWhile(int identifier, Expression condition, Statement body) {
 	FlowGraph whileFlow = FlowGraph({}, 0, {});
-	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = condition;
 	
 	whileFlow.entryNode = identifier;
 	whileFlow.exitNodes += {identifier};
+	
+	scopeDown();
 	
 	FlowGraph bodyFlow = createControlFlowGraph(body);
 	bodyFlow.exitNodes += getContinueNodes();
@@ -258,18 +279,19 @@ private FlowGraph processWhile(Expression condition, Statement body) {
 	
 	whileFlow.exitNodes += getBreakNodes();
 	
+	scopeUp();
+	
 	return whileFlow;
 }
 
-private FlowGraph processDoWhile(Statement body, Expression condition) {
+private FlowGraph processDoWhile(int identifier, Statement body, Expression condition) {
 	FlowGraph doWhileFlow = FlowGraph({}, 0, {});
+	
+	scopeDown();
 	
 	// Process the body first, as it is always executed once.
 	FlowGraph bodyFlow = createControlFlowGraph(body);
 	bodyFlow.exitNodes += getContinueNodes();
-	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = condition;
 	
 	doWhileFlow.entryNode = identifier;
 	doWhileFlow.exitNodes += {identifier};
@@ -281,6 +303,8 @@ private FlowGraph processDoWhile(Statement body, Expression condition) {
 	doWhileFlow.edges += createConnectionEdges(doWhileFlow, bodyFlow);
 	
 	doWhileFlow.exitNodes += getBreakNodes();
+	
+	scopeUp();
 	
 	return doWhileFlow;
 }
@@ -315,11 +339,8 @@ private list[FlowGraph] processCases(list[Statement] statements) {
 	return caseFlows;
 }
 
-private FlowGraph processSwitch(Expression expression, list[Statement] statements) {
+private FlowGraph processSwitch(int identifier, Expression expression, list[Statement] statements) {
 	FlowGraph switchFlow = FlowGraph({}, 0, {});
-	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = expression;
 	
 	switchFlow.entryNode = identifier;
 	switchFlow.exitNodes = {identifier};
@@ -342,45 +363,33 @@ private FlowGraph processSwitch(Expression expression, list[Statement] statement
 	return switchFlow;
 }
 
-private FlowGraph processBreak(Statement breakNode) {
+private FlowGraph processBreak(int identifier, Statement breakNode) {
 	FlowGraph breakFlow = FlowGraph({}, 0, {});
 	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = breakNode;
 	addBreakNode(identifier);
-	
 	breakFlow.entryNode = identifier;
 	
 	return breakFlow;
 }
 
-private FlowGraph processContinue(Statement continueNode) {
+private FlowGraph processContinue(int identifier, Statement continueNode) {
 	FlowGraph continueFlow = FlowGraph({}, 0, {});
 	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = continueNode;
 	addContinueNode(identifier);
-	
 	continueFlow.entryNode = identifier;
 	
 	return continueFlow;
 }
 
-private FlowGraph processReturn(Statement returnNode) {
+private FlowGraph processReturn(int identifier, Statement returnNode) {
 	FlowGraph returnFlow = FlowGraph({}, 0, {});
 	
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = returnNode;
 	addReturnNode(identifier);
-	
 	returnFlow.entryNode = identifier;
 	
 	return returnFlow;
 }
 
-private FlowGraph processStatement(Statement statement) {
-	int identifier = getIdentifier();
-	nodeEnvironment[identifier] = statement;
-	
+private FlowGraph processStatement(int identifier, Statement statement) {
 	return FlowGraph({}, identifier, {identifier});
 }

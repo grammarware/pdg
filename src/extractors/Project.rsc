@@ -90,12 +90,8 @@ public set[loc] getM3Classes(M3 project) {
 	@return (set[loc]) -
 		The set of locations of all methods in the model.
 }
-public set[loc] getM3Methods(M3 project) {
-	if(project notin methodCache) {
-		methodCache[project] = methods(project);
-	}
-	
-	return methodCache[project];
+public set[loc] getM3Methods(M3 project) {	
+	return methods(project);
 }
 
 @doc {
@@ -108,11 +104,7 @@ public set[loc] getM3Methods(M3 project) {
 		The set of locations of all files in the model.
 }
 public set[loc] getM3Files(M3 project) {
-	if(project notin fileCache) {
-		fileCache[project] = files(project);
-	}
-	
-	return fileCache[project];
+	return files(project);
 }
 
  

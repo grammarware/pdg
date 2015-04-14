@@ -2,6 +2,7 @@ module graph::control::flow::JumpEnvironment
 
 // Register break nodes, for post-process binding.
 set[int] breakNodes = {};
+set[int] parentBreakNodes = {};
 
 public void addBreakNode(int identifier) {
 	breakNodes += {identifier};
@@ -17,6 +18,7 @@ public set[int] getBreakNodes() {
 
 // Register continue nodes, for post-process binding.
 set[int] continueNodes = {};
+set[int] parentContinueNodes = {};
 
 public void addContinueNode(int identifier) {
 	continueNodes += {identifier};
@@ -43,4 +45,18 @@ public set[int] getReturnNodes() {
 	returnNodes = {};
 	
 	return returns;
+}
+
+// Scoping functions to account for block scope.
+public void scopeDown() {
+	parentBreakNodes = breakNodes;
+	parentContinueNodes = continueNodes;
+	
+	breakNodes = {};
+	continueNodes = {};
+}
+
+public void scopeUp() {
+	breakNodes = parentBreakNodes;
+	continueNodes = parentContinueNodes;
 }

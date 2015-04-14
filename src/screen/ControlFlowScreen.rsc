@@ -8,6 +8,7 @@ import vis::Render;
 
 import extractors::Project;
 import graph::control::flow::CFG;
+import graph::control::DataStructures;
 
 @doc {
 	To run a test:
