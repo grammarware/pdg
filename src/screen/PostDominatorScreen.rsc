@@ -60,16 +60,18 @@ private Figures createBoxes(Graph[int] tree) {
 					onMouseDown(goToSource(location)));
 	}
 	
-	boxes += box(text("EXIT"), id("-1"), size(50), fillColor("lightblue"));
+	boxes += box(text("EXIT"), id("<EXITNODE>"), size(50), fillColor("lightblue"));
+	boxes += box(text("START"), id("<STARTNODE>"), size(50), fillColor("lightblue"));
 	
 	return boxes;
 }
 
 public &T cast(type[&T] tp, value v) throws str {
-    if (&T tv := v)
+    if (&T tv := v) {
         return tv;
-    else
+    } else {
         throw "cast failed";
+    }
 }
 
 public loc getLocation(node stat){

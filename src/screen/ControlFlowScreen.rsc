@@ -21,7 +21,7 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	
 	FlowGraph flowGraph = createCFG(methodAST);
 	
-	render(graph(createBoxes(flowGraph), createEdges(flowGraph), hint("layered"), gap(100)));
+	render(graph(createBoxes(flowGraph), createEdges(flowGraph), hint("layered"), gap(50)));
 }
 
 private loc getMethodLocation(str methodName, M3 projectModel) {

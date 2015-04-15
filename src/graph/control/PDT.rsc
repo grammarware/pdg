@@ -15,6 +15,8 @@ import lang::java::jdt::m3::Core;
 import graph::control::flow::CFG;
 import graph::control::DataStructures;
 
+public int EXITNODE = -1;
+public int STARTNODE = -2;
 
 private Graph[int] reverseEdges(Graph[int] edges) {
 	Graph[int] reversedTree = {};
@@ -28,18 +30,9 @@ private Graph[int] reverseEdges(Graph[int] edges) {
 
 public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
 	Graph[int] postDominatorTree = {};
-	int mergeNode = -1;
-	list[int] mergeNodes = [];
-	list[int] splitNodes = [];
-	
-	int switchNode = -1;
-	list[int] caseNodes = [];
-	list[int] switchNodes = [];
-	
-	println(carrier(controlFlow.edges));
+
 	map[int, set[int]] dominatedBy = ();
 	map[int, set[int]] dominates = ();
-	
 	
 	Graph[int] reversedTree = reverseEdges(controlFlow.edges);
 	set[int] nodes = carrier(reversedTree) - top(reversedTree);
@@ -51,10 +44,7 @@ public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
 	
 	for(treeNode <- carrier(reversedTree)) {
 		set[int] exclusiveReach = reachX(reversedTree, top(reversedTree), { treeNode });
-		println("[<treeNode>] ReachX: <exclusiveReach>");
-		
 		set[int] domination = nodes - { treeNode } - exclusiveReach;
-		println("[<treeNode>] Dominance: <domination>");
 		
 		for(dominatedNode <- domination) {
 			dominatedBy[dominatedNode] += { treeNode };
@@ -68,7 +58,6 @@ public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
 		for(dominator <- dominatedBy[treeNode]) {
 			if(dominatedBy[dominator] == dominatedBy[treeNode] - dominator) {
 				postDominatorTree += <dominator, treeNode>;
-				println("idom(<treeNode>): <dominator>");
 				foundIdom = true;
 				break;
 			}
@@ -77,9 +66,11 @@ public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
 		// Top nodes do not have a unique immediate dominator. These nodes 
 		// will be connected with the exit node in the graph.
 		if(!foundIdom) {
-			postDominatorTree += <-1, treeNode>;
+			postDominatorTree += <EXITNODE, treeNode>;
 		}
 	}
+	
+	postDominatorTree += <controlFlow.entryNode, STARTNODE>;
 	
 	return postDominatorTree;
 }
