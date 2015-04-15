@@ -16,6 +16,16 @@ import graph::control::flow::CFG;
 import graph::control::DataStructures;
 
 
+private Graph[int] reverseEdges(Graph[int] edges) {
+	Graph[int] reversedTree = {};
+	
+	for(<int from, int to> <- edges) {
+		reversedTree += <to, from>;
+	}
+	
+	return reversedTree;
+}
+
 public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
 	Graph[int] postDominatorTree = {};
 	int mergeNode = -1;
@@ -26,119 +36,50 @@ public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
 	list[int] caseNodes = [];
 	list[int] switchNodes = [];
 	
-	for(treeNode <- unprocessedNodes) {
-		set[int] predecessors = predecessors(controlFlow.edges, treeNode);
+	println(carrier(controlFlow.edges));
+	map[int, set[int]] dominatedBy = ();
+	map[int, set[int]] dominates = ();
+	
+	
+	Graph[int] reversedTree = reverseEdges(controlFlow.edges);
+	set[int] nodes = carrier(reversedTree) - top(reversedTree);
+	
+	for(treeNode <- carrier(reversedTree)) {
+		dominatedBy[treeNode] = {};
+		dominates[treeNode] = {};
+	}
+	
+	for(treeNode <- carrier(reversedTree)) {
+		set[int] exclusiveReach = reachX(reversedTree, top(reversedTree), { treeNode });
+		println("[<treeNode>] ReachX: <exclusiveReach>");
 		
-		if(isMergeNode(predecessors)) {
-			mergeNode = treeNode;
+		set[int] domination = nodes - { treeNode } - exclusiveReach;
+		println("[<treeNode>] Dominance: <domination>");
+		
+		for(dominatedNode <- domination) {
+			dominatedBy[dominatedNode] += { treeNode };
+			dominates[treeNode] = domination;
 		}
+	}
+	
+	for(treeNode <- carrier(reversedTree)) {
+		bool foundIdom = false;
 		
-		if(isSwitchNode(treeNode)) {
-			switchNode = treeNode;
-		}
-		
-		if(isCaseNode(treeNode)) {
-			println(predecessors);
-			switchNodes += getOneFrom(predecessors);;
-			caseNodes += treeNode;
-		}
-		
-		for(predecessor <- predecessors, predecessor in unprocessedNodes) {
-			set[int] successors = successors(controlFlow.edges, predecessor);
-			
-			if(isConditional(predecessor) || isLoop(predecessor)) {
-				mergeNodes += mergeNode;
-				splitNodes += [predecessor];
-				unprocessedNodes -= predecessor;
-			} else {
-				postDominatorTree += <treeNode, predecessor>;
-				unprocessedNodes -= predecessor;
+		for(dominator <- dominatedBy[treeNode]) {
+			if(dominatedBy[dominator] == dominatedBy[treeNode] - dominator) {
+				postDominatorTree += <dominator, treeNode>;
+				println("idom(<treeNode>): <dominator>");
+				foundIdom = true;
+				break;
 			}
-		}		
+		}
+		
+		// Top nodes do not have a unique immediate dominator. These nodes 
+		// will be connected with the exit node in the graph.
+		if(!foundIdom) {
+			postDominatorTree += <-1, treeNode>;
+		}
 	}
-
-	for(edge <- zip(mergeNodes, splitNodes)) {
-		postDominatorTree += edge;
-	}
-	
-	for(edge <- zip(caseNodes, switchNodes)) {
-		postDominatorTree += edge;
-	}
-	
-	println(mergeNodes);
-	println(splitNodes);
-	
-	println(switchNodes);
-	println(caseNodes);
 	
 	return postDominatorTree;
-}
-
-private bool isSwitchNode(int identifier) {
-	switch(resolveIdentifier(identifier)) {
-		case \switch(_, _): {
-			return true;
-		}
-		default: {
-			return false;
-		}
-	}
-}
-
-private bool isCaseNode(int identifier) {
-	switch(resolveIdentifier(identifier)) {
-		case \case(_): {
-			return true;
-		}
-		case \defaultCase(): {
-			return true;
-		}
-		default: {
-			return false;
-		}
-	}
-}
-
-private bool isMergeNode(set[int] predecessors) {
-	if(size(predecessors) > 1) {
-		return true;
-	}
-
-	return false;
-}
-
-private bool isLoop(int identifier) {
-	switch(resolveIdentifier(identifier)) {
-		case forNode: \for(_, _, _): {
-			return true;
-		}
-		case forNode: \for(_, _, _, _): {
-			return true;
-		}
-		case whileNode: \while(condition, body): {
-			return true;
-		}
-		case doNode: \do(body, condition): {
-			return true;
-		}
-		default: {
-			return false;
-		}
-	}
-}
-
-
-
-private bool isConditional(int identifier) {
-	switch(resolveIdentifier(identifier)) {
-		case \if(_, _): {
-			return true;
-		} 
-		case \if(_, _, _): {
-			return true;
-		}
-		default: {
-			return false;
-		}
-	}
 }
