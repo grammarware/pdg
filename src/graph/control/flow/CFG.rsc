@@ -121,6 +121,10 @@ private FlowGraph createControlFlowGraph(node tree) {
 			identifier = storeNode(returnNode);
 			flowGraph = processReturn(identifier, returnNode);
 		}
+		case throwNode: \throw(_): {
+			identifier = storeNode(throwNode);
+			flowGraph = processThrow(identifier, throwNode);
+		}
 		case Statement statement: {
 			identifier = storeNode(statement);
 			flowGraph = processStatement(identifier, statement);
@@ -388,6 +392,15 @@ private FlowGraph processReturn(int identifier, Statement returnNode) {
 	returnFlow.entryNode = identifier;
 	
 	return returnFlow;
+}
+
+private FlowGraph processThrow(int identifier, Statement throwNode) {
+	FlowGraph throwFlow = FlowGraph({}, 0, {});
+	
+	addReturnNode(identifier);
+	throwFlow.entryNode = identifier;
+	
+	return throwFlow;
 }
 
 private FlowGraph processStatement(int identifier, Statement statement) {

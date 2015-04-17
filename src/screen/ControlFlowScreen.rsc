@@ -10,9 +10,9 @@ import extractors::Project;
 import graph::control::flow::CFG;
 import graph::control::DataStructures;
 
-@doc {
+@doc { 
 	To run a test:
-		displayControlFlowGraph(|project://pdg-JavaTest/src/PDG|, "testBreak1");
+		displayControlFlowGraph(|project://pdg-JavaTest|, "testCDG");
 }
 public void displayControlFlowGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);

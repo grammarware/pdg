@@ -1,4 +1,4 @@
-module screen::PostDominatorScreen
+module screen::ControlDependenceScreen
 
 import Prelude;
 import lang::java::jdt::m3::Core;
@@ -14,22 +14,27 @@ import extractors::Project;
 import graph::control::PDT;
 import graph::control::flow::CFG;
 import graph::control::DataStructures;
+import graph::control::dependence::CDG;
 
-@doc {
+@doc { 
 	To run a test:
-		displayPostDominatorTree(|project://pdg-JavaTest|, "testPDT");
-		displayPostDominatorTree(|project://pdg-JavaTest|, "testPDT2");
-		displayPostDominatorTree(|project://pdg-JavaTest|, "testCDG");
+		displayControlDependenceGraph(|project://pdg-JavaTest|, "testPDT");
+		displayControlDependenceGraph(|project://pdg-JavaTest|, "testPDT2");
 }
-public void displayPostDominatorTree(loc project, str methodName) {
+public void displayControlDependenceGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
 	FlowGraph flowGraph = createCFG(methodAST);
 	Graph[int] postDominator = createPDT(flowGraph);
+	Graph[int] controlDependence = createCDG(flowGraph.edges, postDominator, getDominations());
 	
-	render(graph(createBoxes(postDominator), createEdges(postDominator), hint("layered"), gap(50)));
+	for(exitNode <- flowGraph.exitNodes) {
+		controlDependence += <exitNode, EXITNODE>;
+	}
+	
+	render(graph(createBoxes(controlDependence), createEdges(controlDependence), hint("layered"), gap(50)));
 }
 
 private loc getMethodLocation(str methodName, M3 projectModel) {

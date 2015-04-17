@@ -15,8 +15,8 @@ import lang::java::jdt::m3::Core;
 import graph::control::flow::CFG;
 import graph::control::DataStructures;
 
-public int EXITNODE = -1;
-public int STARTNODE = -2;
+private map[int, set[int]] dominates = ();
+private map[int, set[int]] dominatedBy = ();
 
 private Graph[int] reverseEdges(Graph[int] edges) {
 	Graph[int] reversedTree = {};
@@ -28,11 +28,16 @@ private Graph[int] reverseEdges(Graph[int] edges) {
 	return reversedTree;
 }
 
-public Graph[int] createPDT(FlowGraph controlFlow, list[int] unprocessedNodes) {
-	Graph[int] postDominatorTree = {};
+public map[int, set[int]] getNodeDominators() {
+	return dominatedBy;
+}
 
-	map[int, set[int]] dominatedBy = ();
-	map[int, set[int]] dominates = ();
+public map[int, set[int]] getDominations() {
+	return dominates;
+}
+
+public Graph[int] createPDT(FlowGraph controlFlow) {
+	Graph[int] postDominatorTree = {};
 	
 	Graph[int] reversedTree = reverseEdges(controlFlow.edges);
 	set[int] nodes = carrier(reversedTree) - top(reversedTree);
