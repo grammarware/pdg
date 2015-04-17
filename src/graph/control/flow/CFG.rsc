@@ -97,6 +97,18 @@ private FlowGraph createControlFlowGraph(node tree) {
 			identifier = storeNode(switchNode);
 			flowGraph = processSwitch(identifier, expression, statements);
 		}
+		case tryNode: \try(body, catchClauses): {
+			identifier = storeNode(tryNode);
+			flowGraph = processTry(identifier, body, catchClauses);
+		}
+    	case tryNode: \try(body, catchClauses, finalClause): {
+    		identifier = storeNode(tryNode);
+    		flowGraph = processTry(identifier, body, catchClauses, finalClause);
+    	}
+    	case catchNode: \catch(exception, body): {
+    		identifier = storeNode(catchNode);
+    		flowGraph = processCatch(identifier, exception, body);
+    	}
 		case breakNode: \break(): {
 			identifier = storeNode(breakNode);
 			flowGraph = processBreak(identifier, breakNode);
@@ -365,6 +377,118 @@ private FlowGraph processSwitch(int identifier, Expression expression, list[Stat
 	switchFlow.exitNodes = finalExitNodes + getBreakNodes();
 	
 	return switchFlow;
+}
+
+private bool isTryExit(int identifier) {
+	switch(nodeEnvironment[identifier]) {	
+		case blockNode: \block(body): {
+			return false;
+		}
+		case ifNode: \if(condition, thenBranch): {
+			return true;
+		}
+		case ifNode: \if(condition, thenBranch, elseBranch): {
+			return true;
+		}
+		case forNode: \for(_, _, _): {
+			return true;
+		}
+		case forNode: \for(_, _, _, _): {
+			return true;
+		}
+		case whileNode: \while(condition, body): {
+			return true;
+		}
+		case doNode: \do(body, condition): {
+			return true;
+		}
+		case switchNode: \switch(expression, statements): {
+			return false;
+		}
+		case tryNode: \try(body, catchClauses): {
+			return false;
+		}
+    	case tryNode: \try(body, catchClauses, finalClause): {
+    		return false;
+    	}
+    	case catchNode: \catch(exception, body): {
+    		return false;
+    	}
+		case breakNode: \break(): {
+			return false;
+		}
+		case breakNode: \break(_): {
+			return false;
+		}
+		case continueNode: \continue(): {
+			return false;
+		}
+		case continueNode: \continue(_): {
+			return false;
+		}
+		case returnNode: \return(): {
+			return false;
+		}
+		case returnNode: \return(_): {
+			return false;
+		}
+		case throwNode: \throw(_): {
+			return false;
+		}
+		case Statement statement: {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+private FlowGraph processTry(int identifier, Statement body, list[Statement] catchClauses) {
+	FlowGraph tryFlow = FlowGraph({}, 0, {});
+	
+	tryFlow.entryNode = identifier;
+	tryFlow.exitNodes = { identifier };
+	
+	FlowGraph bodyFlow = createControlFlowGraph(body);
+	tryFlow.edges = bodyFlow.edges + createConnectionEdges(tryFlow, bodyFlow);
+	tryFlow.exitNodes = bodyFlow.exitNodes;
+
+	set[int] potentialThrows = {};
+
+	for(treeNode <- carrier(bodyFlow.edges)) {
+		if(isTryExit(treeNode)) {
+			potentialThrows += treeNode;
+		}
+	}
+	
+	list[FlowGraph] catchFlows = [];
+	
+	for(catchClause <- catchClauses) {
+		catchFlows += createControlFlowGraph(catchClause);
+	}
+	
+	for(catchFlow <- catchFlows) {
+		tryFlow.edges += potentialThrows * {catchFlow.entryNode};
+		tryFlow.edges += catchFlow.edges;
+	}
+	
+	return tryFlow;
+}
+
+private FlowGraph processTry(int identifier, Statement body, list[Statement] catchClauses, Statement finallyClause) {
+	
+}
+
+private FlowGraph processCatch(int identifier, Declaration exception, Statement body) {
+	FlowGraph catchFlow = FlowGraph({}, 0, {});
+	catchFlow.entryNode = identifier;
+	catchFlow.exitNodes = {identifier};
+	
+	FlowGraph bodyFlow = createControlFlowGraph(body);
+	catchFlow.edges = bodyFlow.edges + createConnectionEdges(catchFlow, bodyFlow);
+	catchFlow.exitNodes = bodyFlow.exitNodes;
+	
+	return catchFlow;
 }
 
 private FlowGraph processBreak(int identifier, Statement breakNode) {

@@ -30,12 +30,12 @@ public Graph[int] createCDG(Graph[int] controlFlow, Graph[int] postDominator, ma
 	
 	for(treeNode <- carrier(controlFlow)) {
 		int idom = immediatePostDominators[treeNode];
-		set[int] exclusiveReach = reachX(controlFlow, { treeNode }, { idom });
+		set[int] exclusiveReach = reachX(controlFlow, { treeNode }, { idom }) - { treeNode };
 		
-		for(reachableNode <- exclusiveReach, reachableNode != treeNode) {
-			set[int] reachables = reachR(controlFlow, { treeNode }, { treeNode } + dominations[reachableNode]);
+		for(reachableNode <- exclusiveReach) {
+			set[int] reachables = { reachableNode } + reachR(controlFlow, { treeNode }, { treeNode } + dominations[reachableNode]);
 
-			for(reachable <- reachables, reachable != treeNode) {
+			for(reachable <- reachables) {
 				dependencies[reachable] += { treeNode };
 			}
 		}
