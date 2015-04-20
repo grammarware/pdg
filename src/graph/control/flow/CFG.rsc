@@ -439,7 +439,7 @@ private bool isTryExit(int identifier) {
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -455,7 +455,7 @@ private FlowGraph processTry(int identifier, Statement body, list[Statement] cat
 
 	set[int] potentialThrows = {};
 
-	for(treeNode <- carrier(bodyFlow.edges)) {
+	for(treeNode <- carrier(tryFlow.edges)) {
 		if(isTryExit(treeNode)) {
 			potentialThrows += treeNode;
 		}

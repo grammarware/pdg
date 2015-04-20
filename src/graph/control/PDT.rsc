@@ -36,10 +36,25 @@ public map[int, set[int]] getDominations() {
 	return dominates;
 }
 
+private Graph[int] augmentFlowGraph(FlowGraph controlFlow) {
+	Graph[int] augmentedGraph = controlFlow.edges;
+	
+	augmentedGraph += { <STARTNODE, controlFlow.entryNode> };
+	
+	for(exitNode <- controlFlow.exitNodes) {
+		augmentedGraph += { <exitNode, EXITNODE> };
+	}
+	
+	augmentedGraph += { <ENTRYNODE, STARTNODE>, <ENTRYNODE, EXITNODE> };
+	
+	return augmentedGraph;
+}
+
 public Graph[int] createPDT(FlowGraph controlFlow) {
 	Graph[int] postDominatorTree = {};
+	Graph[int] augmentedGraph = augmentFlowGraph(controlFlow);
+	Graph[int] reversedTree = reverseEdges(augmentedGraph);
 	
-	Graph[int] reversedTree = reverseEdges(controlFlow.edges);
 	set[int] nodes = carrier(reversedTree) - top(reversedTree);
 	
 	for(treeNode <- carrier(reversedTree)) {
@@ -58,24 +73,13 @@ public Graph[int] createPDT(FlowGraph controlFlow) {
 	}
 	
 	for(treeNode <- carrier(reversedTree)) {
-		bool foundIdom = false;
-		
 		for(dominator <- dominatedBy[treeNode]) {
 			if(dominatedBy[dominator] == dominatedBy[treeNode] - dominator) {
 				postDominatorTree += <dominator, treeNode>;
-				foundIdom = true;
 				break;
 			}
 		}
-		
-		// Top nodes do not have a unique immediate dominator. These nodes 
-		// will be connected with the exit node in the graph.
-		if(!foundIdom) {
-			postDominatorTree += <EXITNODE, treeNode>;
-		}
 	}
-	
-	postDominatorTree += <controlFlow.entryNode, STARTNODE>;
 	
 	return postDominatorTree;
 }

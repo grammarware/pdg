@@ -63,6 +63,7 @@ private Figures createBoxes(Graph[int] tree) {
 	
 	boxes += box(text("EXIT"), id("<EXITNODE>"), size(50), fillColor("lightblue"));
 	boxes += box(text("START"), id("<STARTNODE>"), size(50), fillColor("lightblue"));
+	boxes += box(text("ENTRY"), id("<ENTRYNODE>"), size(50), fillColor("lightblue"));
 	
 	return boxes;
 }

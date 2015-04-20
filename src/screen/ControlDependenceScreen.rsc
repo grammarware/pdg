@@ -28,11 +28,8 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 	
 	FlowGraph flowGraph = createCFG(methodAST);
 	Graph[int] postDominator = createPDT(flowGraph);
-	Graph[int] controlDependence = createCDG(flowGraph.edges, postDominator, getDominations());
-	
-	for(exitNode <- flowGraph.exitNodes) {
-		controlDependence += <exitNode, EXITNODE>;
-	}
+	Graph[int] controlDependence = createCDG(flowGraph, postDominator);
+	controlDependence -= <ENTRYNODE, STARTNODE>;
 	
 	render(graph(createBoxes(controlDependence), createEdges(controlDependence), hint("layered"), gap(50)));
 }
@@ -66,8 +63,7 @@ private Figures createBoxes(Graph[int] tree) {
 					onMouseDown(goToSource(location)));
 	}
 	
-	boxes += box(text("EXIT"), id("<EXITNODE>"), size(50), fillColor("lightblue"));
-	boxes += box(text("START"), id("<STARTNODE>"), size(50), fillColor("lightblue"));
+	boxes += box(text("ENTRY"), id("<ENTRYNODE>"), size(50), fillColor("lightblue"));
 	
 	return boxes;
 }

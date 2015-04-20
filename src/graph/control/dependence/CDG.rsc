@@ -15,51 +15,56 @@ private map[int, int] getImmediatePostDominators(Graph[int] postDominator) {
 	return immediatePostDominators;
 }
 
-public Graph[int] createCDG(Graph[int] controlFlow, Graph[int] postDominator, map[int, set[int]] dominations) {
-	Graph[int] controlDependenceGraph = {};
+private Graph[int] augmentFlowGraph(FlowGraph controlFlow) {
+	Graph[int] augmentedGraph = controlFlow.edges;
 	
-	map[int, int] immediatePostDominators = getImmediatePostDominators(postDominator);
+	augmentedGraph += { <STARTNODE, controlFlow.entryNode> };
+	
+	for(exitNode <- controlFlow.exitNodes) {
+		augmentedGraph += { <exitNode, EXITNODE> };
+	}
+	
+	augmentedGraph += { <ENTRYNODE, STARTNODE>, <ENTRYNODE, EXITNODE> };
+	
+	return augmentedGraph;
+}
+
+public Graph[int] createCDG(FlowGraph controlFlow, Graph[int] postDominator) {
+	Graph[int] controlDependenceGraph = {};
+	Graph[int] augmentedGraph = augmentFlowGraph(controlFlow);
+	
 	map[int, set[int]] dependencies = ();
 	
-	for(treeNode <- carrier(controlFlow)) {
+	for(treeNode <- carrier(augmentedGraph)) {
 		dependencies[treeNode] = {};
 	}
 	
-	dependencies[STARTNODE] = {};
-	dependencies[EXITNODE] = {};
+	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, from notin reach(postDominator, { to }) - { to } };
 	
-	for(treeNode <- carrier(controlFlow)) {
-		int idom = immediatePostDominators[treeNode];
-		set[int] exclusiveReach = reachX(controlFlow, { treeNode }, { idom }) - { treeNode };
+	for(<from, to> <- inspectionEdges) {
+		int idom = getOneFrom(predecessors(postDominator, from));
+		list[int] pathNodes = shortestPathPair(postDominator, idom, to) - idom;
 		
-		for(reachableNode <- exclusiveReach) {
-			set[int] reachables = { reachableNode } + reachR(controlFlow, { treeNode }, { treeNode } + dominations[reachableNode]);
-
-			for(reachable <- reachables) {
-				dependencies[reachable] += { treeNode };
-			}
+		for(dependency <- pathNodes, dependency != from) {
+			dependencies[dependency] += { from };
 		}
-	}		
+	}
 	
-	for(treeNode <- carrier(controlFlow)) {
-		bool foundDirectDependency = false;
+	for(treeNode <- carrier(augmentedGraph) - { STARTNODE, EXITNODE, ENTRYNODE }) {
+		bool foundDependency = false;
 		
 		for(dependency <- dependencies[treeNode]) {
-			if(dependencies[dependency] == dependencies[treeNode] - dependency) {
+			if(size(dependencies[treeNode]) == 1 || dependencies[dependency] == dependencies[treeNode] - dependency) {
 				controlDependenceGraph += <dependency, treeNode>;
-				foundDirectDependency = true;
+				foundDependency = true;
 				break;
 			}
 		}
 		
-		// Top nodes are only dependant on the start node.
-		if(!foundDirectDependency) {
-			controlDependenceGraph += <STARTNODE, treeNode>;
+		if(!foundDependency) {
+			controlDependenceGraph += <ENTRYNODE, treeNode>;
 		}
 	}
-	
-	println(immediatePostDominators);
-	println(dependencies);
 	
 	return controlDependenceGraph;
 }

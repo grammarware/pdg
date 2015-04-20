@@ -10,7 +10,7 @@ import extractors::Project;
 import graph::control::flow::CFG;
 import graph::control::DataStructures;
 
-@doc { 
+@doc {
 	To run a test:
 		displayControlFlowGraph(|project://pdg-JavaTest|, "testCDG");
 }
