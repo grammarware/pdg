@@ -26,6 +26,10 @@ private int getIdentifier() {
 	return identifier;
 }
 
+public map[int, node] getNodeEnvironment() {
+	return nodeEnvironment;
+}
+
 public set[int] getNodeIdentifiers() {
 	return domain(nodeEnvironment);
 }
@@ -179,22 +183,6 @@ private FlowGraph connectFlowGraphs(list[FlowGraph] flowGraphs) {
 
 private Graph[int] createConnectionEdges(FlowGraph first, FlowGraph second) {
 	return first.exitNodes * {second.entryNode};
-}
-
-test bool testConnector() {
-	Graph[int] firstFlow = { <0, 1> };
-	Graph[int] secondFlow = { <2, 3> };
-	Graph[int] thirdFlow = { <4, 5>, <5, 6>	};
-	
-	list[FlowGraph] graphs = [
-		FlowGraph(firstFlow, 0, {0, 1}),
-		FlowGraph(secondFlow, 2, {3}),
-		FlowGraph(thirdFlow, 4, {6})
-	];
-	
-	println(connectFlowGraphs(graphs));
-	
-	return true;
 }
 
 private FlowGraph processBlock(list[Statement] body) {
@@ -539,4 +527,24 @@ private FlowGraph processThrow(int identifier, Statement throwNode) {
 
 private FlowGraph processStatement(int identifier, Statement statement) {
 	return FlowGraph({}, identifier, {identifier});
+}
+
+
+/*********
+ * Tests *
+ *********/
+test bool testConnector() {
+	Graph[int] firstFlow = { <0, 1> };
+	Graph[int] secondFlow = { <2, 3> };
+	Graph[int] thirdFlow = { <4, 5>, <5, 6>	};
+	
+	list[FlowGraph] graphs = [
+		FlowGraph(firstFlow, 0, {0, 1}),
+		FlowGraph(secondFlow, 2, {3}),
+		FlowGraph(thirdFlow, 4, {6})
+	];
+	
+	println(connectFlowGraphs(graphs));
+	
+	return true;
 }
