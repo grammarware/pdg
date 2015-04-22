@@ -32,6 +32,22 @@ public set[int] getContinueNodes() {
 	return continues;
 }
 
+// Register throw nodes, for post-process binding.
+set[int] throwNodes = {};
+set[int] parentThrowNodes = {};
+
+public void addThrowNode(int identifier) {
+	throwNodes += {identifier};
+}
+
+public set[int] getThrowNodes() {
+	set[int] throwss = throwNodes;
+	
+	throwNodes = {};
+	
+	return throwss;
+}
+
 // Register return nodes, for post-process binding.
 set[int] returnNodes = {};
 
@@ -47,16 +63,21 @@ public set[int] getReturnNodes() {
 	return returns;
 }
 
+
+
 // Scoping functions to account for block scope.
 public void scopeDown() {
 	parentBreakNodes = breakNodes;
 	parentContinueNodes = continueNodes;
+	parentThrowNodes = throwNodes;
 	
 	breakNodes = {};
 	continueNodes = {};
+	throwNodes = {};
 }
 
 public void scopeUp() {
 	breakNodes = parentBreakNodes;
 	continueNodes = parentContinueNodes;
+	throwNodes = parentThrowNodes;
 }

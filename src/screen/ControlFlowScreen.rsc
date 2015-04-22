@@ -6,9 +6,9 @@ import analysis::graphs::Graph;
 import vis::Figure;
 import vis::Render;
 
+import graph::DataStructures;
 import extractors::Project;
 import graph::control::flow::CFG;
-import graph::control::DataStructures;
 
 @doc {
 	To run a test:

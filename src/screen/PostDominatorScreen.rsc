@@ -11,9 +11,9 @@ import lang::java::m3::AST;
 
 import extractors::Project;
 
+import graph::DataStructures;
 import graph::control::PDT;
 import graph::control::flow::CFG;
-import graph::control::DataStructures;
 
 @doc {
 	To run a test:

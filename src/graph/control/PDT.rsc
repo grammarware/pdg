@@ -12,8 +12,8 @@ import analysis::graphs::Graph;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
+import graph::DataStructures;
 import graph::control::flow::CFG;
-import graph::control::DataStructures;
 
 private map[int, set[int]] dominates = ();
 private map[int, set[int]] dominatedBy = ();

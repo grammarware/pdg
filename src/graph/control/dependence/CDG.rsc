@@ -1,8 +1,8 @@
 module graph::control::dependence::CDG
 
 import Prelude;
+import graph::DataStructures;
 import analysis::graphs::Graph;
-import graph::control::DataStructures;
 
 private map[int, int] getImmediatePostDominators(Graph[int] postDominator) {
 	map[int, int] immediatePostDominators = ();

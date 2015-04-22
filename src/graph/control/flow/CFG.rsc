@@ -9,7 +9,7 @@ import lang::java::m3::AST;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
-import graph::control::DataStructures;
+import graph::DataStructures;
 import graph::control::flow::JumpEnvironment;
 
 // A counter to identify nodes.
@@ -49,6 +49,7 @@ public FlowGraph createCFG(node tree) {
 	FlowGraph controlFlowGraph = createControlFlowGraph(tree);
 	
 	controlFlowGraph.exitNodes += getReturnNodes();
+	controlFlowGraph.exitNodes += getThrowNodes();
 	
 	return controlFlowGraph;
 }
@@ -433,7 +434,7 @@ private bool isTryExit(int identifier) {
 			return false;
 		}
 		case throwNode: \throw(_): {
-			return false;
+			return true;
 		}
 		case Statement statement: {
 			return true;
@@ -461,6 +462,8 @@ private FlowGraph processTry(int identifier, Statement body, list[Statement] cat
 		}
 	}
 	
+	potentialThrows += getThrowNodes();
+	
 	list[FlowGraph] catchFlows = [];
 	
 	for(catchClause <- catchClauses) {
@@ -470,13 +473,20 @@ private FlowGraph processTry(int identifier, Statement body, list[Statement] cat
 	for(catchFlow <- catchFlows) {
 		tryFlow.edges += potentialThrows * {catchFlow.entryNode};
 		tryFlow.edges += catchFlow.edges;
+		tryFlow.exitNodes += catchFlow.exitNodes;
 	}
 	
 	return tryFlow;
 }
 
 private FlowGraph processTry(int identifier, Statement body, list[Statement] catchClauses, Statement finallyClause) {
+	FlowGraph tryFlow = processTry(identifier, body, catchClauses);
+	FlowGraph finallyFlow = createControlFlowGraph(finallyClause);
 	
+	tryFlow.edges += createConnectionEdges(tryFlow, finallyFlow);
+	tryFlow.exitNodes = finallyFlow.exitNodes;	
+	
+	return tryFlow;
 }
 
 private FlowGraph processCatch(int identifier, Declaration exception, Statement body) {
@@ -521,7 +531,7 @@ private FlowGraph processReturn(int identifier, Statement returnNode) {
 private FlowGraph processThrow(int identifier, Statement throwNode) {
 	FlowGraph throwFlow = FlowGraph({}, 0, {});
 	
-	addReturnNode(identifier);
+	addThrowNode(identifier);
 	throwFlow.entryNode = identifier;
 	
 	return throwFlow;

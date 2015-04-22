@@ -1,4 +1,4 @@
-module graph::control::DataStructures
+module graph::DataStructures
 
 import analysis::graphs::Graph;
 
