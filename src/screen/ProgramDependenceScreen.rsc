@@ -1,4 +1,4 @@
-module screen::DataDependenceScreen
+module screen::ProgramDependenceScreen
 
 import Prelude;
 import lang::java::jdt::m3::Core;
@@ -13,26 +13,29 @@ import extractors::Project;
 
 import graph::DataStructures;
 import graph::\data::DDG;
+import graph::control::PDT;
 import graph::control::flow::CFG;
+import graph::control::dependence::CDG;
 
 @doc {
 	To run a test:
-		displayDataDependenceGraph(|project://pdg-JavaTest|, "testPDT");
-		displayDataDependenceGraph(|project://pdg-JavaTest|, "testPDT2");
-		displayDataDependenceGraph(|project://QL|, "nextToken");
+		displayProgramDependenceGraph(|project://pdg-JavaTest|, "testPDG");
+		displayControlDependenceGraph(|project://pdg-JavaTest|, "testPDT2");
 }
-public void displayDataDependenceGraph(loc project, str methodName) {
+public void displayProgramDependenceGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
 	FlowGraph flowGraph = createCFG(methodAST);
+	Graph[int] postDominator = createPDT(flowGraph);
+	Graph[int] controlDependence = createCDG(flowGraph, postDominator);
+	controlDependence -= <ENTRYNODE, STARTNODE>;
 	
 	Graph[int] dataDependences = createDDG(flowGraph.edges, getNodeEnvironment());
-	list[Edge] graphEdges = createEdges(dataDependences, "green");
-	Figures graphBoxes = createBoxes(flowGraph.edges);
+	list[Edge] graphEdges = createEdges(controlDependence, "solid", "blue") + createEdges(dataDependences, "dash", "green");
 	
-	render(graph(graphBoxes, graphEdges, hint("layered"), gap(50)));
+	render(graph(createBoxes(controlDependence), graphEdges, hint("layered"), gap(50)));
 }
 
 private loc getMethodLocation(str methodName, M3 projectModel) {
@@ -45,11 +48,11 @@ private loc getMethodLocation(str methodName, M3 projectModel) {
 	return |file://methodDoesNotExist|;
 }
 
-private list[Edge] createEdges(Graph[int] tree, str color) {
+private list[Edge] createEdges(Graph[int] tree, str style, str color) {
 	list[Edge] edges = [];
 
 	for(graphEdge <- tree) {
-		edges += edge("<graphEdge.from>", "<graphEdge.to>", lineStyle("dash"), lineColor(color), toArrow(box(size(10), fillColor("black"))));
+		edges += edge("<graphEdge.from>", "<graphEdge.to>", lineStyle(style), lineColor(color), toArrow(box(size(10), fillColor("black"))));
 	}
 	
 	return edges;
