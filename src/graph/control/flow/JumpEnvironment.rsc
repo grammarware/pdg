@@ -79,5 +79,5 @@ public void scopeDown() {
 public void scopeUp() {
 	breakNodes = parentBreakNodes;
 	continueNodes = parentContinueNodes;
-	throwNodes = parentThrowNodes;
+	throwNodes += parentThrowNodes;
 }

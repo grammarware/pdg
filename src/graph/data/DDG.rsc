@@ -66,6 +66,11 @@ public Graph[int] createDDG(Graph[int] controlFlow, map[int, node] nodeEnvironme
 	
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
+			if(usedVariable notin definitions) {
+				dataDependenceGraph += <ENTRYNODE, identifier>;
+				continue;
+			}
+			
 			set[int] variableDefs = definitions[usedVariable];
 			for(dependency <- \in[identifier] & variableDefs) {
 				dataDependenceGraph += <dependency, identifier>;
@@ -118,41 +123,64 @@ private void storeKill(int statement, set[int] killSet) {
 	}
 }
 
+private void checkForUse(int identifier, Expression expression) {
+	if(\simpleName(name) := expression) {
+		storeUse(identifier, name);
+	} 
+}
+
+private void checkForDefinition(int identifier, Expression expression) {
+	if(\simpleName(name) := expression) {
+		storeDefinition(name, identifier);
+		storeGenerator(identifier, name);
+	} 
+}
+
 private void processStatement(int identifier, node statement) {
 	top-down-break visit(statement) {
 		case \if(condition, _): {
+			checkForUse(identifier, condition);
 			createDataDependenceGraph(identifier, condition);
 		}
 		case \if(condition, _, _): {
+			checkForUse(identifier, condition);
 			createDataDependenceGraph(identifier, condition);
 		}
 		case \for(initializers, updaters, _): {
 			for(initializer <- initializers) {
+				checkForDefinition(identifier, initializer);
 				createDataDependenceGraph(identifier, initializer);
 			}
 			
 			for(updater <- updaters) {
+				checkForUse(identifier, updater);
 				createDataDependenceGraph(identifier, updater);
 			}
 		}
 		case \for(initializers, condition, updaters, _): {
 			for(initializer <- initializers) {
+				checkForDefinition(identifier, initializer);
 				createDataDependenceGraph(identifier, initializer);
 			}
 			
+			checkForUse(identifier, condition);
 			createDataDependenceGraph(identifier, condition);
 			
 			for(updater <- updaters) {
+				checkForUse(identifier, updater);
 				createDataDependenceGraph(identifier, updater);
 			}
 		}
 		case \while(condition, _): {
+			checkForUse(identifier, condition);
 			createDataDependenceGraph(identifier, condition);
 		}
 		case \do(_, condition): {
+			checkForUse(identifier, condition);
 			createDataDependenceGraph(identifier, condition);
 		}
 		case \switch(expression, _): {
+			checkForUse(identifier, expression);
 			createDataDependenceGraph(identifier, expression);
 		}
 		case \try(_, _): {
@@ -165,9 +193,11 @@ private void processStatement(int identifier, node statement) {
     		return;
     	}
 		case \return(expression): {
+			checkForUse(identifier, expression);
 			createDataDependenceGraph(identifier, expression);
 		}
 		case \throw(expression): {
+			checkForUse(identifier, expression);
 			createDataDependenceGraph(identifier, expression);
 		}
 		case \expressionStatement(stmt) : {
@@ -193,20 +223,12 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \arrayInitializer(elements): {
 			throw "An array is initialized with: <elements>.";
 		}
-		case \assignment(lhs, operator, rhs): {
-			if(\simpleName(name) := lhs) {
-				storeDefinition(name, identifier);
-				storeGenerator(identifier, name);
-			}
-			
-			if(\simpleName(name) := rhs) {
-				storeUse(identifier, name);
-			}
+		case \assignment(lhs, _, rhs): {
+			checkForDefinition(identifier, lhs);
+			checkForUse(identifier, rhs);
 		}
-		case \cast(\type, expression): {
-			if(\simpleName(name) := expression) {
-				storeUse(identifier, name);
-			}
+		case \cast(_, expression): {
+			checkForUse(identifier, expression);
 		}
 		case \newObject(expr, \type, args, class): {
 			throw "Not implemented newObject(Expression, Type, Arguments, Class). <expr>, <\type>, <args>, <class>";
@@ -219,26 +241,16 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		}
     	case \newObject(\type, args): {
     		for(argument <- args) {
-    			if(\simpleName(name) := argument) {
-    				storeUse(identifier, name);
-    			} 
+    			checkForUse(identifier, argument);
     		}
     	}
     	case \qualifiedName(qualifier, expression): {
     		println("Not implemented qualifiedName(<qualifier>, <expression>).");
     	}
     	case \conditional(expression, thenBranch, elseBranch): {
-    		if(\simpleName(name) := expression) {
-    			storeUse(identifier, name);
-    		}
-    		
-    		if(\simpleName(name) := thenBranch) {
-    			storeUse(identifier, name);
-    		}
-    		
-    		if(\simpleName(name) := elseBranch) {
-    			storeUse(identifier, name);
-    		}
+    		checkForUse(identifier, expression);
+    		checkForUse(identifier, thenBranch);
+    		checkForUse(identifier, elseBranch);
     	}
 		case \fieldAccess(isSuper, expression, name): {
 			throw "Not implemented fieldAccess(<isSuper>, <expression>, <name>)";
@@ -251,16 +263,12 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		}
 		case \methodCall(_, _, arguments): {
 			for(argument <- arguments) {
-				if(\simpleName(name) := argument) {
-					storeUse(identifier, name);
-				}
+				checkForUse(identifier, argument);
 			}
 		}
 		case \methodCall(_, _, _, arguments): {
 			for(argument <- arguments) {
-				if(\simpleName(name) := argument) {
-					storeUse(identifier, name);
-				}
+				checkForUse(identifier, argument);
 			}
 		}
     	case \variable(name, extraDimensions): {
@@ -270,46 +278,33 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \variable(name, extraDimensions, initializer): {
 			storeDefinition(name, identifier);
 			storeGenerator(identifier, name);
+			
+			checkForUse(identifier, initializer);
 		}
 		case \bracket(expression): {
-			if(\simpleName(name) := expression) {
-				storeUse(identifier, name);
-			}
+			checkForUse(identifier, expression);
 		}
 		case \this(thisExpression): {
 			throw "Not implemented this(<thisExpression>)";
 		}
 		case \infix(lhs, _, rhs): {
-			if(\simpleName(name) := lhs) {
-				storeUse(identifier, name);
-			}
-			
-			if(\simpleName(name) := rhs) {
-				storeUse(identifier, name);
-			}
+			checkForUse(identifier, lhs);
+			checkForUse(identifier, rhs);
 		}
 		case \postfix(operand, _ ): {
-			if(\simpleName(name) := operand) {
-				storeUse(identifier, name);
-			}
+			checkForUse(identifier, operand);
 		}	
 		case \prefix(_, operand):{
-			if(\simpleName(name) := operand) {
-				storeUse(identifier, name);
-			}
+			checkForUse(identifier, operand);
 		}
 		case \methodCall(_, _, arguments): {
 			for(argument <- arguments) {
-				if(\simpleName(name) := argument) {
-					storeUse(identifier, name);
-				}
+				checkForUse(identifier, argument);
 			}
 		}
 		case \methodCall(_, _, _, arguments): {
 			for(argument <- arguments) {
-				if(\simpleName(name) := argument) {
-					storeUse(identifier, name);
-				}
+				checkForUse(identifier, argument);
 			}
 		}
 	}
