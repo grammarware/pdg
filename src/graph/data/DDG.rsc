@@ -91,34 +91,71 @@ private void createDataDependenceGraph(int identifier, node tree) {
 			println("An array is initialized with: <elements>.");
 		}
 		case \assignment(lhs, operator, rhs): {
-			println("Statement <identifier> with <operator> assigns to <lhs>.");
+			println("Statement <identifier> with <operator> assigns to <lhs>."); 
 		}
 		case \cast(\type, expression): {
 			println("Statement <identifier> casts <expression> to <\type>.");
 		}
 		case \newObject(expr, \type, args, class): {
-			println(expr);
+			throw "Not implemented newObject(Expression, Type, Arguments, Class). <expr>, <\type>, <args>, <class>";
 		}
 		case \newObject(expr, \type, args): {
-			println(expr);
+			throw "Not implemented newObject(Expression, Type, Arguments). <expr>, <\type>, <args>";
 		}
 		case \newObject(\type, args, class): {
-			println(args);
+			throw "Not implemented newObject(Type, Arguments, Class). <\type>, <args>, <class>";
 		}
     	case \newObject(\type, args): {
-    		println(args);
+    		// throw "Not implemented newObject(Type, Arguments). <\type>, <args>";
+    		for(argument <- args) {
+    			if(\simpleName(name) := argument) {
+    				println("Statement <identifier> uses <name>.");
+    			} 
+    		}
+    	}
+    	case \qualifiedName(qualifier, expression): {
+    		throw "Not implemented qualifiedName(<qualifier>, <expression>).";
+    	}
+    	case \conditional(expression, thenBranch, elseBranch): {
+    		throw "Not implemented conditional(<expression>, <thenBranch>, <elseBranch>)";
     	}
 		case \fieldAccess(isSuper, expression, name): {
-			println("Field accessed with <expression> and name <name>.");
+			throw "Not implemented fieldAccess(<isSuper>, <expression>, <name>)";
 		}
 		case \fieldAccess(isSuper, name): {
-			println("Field <name> accessed.");
+			throw "Not implemented fieldAccess(<isSuper>, <name>)";
+		}
+		case \instanceof(leftSide, rightSide): {
+			throw "Not implemented instanceof(<leftSide>, <rightSide>)";
+		}
+		case \methodCall(_, _, arguments): {
+			for(argument <- arguments) {
+				if(\simpleName(name) := argument) {
+					println("Statement <identifier> uses <name>.");
+				}
+			}
+		}
+		case \methodCall(_, _, _, arguments): {
+			for(argument <- arguments) {
+				if(\simpleName(name) := argument) {
+					println("Statement <identifier> uses <name>.");
+				}
+			}
 		}
     	case \variable(name, extraDimensions): {
 			println("Statement <identifier> defines <name>.");
 		}
 		case \variable(name, extraDimensions, initializer): {
 			println("Statement <identifier> defines <name>.");
+		}
+		case \bracket(expression): {
+			// throw "Not implemented bracket(<expression>)";
+			if(\simpleName(name) := expression) {
+				println("Statement <identifier> uses <name>.");
+			}
+		}
+		case \this(thisExpression): {
+			throw "Not implemented this(<thisExpression>)";
 		}
 		case \infix(lhs, _, rhs): {
 			if(\simpleName(name) := lhs) {
@@ -135,20 +172,15 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \prefix(operator, operand):{
 			println("Statement <identifier> uses <operand>.");
 		}
-		case \methodCall(_, _, arguments): {
-			for(argument <- arguments) {
-				if(\simpleName(name) := argument) {
-					println("Statement <identifier> uses <name>.");
-				}
-			}
+		case \normalAnnotation(typeName, memberValuePairs): {
+			throw "Not implemented normalAnnotation(<typeName>, <memberValuePairs>)";
 		}
-		case \methodCall(_, _, _, arguments): {
-			for(argument <- arguments) {
-				if(\simpleName(name) := argument) {
-					println("Statement <identifier> uses <name>.");
-				}
-			}
-		}
+    	case \memberValuePair(name, \value): {
+    		throw "Not implemented memberValuePair(<name>, <\value>)";
+    	}             
+    	case \singleMemberAnnotation(typeName, \value): {
+    		throw "Not implemented singleMemberAnnotation(<typeName>, <\value>)";
+    	}
 	}
 }
 
