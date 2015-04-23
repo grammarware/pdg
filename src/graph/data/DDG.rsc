@@ -9,8 +9,17 @@ import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
 
+map[str, set[int]] defintions = ();
+map[int, set[str]] generators = ();
+map[int, set[str]] kills = ();
+map[int, set[str]] uses = ();
+
 public void createDDG(map[int, node] nodeEnvironment) {
 	for(identifier <- domain(nodeEnvironment)) {
+		definitions[identifier] = {};
+		generators[identifier] = {};
+		kills[identifier] = {};
+		uses[identifier] = {};
 		processStatement(identifier, nodeEnvironment[identifier]);
 	}
 }
@@ -79,6 +88,7 @@ private void processStatement(int identifier, node statement) {
 private void createDataDependenceGraph(int identifier, node tree) {
 	visit(tree) {
 		case \arrayAccess(array, index): {
+			uses[identifier] += index;
 			println("Array <array> accessed at <index>");
 		}
 		case \newArray(\type, dimensions, init): {
@@ -91,9 +101,20 @@ private void createDataDependenceGraph(int identifier, node tree) {
 			println("An array is initialized with: <elements>.");
 		}
 		case \assignment(lhs, operator, rhs): {
+			if(\simpleName(name) := lhs) {
+				definitions[identifier] += name;
+				generators[identifier] += mame;
+			}
+			
+			if(\simpleName(name) := rhs) {
+				uses[identifier] += name;
+			}
 			println("Statement <identifier> with <operator> assigns to <lhs>."); 
 		}
 		case \cast(\type, expression): {
+			if(\simpleName(name) := expression) {
+				uses[identifier] += name;
+			}
 			println("Statement <identifier> casts <expression> to <\type>.");
 		}
 		case \newObject(expr, \type, args, class): {
@@ -172,15 +193,20 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \prefix(operator, operand):{
 			println("Statement <identifier> uses <operand>.");
 		}
-		case \normalAnnotation(typeName, memberValuePairs): {
-			throw "Not implemented normalAnnotation(<typeName>, <memberValuePairs>)";
+		case \methodCall(_, _, arguments): {
+			for(argument <- arguments) {
+				if(\simpleName(name) := argument) {
+					println("Statement <identifier> uses <name>.");
+				}
+			}
 		}
-    	case \memberValuePair(name, \value): {
-    		throw "Not implemented memberValuePair(<name>, <\value>)";
-    	}             
-    	case \singleMemberAnnotation(typeName, \value): {
-    		throw "Not implemented singleMemberAnnotation(<typeName>, <\value>)";
-    	}
+		case \methodCall(_, _, _, arguments): {
+			for(argument <- arguments) {
+				if(\simpleName(name) := argument) {
+					println("Statement <identifier> uses <name>.");
+				}
+			}
+		}
 	}
 }
 
