@@ -78,16 +78,6 @@ public Graph[int] createDDG(Graph[int] controlFlow, map[int, node] nodeEnvironme
 		}
 	}
 	
-	println("Uses: <uses>");
-	println("Kills: <kills>");
-	println("Generators: <generators>");
-	println("Definitions: <definitions>");
-	println("");
-	println("In: <\in>");
-	println("Out: <\out>");
-	println("");
-	println("Data dependences: <dataDependenceGraph>");
-	
 	return dataDependenceGraph;
 }
 
@@ -212,13 +202,26 @@ private void processStatement(int identifier, node statement) {
 private void createDataDependenceGraph(int identifier, node tree) {
 	visit(tree) {
 		case \arrayAccess(array, index): {
-			throw "Array access not implemented. <array>, <index>.";
+			checkForUse(identifier, array);
+			checkForUse(identifier, index);
+			
+			if(\simpleName(name) := array) {
+				if(\simpleName(_) := index) {
+					storeUse(identifier, "<name>[variable]");
+				}
+				
+				if(\number(numberValue) := index) {
+					storeUse(identifier, "<name>[<numberValue>]");
+				}
+			}
 		}
 		case \newArray(\type, dimensions, init): {
 			throw "Array with <\type> created. Dimensions: <dimensions>. Initialization: <init>.";
 		}
 		case \newArray(\type, dimensions): {
-			throw "Array with <\type> created. Dimensions: <dimensions>.";
+			for(dimension <- dimensions) {
+				checkForUse(identifier, dimension);
+			}
 		}
 		case \arrayInitializer(elements): {
 			throw "An array is initialized with: <elements>.";
@@ -226,6 +229,18 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \assignment(lhs, _, rhs): {
 			checkForDefinition(identifier, lhs);
 			checkForUse(identifier, rhs);
+			
+			if(\arrayAccess(\simpleName(name), index) := lhs) {
+				if(\simpleName(_) := index) {
+					storeDefinition("<name>[variable]", identifier);
+					storeGenerator(identifier, "<name>[variable]");
+				}
+				
+				if(\number(numberValue) := index) {
+					storeDefinition("<name>[<numberValue>]", identifier);
+					storeGenerator(identifier, "<name>[<numberValue>]");
+				}
+			}
 		}
 		case \cast(_, expression): {
 			checkForUse(identifier, expression);
@@ -308,12 +323,4 @@ private void createDataDependenceGraph(int identifier, node tree) {
 			}
 		}
 	}
-}
-
-public &T cast(type[&T] tp, value v) throws str {
-    if (&T tv := v) {
-        return tv;
-    } else {
-        throw "cast failed";
-    }
 }
