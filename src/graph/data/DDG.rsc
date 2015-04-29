@@ -63,7 +63,7 @@ public Graph[int] createDDG(Graph[int] controlFlow, map[int, node] nodeEnvironme
 	}
 		
 	Graph[int] dataDependenceGraph = {};
-	
+
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
 			if(usedVariable notin definitions) {

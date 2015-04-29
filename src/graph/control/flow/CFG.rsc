@@ -142,6 +142,14 @@ private FlowGraph createControlFlowGraph(node tree) {
 			identifier = storeNode(throwNode);
 			flowGraph = processThrow(identifier, throwNode);
 		}
+		case statementNode: \expressionStatement(Expression stmt): {
+			identifier = storeNode(statementNode);
+			flowGraph = processStatement(identifier, statementNode);
+				
+			if(\assignment(lhs, operator, rhs) := stmt) {
+				println(stmt);
+			}
+		}
 		case Statement statement: {
 			identifier = storeNode(statement);
 			flowGraph = processStatement(identifier, statement);
