@@ -10,6 +10,8 @@ import graph::DataStructures;
 import extractors::Project;
 import graph::control::flow::CFG;
 
+set[loc] generatedMethods = {};
+
 @doc { 
 	To run a test:
 		displayControlFlowGraph(|project://pdg-JavaTest|, "testCDG");
@@ -19,29 +21,47 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	FlowGraph startFlowGraph = createCFG(methodAST, 0);
+	MethodData methodData = emptyMethodData();
+	methodData.name = methodName;
+	methodData.abstractTree = methodAST;
+	methodData = createCFG(methodData, 0);
 	
-	int maxIdentifier = max(environmentDomain(startFlowGraph));
-	list[FlowGraph] flowGraphs = [startFlowGraph];
+	int maxIdentifier = max(environmentDomain(methodData)) + 1;
+	list[MethodData] methodCollection = [methodData];
 	
-	for(calledMethod <- startFlowGraph.calledMethods) {
-		methodAST = getMethodASTEclipse(calledMethod, model = projectModel);
-		
-		flowGraph = createCFG(methodAST, maxIdentifier);
-		flowGraphs += flowGraph;
-		
-		maxIdentifier = max(environmentDomain(flowGraph));
-	}
+	generatedMethods = { methodLocation };
+	methodCollection += getCalledMethods(methodData.calledMethods, maxIdentifier, projectModel);	
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
-	for(flow <- flowGraphs) {
-		edges += createEdges(flow);
-		boxes += createBoxes(flow);
+	for(method <- methodCollection) {
+		edges += createEdges(method.controlFlow);
+		boxes += createBoxes(method);
 	}
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
+}
+
+
+private list[MethodData] getCalledMethods(set[loc] calledMethods, int startIdentifier, M3 projectModel) {
+	int maxIdentifier = startIdentifier;
+	list[MethodData] methodCollection = [];
+	
+	MethodData methodData = emptyMethodData();
+	
+	for(calledMethod <- calledMethods, calledMethod in getM3Methods(projectModel), calledMethod notin generatedMethods) {
+		methodData.abstractTree = getMethodASTEclipse(calledMethod, model = projectModel);
+		
+		methodData = createCFG(methodData, maxIdentifier);
+		methodCollection += methodData;
+		generatedMethods += calledMethod;
+		
+		maxIdentifier = max(environmentDomain(methodData)) + 1;
+		methodCollection += getCalledMethods(methodData.calledMethods, maxIdentifier, projectModel);
+	}
+	
+	return methodCollection;
 }
 
 private loc getMethodLocation(str methodName, M3 projectModel) {
@@ -54,31 +74,22 @@ private loc getMethodLocation(str methodName, M3 projectModel) {
 	return |file://methodDoesNotExist|;
 }
 
-private list[Edge] createEdges(FlowGraph flowGraph) {
+private list[Edge] createEdges(ControlFlow controlFlow) {
 	list[Edge] edges = [];
 
-	for(graphEdge <- flowGraph.edges) {
+	for(graphEdge <- controlFlow.graph) {
 		edges += edge("<graphEdge.from>", "<graphEdge.to>", toArrow(box(size(10), fillColor("black"))));
-	}
-	
-	edges += edge("ENTRY", "<flowGraph.entryNode>", toArrow(box(size(10), fillColor("black"))));
-	
-	for(exitNode <- flowGraph.exitNodes) {
-		edges += edge("<exitNode>", "EXIT", toArrow(box(size(10), fillColor("black"))));
 	}
 	
 	return edges;
 }
 
-private Figures createBoxes(FlowGraph flowGraph) {
+private Figures createBoxes(MethodData methodData) {
 	Figures boxes = [];
 	
-	for(treeNode <- environmentDomain(flowGraph)) {
-		boxes += box(text("<treeNode>: <nodeName(flowGraph, treeNode)>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
+	for(treeNode <- environmentDomain(methodData)) {
+		boxes += box(text("<treeNode>: <nodeName(methodData, treeNode)>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
 	}
-	
-	boxes += box(text("Entry"), id("ENTRY"), size(50), fillColor("lightblue"));
-	boxes += box(text("Exit"), id("EXIT"), size(50), fillColor("lightblue"));
 	
 	return boxes;
 }

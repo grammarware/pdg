@@ -28,19 +28,26 @@ private int getIdentifier() {
 	return identifier;
 }
 
-public FlowGraph createCFG(node tree, int startIdentifier) {
+public MethodData createCFG(MethodData methodData, int startIdentifier) {
 	calledMethods = {};
 	nodeEnvironment = ();
 	nodeIdentifier = startIdentifier;
 	
-	FlowGraph controlFlowGraph = createControlFlowGraph(tree);
+	ControlFlow controlFlow = createControlFlow(methodData.abstractTree);
+	controlFlow.exitNodes += getReturnNodes();
+	controlFlow.exitNodes += getThrowNodes();
 	
-	controlFlowGraph.exitNodes += getReturnNodes();
-	controlFlowGraph.exitNodes += getThrowNodes();
-	controlFlowGraph.calledMethods = calledMethods;
-	controlFlowGraph.nodeEnvironment = nodeEnvironment;
+	if(\method(_, name, parameters, _, _) := methodData.abstractTree) {
+		println(name);
+	}
 	
-	return controlFlowGraph;
+	methodData.calledMethods = calledMethods;
+	methodData.nodeEnvironment = nodeEnvironment;
+	methodData.controlFlow = controlFlow;
+	
+	resetJumps();
+	
+	return methodData;
 }
 
 private int storeNode(node treeNode) {
@@ -51,234 +58,229 @@ private int storeNode(node treeNode) {
 	return identifier;
 }
 
-private FlowGraph createControlFlowGraph(node tree) {
-	FlowGraph flowGraph;
+private ControlFlow createControlFlow(node tree) {
+	ControlFlow controlFlow;
 	int identifier;
 	
 	top-down-break visit(tree) {
 		case blockNode: \block(body): {
-			flowGraph = processBlock(body); 
+			controlFlow = processBlock(body); 
 		}
 		case ifNode: \if(condition, thenBranch): {
 			identifier = storeNode(ifNode);
-			flowGraph = processIf(identifier, condition, thenBranch);
+			controlFlow = processIf(identifier, condition, thenBranch);
 		}
 		case ifNode: \if(condition, thenBranch, elseBranch): {
 			identifier = storeNode(ifNode);
-			flowGraph = processIfElse(identifier, condition, thenBranch, elseBranch);
+			controlFlow = processIfElse(identifier, condition, thenBranch, elseBranch);
 		}
 		case forNode: \for(_, _, _): {
 			identifier = storeNode(forNode);
-			flowGraph = processFor(identifier, forNode);
+			controlFlow = processFor(identifier, forNode);
 		}
 		case forNode: \for(_, _, _, _): {
 			identifier = storeNode(forNode);
-			flowGraph = processFor(identifier, forNode);
+			controlFlow = processFor(identifier, forNode);
 		}
 		case whileNode: \while(condition, body): {
 			identifier = storeNode(whileNode);
-			flowGraph = processWhile(identifier, condition, body);
+			controlFlow = processWhile(identifier, condition, body);
 		}
 		case doNode: \do(body, condition): {
 			identifier = storeNode(doNode);
-			flowGraph = processDoWhile(identifier, body, condition);
+			controlFlow = processDoWhile(identifier, body, condition);
 		}
 		case switchNode: \switch(expression, statements): {
 			identifier = storeNode(switchNode);
-			flowGraph = processSwitch(identifier, expression, statements);
+			controlFlow = processSwitch(identifier, expression, statements);
 		}
 		case tryNode: \try(body, catchClauses): {
 			identifier = storeNode(tryNode);
-			flowGraph = processTry(identifier, body, catchClauses);
+			controlFlow = processTry(identifier, body, catchClauses);
 		}
     	case tryNode: \try(body, catchClauses, finalClause): {
     		identifier = storeNode(tryNode);
-    		flowGraph = processTry(identifier, body, catchClauses, finalClause);
+    		controlFlow = processTry(identifier, body, catchClauses, finalClause);
     	}
     	case catchNode: \catch(exception, body): {
     		identifier = storeNode(catchNode);
-    		flowGraph = processCatch(identifier, exception, body);
+    		controlFlow = processCatch(identifier, exception, body);
     	}
 		case breakNode: \break(): {
 			identifier = storeNode(breakNode);
-			flowGraph = processBreak(identifier, breakNode);
+			controlFlow = processBreak(identifier, breakNode);
 		}
 		case breakNode: \break(_): {
 			identifier = storeNode(breakNode);
-			flowGraph = processBreak(identifier, breakNode);
+			controlFlow = processBreak(identifier, breakNode);
 		}
 		case continueNode: \continue(): {
 			identifier = storeNode(continueNode);
-			flowGraph = processContinue(identifier, continueNode);
+			controlFlow = processContinue(identifier, continueNode);
 		}
 		case continueNode: \continue(_): {
 			identifier = storeNode(continueNode);
-			flowGraph = processContinue(identifier, continueNode);
+			controlFlow = processContinue(identifier, continueNode);
 		}
 		case returnNode: \return(): {
 			identifier = storeNode(returnNode);
-			flowGraph = processReturn(identifier, returnNode);
+			controlFlow = processReturn(identifier, returnNode);
 		}
 		case returnNode: \return(expression): {
-			flowGraph = registerMethodCalls(expression);
+			list[ControlFlow] callsites = registerMethodCalls(expression);
 			
 			identifier = storeNode(returnNode);
-			flowGraph = connectFlowGraphs([flowGraph, processReturn(identifier, returnNode)]);
+			controlFlow = connectControlFlows(callsites + processReturn(identifier, returnNode));
 		}
 		case throwNode: \throw(_): {
 			identifier = storeNode(throwNode);
-			flowGraph = processThrow(identifier, throwNode);
+			controlFlow = processThrow(identifier, throwNode);
 		}
 		case statementNode: \expressionStatement(Expression stmt): {
-			flowGraph = registerMethodCalls(stmt);
+			list[ControlFlow] callsites = registerMethodCalls(stmt);
 			
 			identifier = storeNode(statementNode);
-			flowGraph = connectFlowGraphs([flowGraph, processStatement(identifier, statementNode)]);
+			controlFlow = connectControlFlows(callsites + processStatement(identifier, statementNode));
 		}
 		case Statement statement: {
 			identifier = storeNode(statement);
-			flowGraph = processStatement(identifier, statement);
+			controlFlow = processStatement(identifier, statement);
 		}
 	}
 	
-	return flowGraph;
+	return controlFlow;
 }
 
-private FlowGraph registerMethodCalls(Expression expression) {
-	list[FlowGraph] callsites = [];
-	FlowGraph callsite;
-	
+private list[ControlFlow] registerMethodCalls(Expression expression) {
+	list[ControlFlow] callsites = [];
 	int identifier;
 	
 	visit(expression) {
 		case callNode: \methodCall(isSuper, name, arguments): {
 			identifier = storeNode(callNode);
-			callsite = FlowGraph({}, identifier, {identifier}, {}, ());
-			callsites += callsite;
-			
+
+			callsites += ControlFlow({}, identifier, {identifier});
 			calledMethods += callNode@decl;
 		}
     	case callNode: \methodCall(isSuper, receiver, name, arguments): {
     		identifier = storeNode(callNode);
-			callsite = FlowGraph({}, identifier, {identifier});
 			
-			callsites += callsite;
-			
+			callsites += ControlFlow({}, identifier, {identifier});
 			calledMethods += callNode@decl;
     	}
 	}
 	
-	return connectFlowGraphs(callsites);
+	return callsites;
 }
 
-private FlowGraph connectFlowGraphs(list[FlowGraph] flowGraphs) {
-	tuple[FlowGraph popped, list[FlowGraph] rest] popTuple = pop(flowGraphs);
+private ControlFlow connectControlFlows(list[ControlFlow] controlFlows) {
+	tuple[ControlFlow popped, list[ControlFlow] rest] popTuple = pop(controlFlows);
 	
-	FlowGraph first = popTuple.popped;
-	FlowGraph connectedFlowGraph = first;
+	ControlFlow first = popTuple.popped;
+	ControlFlow connectedControlFlow = first;
 	
 	if(size(popTuple.rest) >= 2) {
 		popTuple = pop(popTuple.rest);
-		FlowGraph second = popTuple.popped;
+		ControlFlow second = popTuple.popped;
 		
-		connectedFlowGraph.edges = first.edges 
-							+ second.edges 
+		connectedControlFlow.graph = first.graph
+							+ second.graph 
 							+ createConnectionEdges(first, second);
 	
-		FlowGraph successorGraph = connectFlowGraphs(popTuple.rest);
-		connectedFlowGraph.edges = connectedFlowGraph.edges 
-							+ successorGraph.edges 
+		ControlFlow successorGraph = connectControlFlows(popTuple.rest);
+		connectedControlFlow.graph = connectedControlFlow.graph
+							+ successorGraph.graph 
 							+ createConnectionEdges(second, successorGraph);
-		connectedFlowGraph.exitNodes = successorGraph.exitNodes;
+		connectedControlFlow.exitNodes = successorGraph.exitNodes;
 	} else if(size(popTuple.rest) >= 1) {
 		popTuple = pop(popTuple.rest);
-		connectedFlowGraph.edges = connectedFlowGraph.edges
-							+ popTuple.popped.edges 
-							+ createConnectionEdges(connectedFlowGraph, popTuple.popped);
-		connectedFlowGraph.exitNodes = popTuple.popped.exitNodes;
+		connectedControlFlow.graph = connectedControlFlow.graph
+							+ popTuple.popped.graph
+							+ createConnectionEdges(connectedControlFlow, popTuple.popped);
+		connectedControlFlow.exitNodes = popTuple.popped.exitNodes;
 	}
 	
-	return connectedFlowGraph;
+	return connectedControlFlow;
 }
 
-private Graph[int] createConnectionEdges(FlowGraph first, FlowGraph second) {
+private Graph[int] createConnectionEdges(ControlFlow first, ControlFlow second) {
 	return first.exitNodes * {second.entryNode};
 }
 
-private FlowGraph processBlock(list[Statement] body) {
-	list[FlowGraph] flowGraphs = [];
+private ControlFlow processBlock(list[Statement] body) {
+	list[ControlFlow] controlFlows = [];
 	
 	for(statement <- body) {
-		flowGraphs += createControlFlowGraph(statement);
+		controlFlows += createControlFlow(statement);
 	}
 	
-	return connectFlowGraphs(flowGraphs);
+	return connectControlFlows(controlFlows);
 }
 
-private FlowGraph createConditionalBranchFlow(Statement branch) {
+private ControlFlow createConditionalBranchFlow(Statement branch) {
 	if(\block(body) := branch) {
 		return processBlock(body);
 	}
 	
-	return createControlFlowGraph(branch);
+	return createControlFlow(branch);
 }
 
-private FlowGraph processIf(int identifier, Expression condition, Statement thenBranch) {
-	FlowGraph ifFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processIf(int identifier, Expression condition, Statement thenBranch) {
+	ControlFlow ifFlow = ControlFlow({}, 0, {});
 	
 	ifFlow.entryNode = identifier;
 	// The condition is an exit node on false.
 	ifFlow.exitNodes += {identifier};
 	
-	FlowGraph thenFlow = createConditionalBranchFlow(thenBranch);
+	ControlFlow thenFlow = createConditionalBranchFlow(thenBranch);
 	
-	ifFlow.edges += thenFlow.edges + createConnectionEdges(ifFlow, thenFlow);
+	ifFlow.graph += thenFlow.graph + createConnectionEdges(ifFlow, thenFlow);
 	ifFlow.exitNodes += thenFlow.exitNodes;
 	
 	return ifFlow;
 }
 
-private FlowGraph processIfElse(int identifier, Expression condition, Statement thenBranch, Statement elseBranch) {
-	FlowGraph ifElseFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processIfElse(int identifier, Expression condition, Statement thenBranch, Statement elseBranch) {
+	ControlFlow ifElseFlow = ControlFlow({}, 0, {});
 	
 	ifElseFlow.entryNode = identifier;
 	// The condition is an exit node on false.
 	ifElseFlow.exitNodes += {identifier};
 	
-	FlowGraph thenFlow = createConditionalBranchFlow(thenBranch);
+	ControlFlow thenFlow = createConditionalBranchFlow(thenBranch);
 	
-	ifElseFlow.edges += thenFlow.edges + createConnectionEdges(ifElseFlow, thenFlow);
+	ifElseFlow.graph += thenFlow.graph + createConnectionEdges(ifElseFlow, thenFlow);
 	
-	FlowGraph elseFlow = createConditionalBranchFlow(elseBranch);
+	ControlFlow elseFlow = createConditionalBranchFlow(elseBranch);
 	
-	ifElseFlow.edges += elseFlow.edges + createConnectionEdges(ifElseFlow, elseFlow);
+	ifElseFlow.graph += elseFlow.graph + createConnectionEdges(ifElseFlow, elseFlow);
 	ifElseFlow.exitNodes += elseFlow.exitNodes + thenFlow.exitNodes;
 	ifElseFlow.exitNodes -= {identifier};
 	
 	return ifElseFlow;
 }
 
-private FlowGraph processFor(int identifier, Statement forNode) {
-	FlowGraph forFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processFor(int identifier, Statement forNode) {
+	ControlFlow forFlow = ControlFlow({}, 0, {});
 	
 	forFlow.entryNode = identifier;
 	forFlow.exitNodes += {identifier};
 	
-	FlowGraph bodyFlow;
+	ControlFlow bodyFlow;
 	
 	scopeDown();
 	
 	if(\for(_, _, _,body) := forNode) {
-		bodyFlow = createControlFlowGraph(body);
+		bodyFlow = createControlFlow(body);
 	} else if(\for(_, _, body) := forNode) {
-		bodyFlow = createControlFlowGraph(body);
+		bodyFlow = createControlFlow(body);
 	}
 	
 	bodyFlow.exitNodes += getContinueNodes();
 	
-	forFlow.edges += bodyFlow.edges;
-	forFlow.edges += createConnectionEdges(forFlow, bodyFlow);
-	forFlow.edges += createConnectionEdges(bodyFlow, forFlow);
+	forFlow.graph += bodyFlow.graph;
+	forFlow.graph += createConnectionEdges(forFlow, bodyFlow);
+	forFlow.graph += createConnectionEdges(bodyFlow, forFlow);
 		
 	forFlow.exitNodes += getBreakNodes();
 	
@@ -287,20 +289,20 @@ private FlowGraph processFor(int identifier, Statement forNode) {
 	return forFlow;
 }
 
-private FlowGraph processWhile(int identifier, Expression condition, Statement body) {
-	FlowGraph whileFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processWhile(int identifier, Expression condition, Statement body) {
+	ControlFlow whileFlow = ControlFlow({}, 0, {});
 	
 	whileFlow.entryNode = identifier;
 	whileFlow.exitNodes += {identifier};
 	
 	scopeDown();
 	
-	FlowGraph bodyFlow = createControlFlowGraph(body);
+	ControlFlow bodyFlow = createControlFlow(body);
 	bodyFlow.exitNodes += getContinueNodes();
 	
-	whileFlow.edges += bodyFlow.edges;
-	whileFlow.edges += createConnectionEdges(bodyFlow, whileFlow);
-	whileFlow.edges += createConnectionEdges(whileFlow, bodyFlow);
+	whileFlow.graph += bodyFlow.graph;
+	whileFlow.graph += createConnectionEdges(bodyFlow, whileFlow);
+	whileFlow.graph += createConnectionEdges(whileFlow, bodyFlow);
 	
 	whileFlow.exitNodes += getBreakNodes();
 	
@@ -309,23 +311,23 @@ private FlowGraph processWhile(int identifier, Expression condition, Statement b
 	return whileFlow;
 }
 
-private FlowGraph processDoWhile(int identifier, Statement body, Expression condition) {
-	FlowGraph doWhileFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processDoWhile(int identifier, Statement body, Expression condition) {
+	ControlFlow doWhileFlow = ControlFlow({}, 0, {});
 	
 	scopeDown();
 	
 	// Process the body first, as it is always executed once.
-	FlowGraph bodyFlow = createControlFlowGraph(body);
+	ControlFlow bodyFlow = createControlFlow(body);
 	bodyFlow.exitNodes += getContinueNodes();
 	
 	doWhileFlow.entryNode = identifier;
 	doWhileFlow.exitNodes += {identifier};
 	
-	doWhileFlow.edges += bodyFlow.edges;
-	doWhileFlow.edges += createConnectionEdges(bodyFlow, doWhileFlow);
+	doWhileFlow.graph += bodyFlow.graph;
+	doWhileFlow.graph += createConnectionEdges(bodyFlow, doWhileFlow);
 	
 	doWhileFlow.entryNode = bodyFlow.entryNode;
-	doWhileFlow.edges += createConnectionEdges(doWhileFlow, bodyFlow);
+	doWhileFlow.graph += createConnectionEdges(doWhileFlow, bodyFlow);
 	
 	doWhileFlow.exitNodes += getBreakNodes();
 	
@@ -334,11 +336,11 @@ private FlowGraph processDoWhile(int identifier, Statement body, Expression cond
 	return doWhileFlow;
 }
 
-private list[FlowGraph] processCases(list[Statement] statements) {
-	FlowGraph caseFlow = FlowGraph({}, 0, {}, {}, ());
+private list[ControlFlow] processCases(list[Statement] statements) {
+	ControlFlow caseFlow = ControlFlow({}, 0, {});
 	
 	tuple[node popped, list[node] remainder] popTuple = pop(statements);
-	FlowGraph caseNode = createControlFlowGraph(popTuple.popped);
+	ControlFlow caseNode = createControlFlow(popTuple.popped);
 	statements = popTuple.remainder;
 	
 	caseFlow.entryNode = caseNode.entryNode;
@@ -349,13 +351,13 @@ private list[FlowGraph] processCases(list[Statement] statements) {
 	
 	list[node] caseBody = takeWhile(statements, isNotCase);
 	
-	FlowGraph caseBodyFlow = processBlock(caseBody);
+	ControlFlow caseBodyFlow = processBlock(caseBody);
 	statements -= caseBody;
 	
-	caseFlow.edges = caseBodyFlow.edges + createConnectionEdges(caseFlow, caseBodyFlow);
+	caseFlow.graph = caseBodyFlow.graph + createConnectionEdges(caseFlow, caseBodyFlow);
 	caseFlow.exitNodes = caseBodyFlow.exitNodes;
 	
-	list[FlowGraph] caseFlows = [caseFlow];
+	list[ControlFlow] caseFlows = [caseFlow];
 	
 	if(size(statements) >= 1) {
 		caseFlows += processCases(statements); 
@@ -364,17 +366,17 @@ private list[FlowGraph] processCases(list[Statement] statements) {
 	return caseFlows;
 }
 
-private FlowGraph processSwitch(int identifier, Expression expression, list[Statement] statements) {
-	FlowGraph switchFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processSwitch(int identifier, Expression expression, list[Statement] statements) {
+	ControlFlow switchFlow = ControlFlow({}, 0, {});
 	
 	switchFlow.entryNode = identifier;
 	switchFlow.exitNodes = {identifier};
 	
-	list[FlowGraph] caseFlows = processCases(statements);
+	list[ControlFlow] caseFlows = processCases(statements);
 	set[int] finalExitNodes = {};
 	
 	for(caseFlow <- caseFlows) {
-		switchFlow.edges += caseFlow.edges + createConnectionEdges(switchFlow, caseFlow);
+		switchFlow.graph += caseFlow.graph + createConnectionEdges(switchFlow, caseFlow);
 		switchFlow.exitNodes += caseFlow.exitNodes;
 		
 		// Previous loop's exit nodes are now bound. Remove them.
@@ -390,60 +392,66 @@ private FlowGraph processSwitch(int identifier, Expression expression, list[Stat
 
 private bool isTryExit(int identifier) {
 	switch(nodeEnvironment[identifier]) {	
-		case blockNode: \block(body): {
+		case \block(body): {
 			return false;
 		}
-		case ifNode: \if(condition, thenBranch): {
+		case \if(condition, thenBranch): {
 			return true;
 		}
-		case ifNode: \if(condition, thenBranch, elseBranch): {
+		case \if(condition, thenBranch, elseBranch): {
 			return true;
 		}
-		case forNode: \for(_, _, _): {
+		case \for(_, _, _): {
 			return true;
 		}
-		case forNode: \for(_, _, _, _): {
+		case \for(_, _, _, _): {
 			return true;
 		}
-		case whileNode: \while(condition, body): {
+		case \while(condition, body): {
 			return true;
 		}
-		case doNode: \do(body, condition): {
+		case \do(body, condition): {
 			return true;
 		}
-		case switchNode: \switch(expression, statements): {
+		case \switch(expression, statements): {
 			return false;
 		}
-		case tryNode: \try(body, catchClauses): {
+		case \try(body, catchClauses): {
 			return false;
 		}
-    	case tryNode: \try(body, catchClauses, finalClause): {
+    	case \try(body, catchClauses, finalClause): {
     		return false;
     	}
-    	case catchNode: \catch(exception, body): {
+    	case \catch(exception, body): {
     		return false;
     	}
-		case breakNode: \break(): {
+		case \break(): {
 			return false;
 		}
-		case breakNode: \break(_): {
+		case \break(_): {
 			return false;
 		}
-		case continueNode: \continue(): {
+		case \continue(): {
 			return false;
 		}
-		case continueNode: \continue(_): {
+		case \continue(_): {
 			return false;
 		}
-		case returnNode: \return(): {
+		case \return(): {
 			return false;
 		}
-		case returnNode: \return(_): {
+		case \return(_): {
 			return false;
 		}
-		case throwNode: \throw(_): {
+		case \throw(_): {
 			return true;
 		}
+		case \methodCall(_, _, _): {
+			return true;
+		}
+    	case \methodCall(_, _, _, _): {
+    		return true;
+    	}
 		case Statement statement: {
 			return true;
 		}
@@ -452,19 +460,21 @@ private bool isTryExit(int identifier) {
 	return false;
 }
 
-private FlowGraph processTry(int identifier, Statement body, list[Statement] catchClauses) {
-	FlowGraph tryFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processTry(int identifier, Statement body, list[Statement] catchClauses) {
+	ControlFlow tryFlow = ControlFlow({}, 0, {});
 	
 	tryFlow.entryNode = identifier;
 	tryFlow.exitNodes = { identifier };
 	
-	FlowGraph bodyFlow = createControlFlowGraph(body);
-	tryFlow.edges = bodyFlow.edges + createConnectionEdges(tryFlow, bodyFlow);
+	ControlFlow bodyFlow = createControlFlow(body);
+	tryFlow.graph = bodyFlow.graph + createConnectionEdges(tryFlow, bodyFlow);
 	tryFlow.exitNodes = bodyFlow.exitNodes;
 
 	set[int] potentialThrows = {};
+	
+	scopeDown();
 
-	for(treeNode <- carrier(tryFlow.edges)) {
+	for(treeNode <- carrier(tryFlow.graph)) {
 		if(isTryExit(treeNode)) {
 			potentialThrows += treeNode;
 		}
@@ -472,45 +482,47 @@ private FlowGraph processTry(int identifier, Statement body, list[Statement] cat
 	
 	potentialThrows += getThrowNodes();
 	
-	list[FlowGraph] catchFlows = [];
+	scopeUp();
+	
+	list[ControlFlow] catchFlows = [];
 	
 	for(catchClause <- catchClauses) {
-		catchFlows += createControlFlowGraph(catchClause);
+		catchFlows += createControlFlow(catchClause);
 	}
 	
 	for(catchFlow <- catchFlows) {
-		tryFlow.edges += potentialThrows * {catchFlow.entryNode};
-		tryFlow.edges += catchFlow.edges;
+		tryFlow.graph += potentialThrows * {catchFlow.entryNode};
+		tryFlow.graph += catchFlow.graph;
 		tryFlow.exitNodes += catchFlow.exitNodes;
 	}
 	
 	return tryFlow;
 }
 
-private FlowGraph processTry(int identifier, Statement body, list[Statement] catchClauses, Statement finallyClause) {
-	FlowGraph tryFlow = processTry(identifier, body, catchClauses);
-	FlowGraph finallyFlow = createControlFlowGraph(finallyClause);
+private ControlFlow processTry(int identifier, Statement body, list[Statement] catchClauses, Statement finallyClause) {
+	ControlFlow tryFlow = processTry(identifier, body, catchClauses);
+	ControlFlow finallyFlow = createControlFlow(finallyClause);
 	
-	tryFlow.edges += createConnectionEdges(tryFlow, finallyFlow);
+	tryFlow.graph += createConnectionEdges(tryFlow, finallyFlow);
 	tryFlow.exitNodes = finallyFlow.exitNodes;	
 	
 	return tryFlow;
 }
 
-private FlowGraph processCatch(int identifier, Declaration exception, Statement body) {
-	FlowGraph catchFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processCatch(int identifier, Declaration exception, Statement body) {
+	ControlFlow catchFlow = ControlFlow({}, 0, {});
 	catchFlow.entryNode = identifier;
 	catchFlow.exitNodes = {identifier};
 	
-	FlowGraph bodyFlow = createControlFlowGraph(body);
-	catchFlow.edges = bodyFlow.edges + createConnectionEdges(catchFlow, bodyFlow);
+	ControlFlow bodyFlow = createControlFlow(body);
+	catchFlow.graph = bodyFlow.graph + createConnectionEdges(catchFlow, bodyFlow);
 	catchFlow.exitNodes = bodyFlow.exitNodes;
 	
 	return catchFlow;
 }
 
-private FlowGraph processBreak(int identifier, Statement breakNode) {
-	FlowGraph breakFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processBreak(int identifier, Statement breakNode) {
+	ControlFlow breakFlow = ControlFlow({}, 0, {});
 	
 	addBreakNode(identifier);
 	breakFlow.entryNode = identifier;
@@ -518,8 +530,8 @@ private FlowGraph processBreak(int identifier, Statement breakNode) {
 	return breakFlow;
 }
 
-private FlowGraph processContinue(int identifier, Statement continueNode) {
-	FlowGraph continueFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processContinue(int identifier, Statement continueNode) {
+	ControlFlow continueFlow = ControlFlow({}, 0, {});
 	
 	addContinueNode(identifier);
 	continueFlow.entryNode = identifier;
@@ -527,8 +539,8 @@ private FlowGraph processContinue(int identifier, Statement continueNode) {
 	return continueFlow;
 }
 
-private FlowGraph processReturn(int identifier, Statement returnNode) {
-	FlowGraph returnFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processReturn(int identifier, Statement returnNode) {
+	ControlFlow returnFlow = ControlFlow({}, 0, {});
 	
 	addReturnNode(identifier);
 	returnFlow.entryNode = identifier;
@@ -536,8 +548,8 @@ private FlowGraph processReturn(int identifier, Statement returnNode) {
 	return returnFlow;
 }
 
-private FlowGraph processThrow(int identifier, Statement throwNode) {
-	FlowGraph throwFlow = FlowGraph({}, 0, {}, {}, ());
+private ControlFlow processThrow(int identifier, Statement throwNode) {
+	ControlFlow throwFlow = ControlFlow({}, 0, {});
 	
 	addThrowNode(identifier);
 	throwFlow.entryNode = identifier;
@@ -545,8 +557,8 @@ private FlowGraph processThrow(int identifier, Statement throwNode) {
 	return throwFlow;
 }
 
-private FlowGraph processStatement(int identifier, Statement statement) {
-	return FlowGraph({}, identifier, {identifier}, {}, ());
+private ControlFlow processStatement(int identifier, Statement statement) {
+	return ControlFlow({}, identifier, {identifier});
 }
 
 
@@ -558,13 +570,13 @@ test bool testConnector() {
 	Graph[int] secondFlow = { <2, 3> };
 	Graph[int] thirdFlow = { <4, 5>, <5, 6>	};
 	
-	list[FlowGraph] graphs = [
-		FlowGraph(firstFlow, 0, {0, 1}),
-		FlowGraph(secondFlow, 2, {3}),
-		FlowGraph(thirdFlow, 4, {6})
+	list[ControlFlow] graphs = [
+		ControlFlow(firstFlow, 0, {0, 1}),
+		ControlFlow(secondFlow, 2, {3}),
+		ControlFlow(thirdFlow, 4, {6})
 	];
 	
-	println(connectFlowGraphs(graphs));
+	println(connectControlFlows(graphs));
 	
 	return true;
 }

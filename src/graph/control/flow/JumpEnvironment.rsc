@@ -63,7 +63,15 @@ public set[int] getReturnNodes() {
 	return returns;
 }
 
-
+public void resetJumps() {
+	breakNodes = {};
+	parentBreakNodes = {};
+	continueNodes = {};
+	parentContinueNodes = {};
+	throwNodes = {};
+	parentThrowNodes = {};
+	returnNodes = {};
+}
 
 // Scoping functions to account for block scope.
 public void scopeDown() {
