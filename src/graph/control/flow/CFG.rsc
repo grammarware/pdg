@@ -28,10 +28,10 @@ private int getIdentifier() {
 	return identifier;
 }
 
-public MethodData createCFG(MethodData methodData, int startIdentifier) {
+public MethodData createCFG(MethodData methodData) {
 	calledMethods = {};
 	nodeEnvironment = ();
-	nodeIdentifier = startIdentifier;
+	nodeIdentifier = 0;
 	
 	ControlFlow controlFlow = createControlFlow(methodData.abstractTree);
 	controlFlow.exitNodes += getReturnNodes();
@@ -139,8 +139,12 @@ private ControlFlow createControlFlow(node tree) {
 		case statementNode: \expressionStatement(Expression stmt): {
 			list[ControlFlow] callsites = registerMethodCalls(stmt);
 			
-			identifier = storeNode(statementNode);
-			controlFlow = connectControlFlows(callsites + processStatement(identifier, statementNode));
+			if(!isMethodCall(stmt)) {
+				identifier = storeNode(statementNode);
+				controlFlow = connectControlFlows(callsites + processStatement(identifier, statementNode));
+			} else {
+				controlFlow = connectControlFlows(callsites);
+			}
 		}
 		case Statement statement: {
 			identifier = storeNode(statement);
@@ -149,6 +153,19 @@ private ControlFlow createControlFlow(node tree) {
 	}
 	
 	return controlFlow;
+}
+
+private bool isMethodCall(Expression expression) {
+	switch(expression) {
+		case \methodCall(_, _, _): {
+			return true;
+		}
+    	case \methodCall(_, _, _, _): {
+    		return true;
+    	}
+	}
+	
+	return false;
 }
 
 private list[ControlFlow] registerMethodCalls(Expression expression) {
@@ -514,7 +531,12 @@ private ControlFlow processCatch(int identifier, Declaration exception, Statemen
 	catchFlow.entryNode = identifier;
 	catchFlow.exitNodes = {identifier};
 	
+	scopeDown();
+	
 	ControlFlow bodyFlow = createControlFlow(body);
+	
+	scopeUp();
+	
 	catchFlow.graph = bodyFlow.graph + createConnectionEdges(catchFlow, bodyFlow);
 	catchFlow.exitNodes = bodyFlow.exitNodes;
 	

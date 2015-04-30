@@ -15,8 +15,8 @@ private map[int, int] getImmediatePostDominators(Graph[int] postDominator) {
 	return immediatePostDominators;
 }
 
-private Graph[int] augmentFlowGraph(FlowGraph controlFlow) {
-	Graph[int] augmentedGraph = controlFlow.edges;
+private Graph[int] augmentFlowGraph(ControlFlow controlFlow) {
+	Graph[int] augmentedGraph = controlFlow.graph;
 	
 	augmentedGraph += { <STARTNODE, controlFlow.entryNode> };
 	
@@ -29,9 +29,9 @@ private Graph[int] augmentFlowGraph(FlowGraph controlFlow) {
 	return augmentedGraph;
 }
 
-public Graph[int] createCDG(FlowGraph controlFlow, Graph[int] postDominator) {
-	Graph[int] controlDependenceGraph = {};
-	Graph[int] augmentedGraph = augmentFlowGraph(controlFlow);
+public MethodData createCDG(MethodData methodData) {
+	ControlDependence controlDependence = ControlDependence({});
+	Graph[int] augmentedGraph = augmentFlowGraph(methodData.controlFlow);
 	
 	map[int, set[int]] dependencies = ();
 	
@@ -39,11 +39,12 @@ public Graph[int] createCDG(FlowGraph controlFlow, Graph[int] postDominator) {
 		dependencies[treeNode] = {};
 	}
 	
-	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, from notin reach(postDominator, { to }) - { to } };
+	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, from notin reach(methodData.postDominator.tree, { to }) - { to } };
 	
 	for(<from, to> <- inspectionEdges) {
-		int idom = getOneFrom(predecessors(postDominator, from));
-		list[int] pathNodes = shortestPathPair(postDominator, idom, to) - idom;
+		// Immediate dominator (idom)
+		int idom = getOneFrom(predecessors(methodData.postDominator.tree, from));
+		list[int] pathNodes = shortestPathPair(methodData.postDominator.tree, idom, to) - idom;
 		
 		for(dependency <- pathNodes, dependency != from) {
 			dependencies[dependency] += { from };
@@ -55,16 +56,18 @@ public Graph[int] createCDG(FlowGraph controlFlow, Graph[int] postDominator) {
 		
 		for(dependency <- dependencies[treeNode]) {
 			if(size(dependencies[treeNode]) == 1 || dependencies[dependency] == dependencies[treeNode] - dependency) {
-				controlDependenceGraph += <dependency, treeNode>;
+				controlDependence.graph += { <dependency, treeNode> };
 				foundDependency = true;
 				break;
 			}
 		}
 		
 		if(!foundDependency) {
-			controlDependenceGraph += <ENTRYNODE, treeNode>;
+			controlDependence.graph += { <ENTRYNODE, treeNode> };
 		}
 	}
 	
-	return controlDependenceGraph;
+	methodData.controlDependence = controlDependence;
+	
+	return methodData;
 }

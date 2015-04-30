@@ -15,8 +15,8 @@ import lang::java::jdt::m3::Core;
 import graph::DataStructures;
 import graph::control::flow::CFG;
 
-private map[int, set[int]] dominates = ();
-private map[int, set[int]] dominatedBy = ();
+private map[int, set[int]] dominators = ();
+private map[int, set[int]] dominations = ();
 
 private Graph[int] reverseEdges(Graph[int] edges) {
 	Graph[int] reversedTree = {};
@@ -28,16 +28,8 @@ private Graph[int] reverseEdges(Graph[int] edges) {
 	return reversedTree;
 }
 
-public map[int, set[int]] getNodeDominators() {
-	return dominatedBy;
-}
-
-public map[int, set[int]] getDominations() {
-	return dominates;
-}
-
-private Graph[int] augmentFlowGraph(FlowGraph controlFlow) {
-	Graph[int] augmentedGraph = controlFlow.edges;
+private Graph[int] augmentFlowGraph(ControlFlow controlFlow) {
+	Graph[int] augmentedGraph = controlFlow.graph;
 	
 	augmentedGraph += { <STARTNODE, controlFlow.entryNode> };
 	
@@ -50,16 +42,17 @@ private Graph[int] augmentFlowGraph(FlowGraph controlFlow) {
 	return augmentedGraph;
 }
 
-public Graph[int] createPDT(FlowGraph controlFlow) {
-	Graph[int] postDominatorTree = {};
-	Graph[int] augmentedGraph = augmentFlowGraph(controlFlow);
+public MethodData createPDT(MethodData methodData) {
+	PostDominator postDominator = PostDominator({}, (), ());
+	
+	Graph[int] augmentedGraph = augmentFlowGraph(methodData.controlFlow);
 	Graph[int] reversedTree = reverseEdges(augmentedGraph);
 	
 	set[int] nodes = carrier(reversedTree) - top(reversedTree);
 	
 	for(treeNode <- carrier(reversedTree)) {
-		dominatedBy[treeNode] = {};
-		dominates[treeNode] = {};
+		dominations[treeNode] = {};
+		dominators[treeNode] = {};
 	}
 	
 	for(treeNode <- carrier(reversedTree)) {
@@ -67,19 +60,23 @@ public Graph[int] createPDT(FlowGraph controlFlow) {
 		set[int] domination = nodes - { treeNode } - exclusiveReach;
 		
 		for(dominatedNode <- domination) {
-			dominatedBy[dominatedNode] += { treeNode };
-			dominates[treeNode] = domination;
+			dominations[dominatedNode] += { treeNode };
+			dominators[treeNode] = domination;
 		}
 	}
 	
 	for(treeNode <- carrier(reversedTree)) {
-		for(dominator <- dominatedBy[treeNode]) {
-			if(dominatedBy[dominator] == dominatedBy[treeNode] - dominator) {
-				postDominatorTree += <dominator, treeNode>;
+		for(dominator <- dominations[treeNode]) {
+			if(dominations[dominator] == dominations[treeNode] - dominator) {
+				postDominator.tree += { <dominator, treeNode> };
 				break;
 			}
 		}
 	}
 	
-	return postDominatorTree;
+	postDominator.dominations = dominations;
+	postDominator.dominators = dominators;
+	methodData.postDominator = postDominator;
+	
+	return methodData;
 }

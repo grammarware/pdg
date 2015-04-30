@@ -6,11 +6,11 @@ import analysis::graphs::Graph;
 import vis::Figure;
 import vis::Render;
 
+import screen::Screen;
 import graph::DataStructures;
 import extractors::Project;
-import graph::control::flow::CFG;
+import creator::CFGCreator;
 
-set[loc] generatedMethods = {};
 
 @doc { 
 	To run a test:
@@ -24,72 +24,23 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	MethodData methodData = emptyMethodData();
 	methodData.name = methodName;
 	methodData.abstractTree = methodAST;
-	methodData = createCFG(methodData, 0);
 	
-	int maxIdentifier = max(environmentDomain(methodData)) + 1;
-	list[MethodData] methodCollection = [methodData];
-	
-	generatedMethods = { methodLocation };
-	methodCollection += getCalledMethods(methodData.calledMethods, maxIdentifier, projectModel);	
-	
+	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
 	for(method <- methodCollection) {
-		edges += createEdges(method.controlFlow);
+		edges += createEdges(method.name, method.controlFlow.graph);
+		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<method.controlFlow.entryNode>", toArrow(box(size(10), fillColor("black"))));
+		
+		for(exitNode <- method.controlFlow.exitNodes) {
+			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", toArrow(box(size(10), fillColor("black"))));
+		}
+		
 		boxes += createBoxes(method);
+		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
+		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
-}
-
-
-private list[MethodData] getCalledMethods(set[loc] calledMethods, int startIdentifier, M3 projectModel) {
-	int maxIdentifier = startIdentifier;
-	list[MethodData] methodCollection = [];
-	
-	MethodData methodData = emptyMethodData();
-	
-	for(calledMethod <- calledMethods, calledMethod in getM3Methods(projectModel), calledMethod notin generatedMethods) {
-		methodData.abstractTree = getMethodASTEclipse(calledMethod, model = projectModel);
-		
-		methodData = createCFG(methodData, maxIdentifier);
-		methodCollection += methodData;
-		generatedMethods += calledMethod;
-		
-		maxIdentifier = max(environmentDomain(methodData)) + 1;
-		methodCollection += getCalledMethods(methodData.calledMethods, maxIdentifier, projectModel);
-	}
-	
-	return methodCollection;
-}
-
-private loc getMethodLocation(str methodName, M3 projectModel) {
-	for(method <- getM3Methods(projectModel)) {
-		if(/<name:.*>\(/ := method.file, name == methodName) {
-			return method;
-		}
-	}
-	
-	return |file://methodDoesNotExist|;
-}
-
-private list[Edge] createEdges(ControlFlow controlFlow) {
-	list[Edge] edges = [];
-
-	for(graphEdge <- controlFlow.graph) {
-		edges += edge("<graphEdge.from>", "<graphEdge.to>", toArrow(box(size(10), fillColor("black"))));
-	}
-	
-	return edges;
-}
-
-private Figures createBoxes(MethodData methodData) {
-	Figures boxes = [];
-	
-	for(treeNode <- environmentDomain(methodData)) {
-		boxes += box(text("<treeNode>: <nodeName(methodData, treeNode)>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
-	}
-	
-	return boxes;
 }
