@@ -33,10 +33,14 @@ public MethodData createCDG(MethodData methodData) {
 	ControlDependence controlDependence = ControlDependence({});
 	Graph[int] augmentedGraph = augmentFlowGraph(methodData.controlFlow);
 	
+	// Maps a node to all the nodes that it depends on.
 	map[int, set[int]] dependencies = ();
+	// Maps a node to all the nodes that depend on it.
+	map[int, set[int]] controls = ();
 	
 	for(treeNode <- carrier(augmentedGraph)) {
 		dependencies[treeNode] = {};
+		controls[treeNode] = {};
 	}
 	
 	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, from notin reach(methodData.postDominator.tree, { to }) - { to } };
@@ -46,26 +50,22 @@ public MethodData createCDG(MethodData methodData) {
 		int idom = getOneFrom(predecessors(methodData.postDominator.tree, from));
 		list[int] pathNodes = shortestPathPair(methodData.postDominator.tree, idom, to) - idom;
 		
-		for(dependency <- pathNodes, dependency != from) {
-			dependencies[dependency] += { from };
+		for(pathNode <- pathNodes, pathNode != from) {
+			dependencies[pathNode] += { from };
+			controls[from] += { pathNode };
 		}
 	}
 	
-	for(treeNode <- carrier(augmentedGraph) - { STARTNODE, EXITNODE, ENTRYNODE }) {
-		bool foundDependency = false;
-		
-		for(dependency <- dependencies[treeNode]) {
-			if(size(dependencies[treeNode]) == 1 || dependencies[dependency] == dependencies[treeNode] - dependency) {
-				controlDependence.graph += { <dependency, treeNode> };
-				foundDependency = true;
+	for(treeNode <- sort(carrier(augmentedGraph)) - { STARTNODE, EXITNODE, ENTRYNODE }) {
+		for(controller <- sort(dependencies[treeNode])) {
+			if(size(dependencies[treeNode]) == 1 || (controls[controller] & dependencies[treeNode]) == {}) {
+				controlDependence.graph += { <controller, treeNode> };
 				break;
 			}
 		}
-		
-		if(!foundDependency) {
-			controlDependence.graph += { <ENTRYNODE, treeNode> };
-		}
 	}
+	
+	println(controls[-3]);
 	
 	methodData.controlDependence = controlDependence;
 	

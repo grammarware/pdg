@@ -15,7 +15,13 @@ import lang::java::jdt::m3::Core;
 import graph::DataStructures;
 import graph::control::flow::CFG;
 
+@doc{
+	Maps the node to all nodes that dominate it.
+}
 private map[int, set[int]] dominators = ();
+@doc{
+	Maps the node to every node it dominates.
+}
 private map[int, set[int]] dominations = ();
 
 private Graph[int] reverseEdges(Graph[int] edges) {
@@ -60,14 +66,14 @@ public MethodData createPDT(MethodData methodData) {
 		set[int] domination = nodes - { treeNode } - exclusiveReach;
 		
 		for(dominatedNode <- domination) {
-			dominations[dominatedNode] += { treeNode };
-			dominators[treeNode] = domination;
+			dominators[dominatedNode] += { treeNode };
+			dominations[treeNode] = domination;
 		}
 	}
 	
 	for(treeNode <- carrier(reversedTree)) {
-		for(dominator <- dominations[treeNode]) {
-			if(dominations[dominator] == dominations[treeNode] - dominator) {
+		for(dominator <- dominators[treeNode]) {
+			if((dominations[dominator] & dominators[treeNode]) == {}) {
 				postDominator.tree += { <dominator, treeNode> };
 				break;
 			}
