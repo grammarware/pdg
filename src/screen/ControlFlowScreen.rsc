@@ -10,7 +10,7 @@ import graph::DataStructures;
 import extractors::Project;
 import graph::control::flow::CFG;
 
-@doc {
+@doc { 
 	To run a test:
 		displayControlFlowGraph(|project://pdg-JavaTest|, "testCDG");
 }
@@ -19,9 +19,29 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	FlowGraph flowGraph = createCFG(methodAST);
+	FlowGraph startFlowGraph = createCFG(methodAST, 0);
 	
-	render(graph(createBoxes(flowGraph), createEdges(flowGraph), hint("layered"), gap(50)));
+	int maxIdentifier = max(environmentDomain(startFlowGraph));
+	list[FlowGraph] flowGraphs = [startFlowGraph];
+	
+	for(calledMethod <- startFlowGraph.calledMethods) {
+		methodAST = getMethodASTEclipse(calledMethod, model = projectModel);
+		
+		flowGraph = createCFG(methodAST, maxIdentifier);
+		flowGraphs += flowGraph;
+		
+		maxIdentifier = max(environmentDomain(flowGraph));
+	}
+	
+	list[Edge] edges = [];
+	list[Figure] boxes = [];
+	
+	for(flow <- flowGraphs) {
+		edges += createEdges(flow);
+		boxes += createBoxes(flow);
+	}
+	
+	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
 
 private loc getMethodLocation(str methodName, M3 projectModel) {
@@ -53,8 +73,8 @@ private list[Edge] createEdges(FlowGraph flowGraph) {
 private Figures createBoxes(FlowGraph flowGraph) {
 	Figures boxes = [];
 	
-	for(treeNode <- getNodeIdentifiers()) {
-		boxes += box(text("<treeNode>: <getNodeName(treeNode)>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
+	for(treeNode <- environmentDomain(flowGraph)) {
+		boxes += box(text("<treeNode>: <nodeName(flowGraph, treeNode)>"), id("<treeNode>"), size(50), fillColor("lightgreen"));
 	}
 	
 	boxes += box(text("Entry"), id("ENTRY"), size(50), fillColor("lightblue"));

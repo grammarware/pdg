@@ -52,7 +52,7 @@ private list[Edge] createEdges(Graph[int] tree, str style, str color) {
 	list[Edge] edges = [];
 
 	for(graphEdge <- tree) {
-		edges += edge("<graphEdge.from>", "<graphEdge.to>", lineStyle(style), lineColor(color), toArrow(box(size(10), fillColor("black"))));
+		edges += edge("<graphEdge.from>", "<graphEdge.to>", lineStyle(style), lineColor(color), toArrow(box(size(10), fillColor(color))));
 	}
 	
 	return edges;
