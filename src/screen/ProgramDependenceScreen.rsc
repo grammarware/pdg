@@ -46,7 +46,6 @@ public void displayProgramDependenceGraph(loc project, str methodName) {
 		
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
-		boxes += box(text("START <method.name>"), id("<method.name>:<STARTNODE>"), size(50), fillColor("lightblue"));
 	}
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));

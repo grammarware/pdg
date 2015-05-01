@@ -57,6 +57,11 @@ public MethodData createCDG(MethodData methodData) {
 	}
 	
 	for(treeNode <- sort(carrier(augmentedGraph)) - { STARTNODE, EXITNODE, ENTRYNODE }) {
+		if(treeNode > 0 && resolveIdentifier(methodData, treeNode)@nodeType == Parameter()) {
+			controlDependence.graph += { <methodData.parameterNodes[treeNode], treeNode> };
+			continue;
+		}
+		
 		for(controller <- sort(dependencies[treeNode])) {
 			if(size(dependencies[treeNode]) == 1 || (controls[controller] & dependencies[treeNode]) == {}) {
 				controlDependence.graph += { <controller, treeNode> };
@@ -65,6 +70,7 @@ public MethodData createCDG(MethodData methodData) {
 		}
 	}
 	
+	controlDependence.graph -= { <ENTRYNODE, STARTNODE> };
 	methodData.controlDependence = controlDependence;
 	
 	return methodData;

@@ -11,11 +11,15 @@ data ControlFlow = EmptyCF() | ControlFlow(Graph[int] graph, int entryNode, set[
 data PostDominator = EmptyPD() | PostDominator(Graph[int] tree, map[int, set[int]] dominators, map[int, set[int]] dominations);
 data ControlDependence = EmptyCD() | ControlDependence(Graph[int] graph);
 data DataDependence =  EmptyDD() | DataDependence(Graph[int] graph, map[int, set[int]] \in, map[int, set[int]] \out);
-data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, set[loc] calledMethods, ControlFlow controlFlow, 
-								PostDominator postDominator, ControlDependence controlDependence, DataDependence dataDependence); 
+data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, set[loc] calledMethods, map[int, int] parameterNodes,
+								ControlFlow controlFlow, PostDominator postDominator, ControlDependence controlDependence, DataDependence dataDependence); 
+
+data NodeType = Normal() | Parameter() | CallSite();
+
+anno NodeType node@nodeType;
 
 public MethodData emptyMethodData() {
-	return MethodData("", ""(), (), {}, EmptyCF(), EmptyPD(), EmptyCD(), EmptyDD());
+	return MethodData("", ""(), (), {}, (), EmptyCF(), EmptyPD(), EmptyCD(), EmptyDD());
 }
 
 public set[int] environmentDomain(MethodData methodData) {

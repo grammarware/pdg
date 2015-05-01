@@ -31,9 +31,17 @@ public list[Edge] createEdges(str methodName, Graph[int] tree, str style, str co
 					fillColor(color)))) | graphEdge <- tree ];
 }
 
+private str getBoxColor(NodeType nodeType) {
+	switch(nodeType) {
+		case Normal(): return "lightgreen";
+		case CallSite(): return "lightpink";
+		case Parameter(): return "beige";
+	}
+}
+
 public Figures createBoxes(MethodData methodData) {	
 	return [ box(text("<methodData.name>:<treeNode>"), id("<methodData.name>:<treeNode>"), 
-						size(50), fillColor("lightgreen"), 
+						size(50), fillColor(getBoxColor(resolveIdentifier(methodData, treeNode)@nodeType)), 
 						onMouseDown(
 							goToSource(
 								getLocation(

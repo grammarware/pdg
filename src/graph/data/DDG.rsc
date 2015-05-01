@@ -72,7 +72,6 @@ public MethodData createDDG(MethodData methodData) {
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
 			if(usedVariable notin definitions) {
-				dataDependence.graph += { <ENTRYNODE, identifier> };
 				continue;
 			}
 			
@@ -125,7 +124,19 @@ private void storeKill(int statement, set[int] killSet) {
 private void checkForUse(int identifier, Expression expression) {
 	if(\simpleName(name) := expression) {
 		storeUse(identifier, name);
-	} 
+	}
+	
+	if(callNode: \methodCall(_, name, arguments) := expression) {
+		if(callNode@typ != \void()) {
+			storeUse(identifier, "$method_<name>_return");
+		}
+	}
+	
+	if(callNode: \methodCall(_, _, name, arguments):= expression) {
+		if(callNode@typ != \void()) {
+			storeUse(identifier, "$method_<name>_return");
+		}
+	}
 }
 
 private void checkForDefinition(int identifier, Expression expression) {
@@ -201,16 +212,6 @@ private void processStatement(int identifier, node statement) {
 		}
 		case \expressionStatement(stmt) : {
 			createDataDependenceGraph(identifier, stmt);
-		}
-		case \methodCall(_, _, arguments): {
-			for(argument <- arguments) {
-				checkForUse(identifier, argument);
-			}
-		}
-		case \methodCall(_, _, _, arguments): {
-			for(argument <- arguments) {
-				checkForUse(identifier, argument);
-			}
 		}
 		case Statement stmt: {
 			createDataDependenceGraph(identifier, stmt);
@@ -295,16 +296,6 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \instanceof(leftSide, rightSide): {
 			throw "Not implemented instanceof(<leftSide>, <rightSide>)";
 		}
-		case \methodCall(_, _, arguments): {
-			for(argument <- arguments) {
-				checkForUse(identifier, argument);
-			}
-		}
-		case \methodCall(_, _, _, arguments): {
-			for(argument <- arguments) {
-				checkForUse(identifier, argument);
-			}
-		}
     	case \variable(name, extraDimensions): {
     		storeDefinition(name, identifier);
 			storeGenerator(identifier, name);
@@ -330,16 +321,6 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		}	
 		case \prefix(_, operand):{
 			checkForUse(identifier, operand);
-		}
-		case \methodCall(_, _, arguments): {
-			for(argument <- arguments) {
-				checkForUse(identifier, argument);
-			}
-		}
-		case \methodCall(_, _, _, arguments): {
-			for(argument <- arguments) {
-				checkForUse(identifier, argument);
-			}
 		}
 	}
 }

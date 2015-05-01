@@ -12,9 +12,9 @@ import extractors::Project;
 import creator::CFGCreator;
 
 
-@doc { 
+@doc {
 	To run a test:
-		displayControlFlowGraph(|project://pdg-JavaTest|, "testCDG");
+		displayControlFlowGraph(|project://JavaTest|, "testCDG");
 }
 public void displayControlFlowGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);

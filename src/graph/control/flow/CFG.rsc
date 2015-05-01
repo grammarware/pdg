@@ -15,10 +15,15 @@ import graph::control::flow::JumpEnvironment;
 // A counter to identify nodes.
 private int nodeIdentifier = 0;
 
+// The set of all the methods that are called by the currently
+// analysed method.
 private set[loc] calledMethods = {};
 
 // Storage for all the visited nodes with their identifier as key.
 private map[int, node] nodeEnvironment = ();
+
+// Maps a parameter node to its call-site node.
+private map[int, int] parameterNodes = ();
 
 private int getIdentifier() {
 	int identifier = nodeIdentifier;
@@ -31,6 +36,7 @@ private int getIdentifier() {
 public MethodData createCFG(MethodData methodData) {
 	calledMethods = {};
 	nodeEnvironment = ();
+	parameterNodes = ();
 	nodeIdentifier = 0;
 	
 	ControlFlow controlFlow = createControlFlow(methodData.abstractTree);
@@ -43,6 +49,7 @@ public MethodData createCFG(MethodData methodData) {
 	
 	methodData.calledMethods = calledMethods;
 	methodData.nodeEnvironment = nodeEnvironment;
+	methodData.parameterNodes = parameterNodes;
 	methodData.controlFlow = controlFlow;
 	
 	resetJumps();
@@ -50,15 +57,11 @@ public MethodData createCFG(MethodData methodData) {
 	return methodData;
 }
 
-anno str node@nodeType;
-
-private int storeNode(node treeNode) {
+private int storeNode(node treeNode, NodeType nodeType = Normal()) {
 	int identifier = getIdentifier();
 
-	treeNode@nodeType = "normal";
+	treeNode@nodeType = nodeType;
 	nodeEnvironment[identifier] = treeNode;
-	
-	println(treeNode@nodeType);
 	
 	return identifier;
 }
@@ -181,7 +184,7 @@ private list[ControlFlow] registerMethodCalls(Expression expression) {
 	
 	visit(expression) {
 		case callNode: \methodCall(isSuper, name, arguments): {
-			identifier = storeNode(callNode);
+			identifier = storeNode(callNode, nodeType = CallSite());
 
 			callsite = ControlFlow({}, identifier, {identifier});
 			
@@ -190,30 +193,35 @@ private list[ControlFlow] registerMethodCalls(Expression expression) {
 			list[ControlFlow] argumentAssignments = [];
 			
 			for(argument <- arguments) {
-				Expression argumentIn = \variable("method_<name>_in", 0, argument);
+				Statement argumentIn = \expressionStatement(\variable("$method_<name>_in", 0, argument));
 				argumentIn@src = argument@src;
 				
-				identifier = storeNode(argumentIn);
+				identifier = storeNode(argumentIn, nodeType = Parameter());
+				parameterNodes[identifier] = callsite.entryNode;
+				argumentAssignments += ControlFlow({}, identifier, {identifier});
+			}
+			
+			if(callNode@typ != \void()) {
+				Statement returnValue = \expressionStatement(\variable("$method_<name>_return", 0, \simpleName("$<name>_return")));
+				returnValue@src = callNode@decl;
+				
+				identifier = storeNode(returnValue, nodeType = Parameter());
+				parameterNodes[identifier] = callsite.entryNode;
 				argumentAssignments += ControlFlow({}, identifier, {identifier});
 			}
 			
 			ControlFlow argumentAssignment;
 			if(!isEmpty(argumentAssignments)) {
-				argumentAssignment = connectControlFlows(argumentAssignments);
-				callsite.graph += argumentAssignment.graph + createConnectionEdges(callsite, argumentAssignment)+ createConnectionEdges(argumentAssignment, callsite);
+				callsite = connectControlFlows([ callsite ] + argumentAssignments);
 			}
 			
 			callsites += callsite;
-			
-			println(callNode);
 		}
     	case callNode: \methodCall(isSuper, receiver, name, arguments): {
-    		identifier = storeNode(callNode);
+    		identifier = storeNode(callNode, nodeType = CallSite());
 			
 			callsites += ControlFlow({}, identifier, {identifier});
 			calledMethods += callNode@decl;
-			
-			println(callNode);
     	}
 	}
 	
