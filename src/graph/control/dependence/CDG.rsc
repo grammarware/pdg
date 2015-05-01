@@ -65,8 +65,6 @@ public MethodData createCDG(MethodData methodData) {
 		}
 	}
 	
-	println(controls[-3]);
-	
 	methodData.controlDependence = controlDependence;
 	
 	return methodData;

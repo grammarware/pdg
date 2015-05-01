@@ -12,9 +12,9 @@ import lang::java::m3::AST;
 import screen::Screen;
 import extractors::Project;
 
-import graph::DataStructures;
 import creator::CFGCreator;
-import creator::PDTCreator;
+import graph::DataStructures;
+import graph::control::PDT;
 
 @doc {
 	To run a test:
@@ -32,7 +32,7 @@ public void displayPostDominatorTree(loc project, str methodName) {
 	methodData.abstractTree = methodAST;
 	
 	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
-	methodCollection = createPostDominators(methodCollection);
+	methodCollection = methodCollection = [ createPDT(method) | method <- methodCollection ];
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];

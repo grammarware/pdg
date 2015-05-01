@@ -14,7 +14,7 @@ import extractors::Project;
 
 import graph::DataStructures;
 import creator::CFGCreator;
-import creator::PDTCreator;
+import graph::control::PDT;
 import graph::control::dependence::CDG;
 
 @doc {
@@ -32,7 +32,7 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 	methodData.abstractTree = methodAST;
 	
 	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
-	methodCollection = createPostDominators(methodCollection);
+	methodCollection = [ createPDT(method) | method <- methodCollection ];
 	methodCollection = [ createCDG(method) | method <- methodCollection ];
 	
 	list[Edge] edges = [];
@@ -42,7 +42,6 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 		edges += createEdges(method.name, method.controlDependence.graph);
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
-		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("START <method.name>"), id("<method.name>:<STARTNODE>"), size(50), fillColor("lightblue"));
 	}
 	
