@@ -170,45 +170,20 @@ private bool isMethodCall(Expression expression) {
 
 private list[ControlFlow] registerMethodCalls(Expression expression) {
 	list[ControlFlow] callsites = [];
-	ControlFlow callsite;
-	
 	int identifier;
 	
 	visit(expression) {
 		case callNode: \methodCall(isSuper, name, arguments): {
 			identifier = storeNode(callNode);
-
-			callsite = ControlFlow({}, identifier, {identifier});
 			
+			callsites += ControlFlow({}, identifier, {identifier});
 			calledMethods += callNode@decl;
-			
-			list[ControlFlow] argumentAssignments = [];
-			
-			for(argument <- arguments) {
-				Expression argumentIn = \variable("method_<name>_in", 0, argument);
-				argumentIn@src = argument@src;
-				
-				identifier = storeNode(argumentIn);
-				argumentAssignments += ControlFlow({}, identifier, {identifier});
-			}
-			
-			ControlFlow argumentAssignment;
-			if(!isEmpty(argumentAssignments)) {
-				argumentAssignment = connectControlFlows(argumentAssignments);
-				callsite.graph += argumentAssignment.graph + createConnectionEdges(callsite, argumentAssignment)+ createConnectionEdges(argumentAssignment, callsite);
-			}
-			
-			callsites += callsite;
-			
-			println(callNode);
 		}
     	case callNode: \methodCall(isSuper, receiver, name, arguments): {
     		identifier = storeNode(callNode);
 			
 			callsites += ControlFlow({}, identifier, {identifier});
 			calledMethods += callNode@decl;
-			
-			println(callNode);
     	}
 	}
 	

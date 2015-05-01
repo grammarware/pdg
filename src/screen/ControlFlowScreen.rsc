@@ -30,11 +30,13 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	list[Figure] boxes = [];
 	
 	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.controlFlow.graph);
-		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<method.controlFlow.entryNode>", toArrow(box(size(10), fillColor("black"))));
+		edges += createEdges(method.name, method.controlFlow.graph, "solid", "blue");
+		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<method.controlFlow.entryNode>", 
+						lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
 		
 		for(exitNode <- method.controlFlow.exitNodes) {
-			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", toArrow(box(size(10), fillColor("black"))));
+			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
+							lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
 		}
 		
 		boxes += createBoxes(method);

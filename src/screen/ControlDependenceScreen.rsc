@@ -39,7 +39,7 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 	list[Figure] boxes = [];
 	
 	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.controlDependence.graph);
+		edges += createEdges(method.name, method.controlDependence.graph, "solid", "blue");
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("START <method.name>"), id("<method.name>:<STARTNODE>"), size(50), fillColor("lightblue"));

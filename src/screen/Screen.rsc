@@ -22,29 +22,26 @@ public loc getMethodLocation(str methodName, M3 projectModel) {
 		}
 	}
 	
-	return |file://methodDoesNotExist|;
+	throw "Method \"<methodName>\" does not exist.";
 }
 
-public list[Edge] createEdges(str methodName, Graph[int] tree) {
-	list[Edge] edges = [];
-
-	for(graphEdge <- tree) {
-		edges += edge("<methodName>:<graphEdge.from>", "<methodName>:<graphEdge.to>", toArrow(box(size(10), fillColor("black"))));
-	}
-	
-	return edges;
+public list[Edge] createEdges(str methodName, Graph[int] tree, str style, str color) {
+	return [ edge("<methodName>:<graphEdge.from>", "<methodName>:<graphEdge.to>", 
+					lineStyle(style), lineColor(color), toArrow(box(size(10), 
+					fillColor(color)))) | graphEdge <- tree ];
 }
 
-public Figures createBoxes(MethodData methodData) {
-	Figures boxes = [];
-	
-	for(treeNode <- environmentDomain(methodData)) {
-		loc location = getLocation(resolveIdentifier(methodData, treeNode));
-		boxes += box(text("<methodData.name>:<treeNode>"), id("<methodData.name>:<treeNode>"), size(50), fillColor("lightgreen"),
-					onMouseDown(goToSource(location)));
-	}
-	
-	return boxes;
+public Figures createBoxes(MethodData methodData) {	
+	return [ box(text("<methodData.name>:<treeNode>"), id("<methodData.name>:<treeNode>"), 
+						size(50), fillColor("lightgreen"), 
+						onMouseDown(
+							goToSource(
+								getLocation(
+									resolveIdentifier(methodData, treeNode)
+								)
+							)
+						)
+				) | treeNode <- environmentDomain(methodData) ];
 }
 
 public &T cast(type[&T] tp, value v) throws str {

@@ -16,17 +16,22 @@ map[int, set[str]] generators = ();
 
 map[int, set[int]] kills = ();
 
-public Graph[int] createDDG(Graph[int] controlFlow, map[int, node] nodeEnvironment) {
+public MethodData createDDG(MethodData methodData) {
 	map[int, set[int]] \in = ();
 	map[int, set[int]] \out = ();
 	
-	for(identifier <- domain(nodeEnvironment)) {
+	definitions = ();
+	uses = ();
+	generators = ();
+	kills = ();
+	
+	for(identifier <- environmentDomain(methodData)) {
 		\in[identifier] = {};
 		\out[identifier] = {};
 		kills[identifier] = {};
 		generators[identifier] = {};
 		
-		processStatement(identifier, nodeEnvironment[identifier]);
+		processStatement(identifier, resolveIdentifier(methodData, identifier));
 	}
 	
 	for(identifier <- domain(generators)) {
@@ -42,18 +47,18 @@ public Graph[int] createDDG(Graph[int] controlFlow, map[int, node] nodeEnvironme
 	while(changed) {
 		changed = false;
 		
-		for(identifier <- domain(nodeEnvironment)) {
+		for(identifier <- environmentDomain(methodData)) {
 			set[int] oldIn = \in[identifier];
 			set[int] oldOut = \out[identifier];
 			
-			for(predecessor <- predecessors(controlFlow, identifier)) {
+			for(predecessor <- predecessors(methodData.controlFlow.graph, identifier)) {
 				\in[identifier] += \out[predecessor];
 			}
 			
 			if(!isEmpty(generators[identifier])) {
 				\out[identifier] = { identifier } + (\in[identifier] - kills[identifier]);
 			} else {
-				\out[identifier] = (\in[identifier] - kills[identifier]);
+				\out[identifier] = \in[identifier] - kills[identifier];
 			}
 			
 			if(oldIn != \in[identifier] || oldOut != \out[identifier]) {
@@ -61,24 +66,28 @@ public Graph[int] createDDG(Graph[int] controlFlow, map[int, node] nodeEnvironme
 			}
 		}
 	}
-		
-	Graph[int] dataDependenceGraph = {};
+	
+	DataDependence dataDependence = DataDependence({}, (), ());	
 
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
 			if(usedVariable notin definitions) {
-				dataDependenceGraph += <ENTRYNODE, identifier>;
+				dataDependence.graph += { <ENTRYNODE, identifier> };
 				continue;
 			}
 			
 			set[int] variableDefs = definitions[usedVariable];
 			for(dependency <- \in[identifier] & variableDefs) {
-				dataDependenceGraph += <dependency, identifier>;
+				dataDependence.graph += { <dependency, identifier> };
 			}
 		}
 	}
 	
-	return dataDependenceGraph;
+	dataDependence.\in = \in;
+	dataDependence.\out = \out;
+	methodData.dataDependence = dataDependence;
+	
+	return methodData;
 }
 
 private void storeDefinition(str variableName, int statement) {
@@ -192,6 +201,16 @@ private void processStatement(int identifier, node statement) {
 		}
 		case \expressionStatement(stmt) : {
 			createDataDependenceGraph(identifier, stmt);
+		}
+		case \methodCall(_, _, arguments): {
+			for(argument <- arguments) {
+				checkForUse(identifier, argument);
+			}
+		}
+		case \methodCall(_, _, _, arguments): {
+			for(argument <- arguments) {
+				checkForUse(identifier, argument);
+			}
 		}
 		case Statement stmt: {
 			createDataDependenceGraph(identifier, stmt);
