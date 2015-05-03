@@ -18,8 +18,9 @@ import graph::\data::DDG;
 import graph::control::PDT;
 import graph::control::dependence::CDG;
 
-@doc {
+@doc { 
 	To run a test:
+		displayProgramDependenceGraph(|project://JavaTest|, "main");
 		displayProgramDependenceGraph(|project://pdg-JavaTest|, "testPDG");
 		displayProgramDependenceGraph(|project://pdg-JavaTest|, "testPDT2");
 }

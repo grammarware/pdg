@@ -16,6 +16,8 @@ map[int, set[str]] generators = ();
 
 map[int, set[int]] kills = ();
 
+str methodName;
+
 public MethodData createDDG(MethodData methodData) {
 	map[int, set[int]] \in = ();
 	map[int, set[int]] \out = ();
@@ -24,6 +26,8 @@ public MethodData createDDG(MethodData methodData) {
 	uses = ();
 	generators = ();
 	kills = ();
+	
+	methodName = methodData.name;
 	
 	for(identifier <- environmentDomain(methodData)) {
 		\in[identifier] = {};
@@ -67,7 +71,7 @@ public MethodData createDDG(MethodData methodData) {
 		}
 	}
 	
-	DataDependence dataDependence = DataDependence({}, (), ());	
+	DataDependence dataDependence = DataDependence({}, (), (), (), ());	
 
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
@@ -84,6 +88,9 @@ public MethodData createDDG(MethodData methodData) {
 	
 	dataDependence.\in = \in;
 	dataDependence.\out = \out;
+	dataDependence.defs = definitions;
+	dataDependence.uses = uses;
+	
 	methodData.dataDependence = dataDependence;
 	
 	return methodData;
@@ -203,6 +210,7 @@ private void processStatement(int identifier, node statement) {
     		return;
     	}
 		case \return(expression): {
+			definitions["$<methodName>_return"] = { identifier };
 			checkForUse(identifier, expression);
 			createDataDependenceGraph(identifier, expression);
 		}

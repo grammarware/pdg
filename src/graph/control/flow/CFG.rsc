@@ -1,8 +1,6 @@
 module graph::control::flow::CFG
 
 import Prelude;
-import List;
-
 import analysis::m3::AST;
 import analysis::graphs::Graph;
 import lang::java::m3::AST;
@@ -11,6 +9,7 @@ import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
 import graph::control::flow::JumpEnvironment;
+import graph::control::flow::CFConnector;
 
 // A counter to identify nodes.
 private int nodeIdentifier = 0;
@@ -39,18 +38,34 @@ public MethodData createCFG(MethodData methodData) {
 	parameterNodes = ();
 	nodeIdentifier = 0;
 	
+	list[ControlFlow] parameterAssignments = [];
+	int parameterNumber = 0;
+	
+	if(\method(_, name, parameters, _, _) := methodData.abstractTree) {
+		for(parameter <- parameters) {
+			Statement parameterIn = \expressionStatement(\variable(parameter.name, 0, \simpleName("$method_<name>_in_<parameterNumber>")));
+			parameterIn@src = parameter@src;
+			
+			identifier = storeNode(parameterIn, nodeType = Parameter());
+			parameterNodes[identifier] = ENTRYNODE;
+			parameterAssignments  += ControlFlow({}, identifier, {identifier});
+			
+			parameterNumber += 1;
+		}
+	}
+	
 	ControlFlow controlFlow = createControlFlow(methodData.abstractTree);
 	controlFlow.exitNodes += getReturnNodes();
 	controlFlow.exitNodes += getThrowNodes();
-	
-	if(\method(_, name, parameters, _, _) := methodData.abstractTree) {
-		println(name);
-	}
 	
 	methodData.calledMethods = calledMethods;
 	methodData.nodeEnvironment = nodeEnvironment;
 	methodData.parameterNodes = parameterNodes;
 	methodData.controlFlow = controlFlow;
+
+	if(!isEmpty(parameterAssignments)) {
+		methodData.controlFlow = connectControlFlows(parameterAssignments + controlFlow);
+	}
 	
 	resetJumps();
 	
@@ -191,14 +206,17 @@ private list[ControlFlow] registerMethodCalls(Expression expression) {
 			calledMethods += callNode@decl;
 			
 			list[ControlFlow] argumentAssignments = [];
+			int argumentNumber = 0;
 			
 			for(argument <- arguments) {
-				Statement argumentIn = \expressionStatement(\variable("$method_<name>_in", 0, argument));
+				Statement argumentIn = \expressionStatement(\variable("$method_<name>_in_<argumentNumber>", 0, argument));
 				argumentIn@src = argument@src;
 				
 				identifier = storeNode(argumentIn, nodeType = Parameter());
 				parameterNodes[identifier] = callsite.entryNode;
 				argumentAssignments += ControlFlow({}, identifier, {identifier});
+				
+				argumentNumber += 1;
 			}
 			
 			if(callNode@typ != \void()) {
@@ -226,40 +244,6 @@ private list[ControlFlow] registerMethodCalls(Expression expression) {
 	}
 	
 	return callsites;
-}
-
-private ControlFlow connectControlFlows(list[ControlFlow] controlFlows) {
-	tuple[ControlFlow popped, list[ControlFlow] rest] popTuple = pop(controlFlows);
-	
-	ControlFlow first = popTuple.popped;
-	ControlFlow connectedControlFlow = first;
-	
-	if(size(popTuple.rest) >= 2) {
-		popTuple = pop(popTuple.rest);
-		ControlFlow second = popTuple.popped;
-		
-		connectedControlFlow.graph = first.graph
-							+ second.graph 
-							+ createConnectionEdges(first, second);
-	
-		ControlFlow successorGraph = connectControlFlows(popTuple.rest);
-		connectedControlFlow.graph = connectedControlFlow.graph
-							+ successorGraph.graph 
-							+ createConnectionEdges(second, successorGraph);
-		connectedControlFlow.exitNodes = successorGraph.exitNodes;
-	} else if(size(popTuple.rest) >= 1) {
-		popTuple = pop(popTuple.rest);
-		connectedControlFlow.graph = connectedControlFlow.graph
-							+ popTuple.popped.graph
-							+ createConnectionEdges(connectedControlFlow, popTuple.popped);
-		connectedControlFlow.exitNodes = popTuple.popped.exitNodes;
-	}
-	
-	return connectedControlFlow;
-}
-
-private Graph[int] createConnectionEdges(ControlFlow first, ControlFlow second) {
-	return first.exitNodes * {second.entryNode};
 }
 
 private ControlFlow processBlock(list[Statement] body) {
@@ -619,24 +603,4 @@ private ControlFlow processThrow(int identifier, Statement throwNode) {
 
 private ControlFlow processStatement(int identifier, Statement statement) {
 	return ControlFlow({}, identifier, {identifier});
-}
-
-
-/*********
- * Tests *
- *********/
-test bool testConnector() {
-	Graph[int] firstFlow = { <0, 1> };
-	Graph[int] secondFlow = { <2, 3> };
-	Graph[int] thirdFlow = { <4, 5>, <5, 6>	};
-	
-	list[ControlFlow] graphs = [
-		ControlFlow(firstFlow, 0, {0, 1}),
-		ControlFlow(secondFlow, 2, {3}),
-		ControlFlow(thirdFlow, 4, {6})
-	];
-	
-	println(connectControlFlows(graphs));
-	
-	return true;
 }
