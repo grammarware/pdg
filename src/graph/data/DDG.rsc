@@ -210,9 +210,7 @@ private void processStatement(int identifier, node statement) {
     		return;
     	}
 		case \return(expression): {
-			definitions["$<methodName>_return"] = { identifier };
-			checkForUse(identifier, expression);
-			createDataDependenceGraph(identifier, expression);
+			return;
 		}
 		case \throw(expression): {
 			checkForUse(identifier, expression);
@@ -286,9 +284,6 @@ private void createDataDependenceGraph(int identifier, node tree) {
     		for(argument <- args) {
     			checkForUse(identifier, argument);
     		}
-    	}
-    	case \qualifiedName(qualifier, expression): {
-    		println("Not implemented qualifiedName(<qualifier>, <expression>).");
     	}
     	case \conditional(expression, thenBranch, elseBranch): {
     		checkForUse(identifier, expression);

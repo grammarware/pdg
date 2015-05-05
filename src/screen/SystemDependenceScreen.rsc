@@ -64,14 +64,16 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 		
 		for(key <- domain(method.parameterNodes), key >= 0) {
 			if(key in method.dataDependence.uses) {
-				println("Key[<method.name><key>] uses: <method.dataDependence.uses[key]>");
+				println("Key[<method.name>:<key>] uses: <method.dataDependence.uses[key]>");
 				
 				for(usedVariable <- method.dataDependence.uses[key]) {
 					if(/\$.*/ := usedVariable && usedVariable in totalDefs) {
+						println("Key[<method.name>:<key>] defs: <totalDefs[usedVariable]>");
+						
 						for(definition <- totalDefs[usedVariable]) {
 							edges += edge("<definition>", "<method.name>:<key>", 
-										lineStyle("dash"), lineColor("lightgreen"), toArrow(box(size(10), 
-										fillColor("lightgreen"))));
+										lineStyle("dash"), lineColor("lime"), toArrow(box(size(10), 
+										fillColor("lime"))));
 						}
 					}
 				}
@@ -84,8 +86,8 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 			}
 			if(Expression expression := resolveIdentifier(method, \value)){
 				edges += edge("<method.name>:<\value>", "<expression.name>:<ENTRYNODE>", 
-					lineStyle("dash"), lineColor("blue"), toArrow(box(size(10), 
-					fillColor("blue"))));
+					lineStyle("dash"), lineColor("deepskyblue"), toArrow(box(size(10), 
+					fillColor("deepskyblue"))));
 			}
 		}
 	}

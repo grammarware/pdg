@@ -24,6 +24,8 @@ private map[int, node] nodeEnvironment = ();
 // Maps a parameter node to its call-site node.
 private map[int, int] parameterNodes = ();
 
+private str methodName = "";
+
 private int getIdentifier() {
 	int identifier = nodeIdentifier;
 	
@@ -38,6 +40,8 @@ public MethodData createCFG(MethodData methodData) {
 	parameterNodes = ();
 	nodeIdentifier = 0;
 	
+	methodName = methodData.name;
+	
 	list[ControlFlow] parameterAssignments = [];
 	int parameterNumber = 0;
 	
@@ -48,14 +52,34 @@ public MethodData createCFG(MethodData methodData) {
 			
 			identifier = storeNode(parameterIn, nodeType = Parameter());
 			parameterNodes[identifier] = ENTRYNODE;
-			parameterAssignments  += ControlFlow({}, identifier, {identifier});
+			parameterAssignments += ControlFlow({}, identifier, {identifier});
 			
 			parameterNumber += 1;
 		}
 	}
 	
 	ControlFlow controlFlow = createControlFlow(methodData.abstractTree);
-	controlFlow.exitNodes += getReturnNodes();
+	
+	if(Declaration decl := methodData.abstractTree) {
+		if(decl.\return != Type::\void()) {
+			set[int] returnNodes = getReturnNodes();
+			
+			Statement returnOut = \expressionStatement(\variable("$<decl.name>_return", 0, \simpleName("$<decl.name>_result")));
+			returnOut@src = decl@src;
+			
+			identifier = storeNode(returnOut, nodeType = Parameter());
+			parameterNodes[identifier] = ENTRYNODE;
+			
+			for(returnNode <- returnNodes) {
+				controlFlow.graph += { <returnNode, identifier> };
+			}
+			
+			controlFlow.exitNodes += { identifier };			
+		} else {
+			controlFlow.exitNodes += getReturnNodes();
+		}
+	}
+	
 	controlFlow.exitNodes += getThrowNodes();
 	
 	methodData.calledMethods = calledMethods;
@@ -153,7 +177,7 @@ private ControlFlow createControlFlow(node tree) {
 			list[ControlFlow] callsites = registerMethodCalls(expression);
 			
 			identifier = storeNode(returnNode);
-			controlFlow = connectControlFlows(callsites + processReturn(identifier, returnNode));
+			controlFlow = connectControlFlows(callsites + processValueReturn(identifier, expression));
 		}
 		case throwNode: \throw(_): {
 			identifier = storeNode(throwNode);
@@ -219,7 +243,7 @@ private list[ControlFlow] registerMethodCalls(Expression expression) {
 				argumentNumber += 1;
 			}
 			
-			if(callNode@typ != \void()) {
+			if("<callNode@typ>" != "void()") {
 				Statement returnValue = \expressionStatement(\variable("$method_<name>_return", 0, \simpleName("$<name>_return")));
 				returnValue@src = callNode@decl;
 				
@@ -590,6 +614,23 @@ private ControlFlow processReturn(int identifier, Statement returnNode) {
 	returnFlow.entryNode = identifier;
 	
 	return returnFlow;
+}
+
+private ControlFlow processValueReturn(int identifier, Expression returnValue) {
+	ControlFlow returnFlow = ControlFlow({}, 0, {});
+	returnFlow.entryNode = identifier;
+	returnFlow.exitNodes = {identifier};
+			
+	Statement resultOut = \expressionStatement(\variable("$<methodName>_result", 0, returnValue));
+	resultOut@src = returnValue@src;
+	
+	identifier = storeNode(resultOut, nodeType = Parameter());
+	ControlFlow resultFlow = ControlFlow({}, identifier, {});
+	parameterNodes[identifier] = returnFlow.entryNode;
+	
+	addReturnNode(identifier);
+	
+	return connectControlFlows([returnFlow, resultFlow]);
 }
 
 private ControlFlow processThrow(int identifier, Statement throwNode) {

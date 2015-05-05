@@ -18,6 +18,21 @@ public class Main {
 	}
 	
 	public static int Add(int a, int b) {
+		if(a > 10) {
+			return a + b;
+		}
 		return a + b;
+	}
+	
+	public void Recurse() {
+		RecurseAdd(1);
+	}
+	
+	public int RecurseAdd(int i) {
+		if(i < 10) {
+			i = RecurseAdd(i);
+		}
+		
+		return i;
 	}
 }
