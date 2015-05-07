@@ -9,16 +9,16 @@ import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
 
-map[str, set[int]] definitions = ();
+private map[str, set[int]] definitions = ();
 
-map[int, set[str]] uses = ();
-map[int, set[str]] generators = ();
+private map[int, set[str]] uses = ();
+private map[int, set[str]] generators = ();
 
-map[int, set[int]] kills = ();
+private map[int, set[int]] kills = ();
 
-str methodName;
+private str methodName;
 
-public MethodData createDDG(MethodData methodData) {
+public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
 	map[int, set[int]] \in = ();
 	map[int, set[int]] \out = ();
 	
@@ -55,7 +55,7 @@ public MethodData createDDG(MethodData methodData) {
 			set[int] oldIn = \in[identifier];
 			set[int] oldOut = \out[identifier];
 			
-			for(predecessor <- predecessors(methodData.controlFlow.graph, identifier)) {
+			for(predecessor <- predecessors(controlFlow.graph, identifier)) {
 				\in[identifier] += \out[predecessor];
 			}
 			
@@ -91,9 +91,7 @@ public MethodData createDDG(MethodData methodData) {
 	dataDependence.defs = definitions;
 	dataDependence.uses = uses;
 	
-	methodData.dataDependence = dataDependence;
-	
-	return methodData;
+	return dataDependence;
 }
 
 private void storeDefinition(str variableName, int statement) {

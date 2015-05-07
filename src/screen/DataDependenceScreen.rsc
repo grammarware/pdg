@@ -27,18 +27,14 @@ public void displayDataDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	MethodData methodData = emptyMethodData();
-	methodData.name = methodName;
-	methodData.abstractTree = methodAST;
-	
-	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
-	methodCollection = [ createDDG(method) | method <- methodCollection ];
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
+	DataDependences dataDependences = ( method : createDDG(method, controlFlows[method]) | method <- controlFlows );
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
-	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.dataDependence.graph, "dash", "green");
+	for(method <- dataDependences) {
+		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
 		
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));

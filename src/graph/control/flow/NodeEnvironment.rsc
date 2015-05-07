@@ -1,6 +1,45 @@
-module graph::control::flow::NodeUtility
+module graph::control::flow::NodeEnvironment
 
+import Prelude;
 import lang::java::m3::AST;
+
+import graph::DataStructures;
+
+// Storage for all the visited nodes with their identifier as key.
+private map[int, node] nodeEnvironment = ();
+
+// A counter to identify nodes.
+private int nodeIdentifier = 0;
+
+private int getIdentifier() {
+	int identifier = nodeIdentifier;
+	
+	nodeIdentifier += 1;
+	
+	return identifier;
+}
+
+public map[int, node] getNodeEnvironment() {
+	map[int, node] returnedEnvironment = nodeEnvironment;
+	
+	nodeEnvironment = ();
+	nodeIdentifier = 0;
+	
+	return returnedEnvironment;
+}
+
+public int storeNode(node treeNode, NodeType nodeType = Normal()) {
+	int identifier = getIdentifier();
+
+	treeNode@nodeType = nodeType;
+	nodeEnvironment[identifier] = treeNode;
+	
+	return identifier;
+}
+
+public node resolveNode(int identifier) {
+	return nodeEnvironment[identifier];
+}
 
 public bool isMethodCall(Expression expression) {
 	switch(expression) {

@@ -48,10 +48,10 @@ private Graph[int] augmentFlowGraph(ControlFlow controlFlow) {
 	return augmentedGraph;
 }
 
-public MethodData createPDT(MethodData methodData) {
+public PostDominator createPDT(MethodData methodData, ControlFlow controlFlow) {
 	PostDominator postDominator = PostDominator({}, (), ());
 	
-	Graph[int] augmentedGraph = augmentFlowGraph(methodData.controlFlow);
+	Graph[int] augmentedGraph = augmentFlowGraph(controlFlow);
 	Graph[int] reversedTree = reverseEdges(augmentedGraph);
 	
 	set[int] nodes = carrier(reversedTree) - top(reversedTree);
@@ -82,7 +82,6 @@ public MethodData createPDT(MethodData methodData) {
 	
 	postDominator.dominations = dominations;
 	postDominator.dominators = dominators;
-	methodData.postDominator = postDominator;
 	
-	return methodData;
+	return postDominator;
 }

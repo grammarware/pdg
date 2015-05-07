@@ -27,29 +27,29 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 		
-	MethodData methodData = emptyMethodData();
-	methodData.name = methodName;
-	methodData.abstractTree = methodAST;
-	
-	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
-	methodCollection = [ createPDT(method) | method <- methodCollection ];
-	methodCollection = [ createCDG(method) | method <- methodCollection ];
-	methodCollection = [ createDDG(method) | method <- methodCollection ];
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
+	PostDominators postDominators = ( method : createPDT(method, controlFlows[method]) | method <- controlFlows );
+	ControlDependences controlDependences = 
+		( 
+			method : createCDG(method, controlFlows[method], postDominators[method]) 
+			| method <- postDominators 
+		);
+	DataDependences dataDependences = ( method : createDDG(method, controlFlows[method]) | method <- controlFlows );
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
 	map[str, set[str]] totalDefs = ();
 	
-	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.controlDependence.graph, "solid", "blue");
-		edges += createEdges(method.name, method.dataDependence.graph, "dash", "green");
+	for(method <- controlFlows) {
+		edges += createEdges(method.name, controlDependences[method].graph, "solid", "blue");
+		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
 		
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		
-		for(key <- method.dataDependence.defs) {
-			for(\value <- method.dataDependence.defs[key]) {
+		for(key <- dataDependences[method].defs) {
+			for(\value <- dataDependences[method].defs[key]) {
 				if(key in totalDefs) {
 					totalDefs[key] += { "<method.name>:<\value>" };
 				} else {
@@ -59,14 +59,14 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 		}
 	}
 	
-	for(method <- methodCollection) {
+	for(method <- controlFlows) {
 		println("===== <method.name> =====");
 		
 		for(key <- domain(method.parameterNodes), key >= 0) {
-			if(key in method.dataDependence.uses) {
-				println("Key[<method.name>:<key>] uses: <method.dataDependence.uses[key]>");
+			if(key in dataDependences[method].uses) {
+				println("Key[<method.name>:<key>] uses: <dataDependences[method].uses[key]>");
 				
-				for(usedVariable <- method.dataDependence.uses[key]) {
+				for(usedVariable <- dataDependences[method].uses[key]) {
 					if(/\$.*/ := usedVariable && usedVariable in totalDefs) {
 						println("Key[<method.name>:<key>] defs: <totalDefs[usedVariable]>");
 						

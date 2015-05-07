@@ -18,27 +18,23 @@ import graph::control::PDT;
 
 @doc {
 	To run a test:
-		displayPostDominatorTree(|project://pdg-JavaTest|, "testPDT");
-		displayPostDominatorTree(|project://pdg-JavaTest|, "testPDT2");
-		displayPostDominatorTree(|project://pdg-JavaTest|, "testCDG");
+		displayPostDominatorTree(|project://JavaTest|, "testPDT");
+		displayPostDominatorTree(|project://JavaTest|, "testPDT2");
+		displayPostDominatorTree(|project://JavaTest|, "testCDG");
 }
 public void displayPostDominatorTree(loc project, str methodName) {
 	M3 projectModel = createM3(project);
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	MethodData methodData = emptyMethodData();
-	methodData.name = methodName;
-	methodData.abstractTree = methodAST;
-	
-	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
-	methodCollection = methodCollection = [ createPDT(method) | method <- methodCollection ];
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
+	PostDominators postDominators = ( method : createPDT(method, controlFlows[method]) | method <- controlFlows );
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
-	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.postDominator.tree, "solid", "blue");
+	for(method <- postDominators) {
+		edges += createEdges(method.name, postDominators[method].tree, "solid", "blue");
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("START <method.name>"), id("<method.name>:<STARTNODE>"), size(50), fillColor("lightblue"));

@@ -29,9 +29,9 @@ private Graph[int] augmentFlowGraph(ControlFlow controlFlow) {
 	return augmentedGraph;
 }
 
-public MethodData createCDG(MethodData methodData) {
+public ControlDependence createCDG(MethodData methodData, ControlFlow controlFlow, PostDominator postDominator) {
 	ControlDependence controlDependence = ControlDependence({});
-	Graph[int] augmentedGraph = augmentFlowGraph(methodData.controlFlow);
+	Graph[int] augmentedGraph = augmentFlowGraph(controlFlow);
 	
 	// Maps a node to all the nodes that it depends on.
 	map[int, set[int]] dependencies = ();
@@ -43,12 +43,13 @@ public MethodData createCDG(MethodData methodData) {
 		controls[treeNode] = {};
 	}
 	
-	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, from notin reach(methodData.postDominator.tree, { to }) - { to } };
+	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, 
+												from notin reach(postDominator.tree, { to }) - { to } };
 	
 	for(<from, to> <- inspectionEdges) {
 		// Immediate dominator (idom)
-		int idom = getOneFrom(predecessors(methodData.postDominator.tree, from));
-		list[int] pathNodes = shortestPathPair(methodData.postDominator.tree, idom, to) - idom;
+		int idom = getOneFrom(predecessors(postDominator.tree, from));
+		list[int] pathNodes = shortestPathPair(postDominator.tree, idom, to) - idom;
 		
 		for(pathNode <- pathNodes, pathNode != from) {
 			dependencies[pathNode] += { from };
@@ -71,7 +72,6 @@ public MethodData createCDG(MethodData methodData) {
 	}
 	
 	controlDependence.graph -= { <ENTRYNODE, STARTNODE> };
-	methodData.controlDependence = controlDependence;
 	
-	return methodData;
+	return controlDependence;
 }

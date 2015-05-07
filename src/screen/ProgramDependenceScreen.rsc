@@ -21,29 +21,29 @@ import graph::control::dependence::CDG;
 @doc { 
 	To run a test:
 		displayProgramDependenceGraph(|project://JavaTest|, "main");
-		displayProgramDependenceGraph(|project://pdg-JavaTest|, "testPDG");
-		displayProgramDependenceGraph(|project://pdg-JavaTest|, "testPDT2");
+		displayProgramDependenceGraph(|project://JavaTest|, "testPDG");
+		displayProgramDependenceGraph(|project://JavaTest|, "testPDT2");
 }
 public void displayProgramDependenceGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 		
-	MethodData methodData = emptyMethodData();
-	methodData.name = methodName;
-	methodData.abstractTree = methodAST;
-	
-	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
-	methodCollection = [ createPDT(method) | method <- methodCollection ];
-	methodCollection = [ createCDG(method) | method <- methodCollection ];
-	methodCollection = [ createDDG(method) | method <- methodCollection ];
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
+	PostDominators postDominators = ( method : createPDT(method, controlFlows[method]) | method <- controlFlows );
+	ControlDependences controlDependences = 
+					( 
+						method : createCDG(method, controlFlows[method], postDominators[method]) 
+						| method <- postDominators 
+					);
+	DataDependences dataDependences = ( method : createDDG(method, controlFlows[method]) | method <- controlFlows );
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
-	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.controlDependence.graph, "solid", "blue");
-		edges += createEdges(method.name, method.dataDependence.graph, "dash", "green");
+	for(method <- controlFlows) {
+		edges += createEdges(method.name, controlDependences[method].graph, "solid", "blue");
+		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
 		
 		boxes += createBoxes(method);
 		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));

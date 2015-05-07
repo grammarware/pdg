@@ -1,6 +1,7 @@
 module creator::CFGCreator
 
 import Prelude;
+import lang::java::jdt::m3::AST;
 import lang::java::jdt::m3::Core;
 import analysis::graphs::Graph;
 
@@ -10,37 +11,36 @@ import graph::control::flow::CFG;
 
 set[loc] generatedMethods = {};
 
-public list[MethodData] createControlFlows(loc methodLocation, MethodData methodData, M3 projectModel) {
-	methodData = createCFG(methodData);
+public map[MethodData, ControlFlow] createControlFlows(loc methodLocation, node abstractTree, M3 projectModel) {
+	GeneratedData generatedData = createCFG(cast(#Declaration, abstractTree));
+	
+	MethodData methodData = generatedData.methodData;
+	ControlFlow controlFlow = generatedData.controlFlow;
+	
+	map[MethodData, ControlFlow] controlFlows = ( methodData : controlFlow );
 	
 	generatedMethods = { methodLocation };
+	controlFlows += getCalledMethods(methodData.calledMethods, projectModel);	
 	
-	list[MethodData] methodCollection = [methodData];
-	methodCollection += getCalledMethods(methodData.calledMethods, projectModel);	
-	
-	return methodCollection;
+	return controlFlows;
 }
 
-private str extractMethodName(loc methodLocation) {
-	if(/<name:.*>\(/ := methodLocation.file) {
-		return name;
-	}
-	
-	return "";
-}
-
-private list[MethodData] getCalledMethods(set[loc] calledMethods, M3 projectModel) {
-	list[MethodData] methodCollection = [];
-	MethodData methodData = emptyMethodData();
+private map[MethodData, ControlFlow] getCalledMethods(set[loc] calledMethods, M3 projectModel) {
+	map[MethodData, ControlFlow] methodCollection = ();
+	node methodAST;
+	GeneratedData generatedData;
+	MethodData methodData;
+	ControlFlow controlFlow;
 	
 	for(calledMethod <- calledMethods, calledMethod in getM3Methods(projectModel), calledMethod notin generatedMethods) {
-		methodData.name = extractMethodName(calledMethod);
-		methodData.abstractTree = getMethodASTEclipse(calledMethod, model = projectModel);
-		methodData = createCFG(methodData);
+		methodAST = getMethodASTEclipse(calledMethod, model = projectModel);
+		generatedData = createCFG(cast(#Declaration, methodAST));
 		
-		methodCollection += methodData;
+		methodData = generatedData.methodData;
+		controlFlow = generatedData.controlFlow;
+		methodCollection[methodData] = controlFlow;
+		
 		generatedMethods += calledMethod;
-		
 		methodCollection += getCalledMethods(methodData.calledMethods, projectModel);
 	}
 	

@@ -21,20 +21,17 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	MethodData methodData = emptyMethodData();
-	methodData.name = methodName;
-	methodData.abstractTree = methodAST;
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
 	
-	list[MethodData] methodCollection = createControlFlows(methodLocation, methodData, projectModel);
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
 	
-	for(method <- methodCollection) {
-		edges += createEdges(method.name, method.controlFlow.graph, "solid", "blue");
-		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<method.controlFlow.entryNode>", 
+	for(method <- controlFlows) {
+		edges += createEdges(method.name, controlFlows[method].graph, "solid", "blue");
+		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<controlFlows[method].entryNode>", 
 						lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
 		
-		for(exitNode <- method.controlFlow.exitNodes) {
+		for(exitNode <- controlFlows[method].exitNodes) {
 			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
 							lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
 		}
