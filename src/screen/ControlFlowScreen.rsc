@@ -12,7 +12,7 @@ import extractors::Project;
 import creator::CFGCreator;
 
 
-@doc {
+@doc { 
 	To run a test:
 		displayControlFlowGraph(|project://JavaTest|, "testCDG");
 }

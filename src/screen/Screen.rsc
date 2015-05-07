@@ -52,14 +52,6 @@ public Figures createBoxes(MethodData methodData) {
 				) | treeNode <- environmentDomain(methodData) ];
 }
 
-public &T cast(type[&T] tp, value v) throws str {
-    if (&T tv := v) {
-        return tv;
-    } else {
-        throw "cast failed";
-    }
-}
-
 public loc getLocation(node stat){
 	return cast(#loc, getAnnotations(stat)["src"]);
 }

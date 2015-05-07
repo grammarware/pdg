@@ -34,10 +34,15 @@ public node resolveIdentifier(MethodData methodData, int identifier) {
 	return methodData.nodeEnvironment[identifier];
 }
 
-public str nodeName(MethodData methodData, int identifier) {
-	if(/^<name:\w*>/ := "<methodData.nodeEnvironment[identifier]>") {
-		return name;
-	}
-	
-	return "";
+public str nodeName(MethodData methodData, int identifier) =
+	/^<name:\w*>/ := "<methodData.nodeEnvironment[identifier]>"
+	? name
+	: "";
+
+public &T cast(type[&T] tp, value v) throws str {
+    if (&T tv := v) {
+        return tv;
+    } else {
+        throw "cast failed";
+    }
 }
