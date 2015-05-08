@@ -49,9 +49,10 @@ private ControlFlow process(blockNode: \block(body)) {
 }
 
 private ControlFlow process(ifNode: \if(condition, thenBranch)) {
+	list[ControlFlow] callSites = registerMethodCalls(condition);
 	int identifier = storeNode(ifNode);
+
 	ControlFlow ifFlow = ControlFlow({}, 0, {});
-	
 	ifFlow.entryNode = identifier;
 	// The condition is an exit node on false.
 	ifFlow.exitNodes += {identifier};
@@ -61,13 +62,14 @@ private ControlFlow process(ifNode: \if(condition, thenBranch)) {
 	ifFlow.graph += thenFlow.graph + createConnectionEdges(ifFlow, thenFlow);
 	ifFlow.exitNodes += thenFlow.exitNodes;
 	
-	return ifFlow;
+	return connectControlFlows(callSites + ifFlow);
 }
 
 private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
+	list[ControlFlow] callSites = registerMethodCalls(condition);
 	int identifier = storeNode(ifNode);
-	ControlFlow ifElseFlow = ControlFlow({}, 0, {});
 	
+	ControlFlow ifElseFlow = ControlFlow({}, 0, {});
 	ifElseFlow.entryNode = identifier;
 	// The condition is an exit node on false.
 	ifElseFlow.exitNodes += {identifier};
@@ -81,7 +83,7 @@ private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
 	ifElseFlow.exitNodes += elseFlow.exitNodes + thenFlow.exitNodes;
 	ifElseFlow.exitNodes -= {identifier};
 	
-	return ifElseFlow;
+	return connectControlFlows(callSites + ifElseFlow);
 }
 
 private ControlFlow createForFlow(int identifier, Statement body) {
@@ -113,15 +115,17 @@ private ControlFlow process(forNode: \for(initializers, updaters, body)) {
 }
 
 private ControlFlow process(forNode: \for(initializers, condition, updaters, body)) {
+	list[ControlFlow] callSites = registerMethodCalls(condition);
 	int identifier = storeNode(forNode);
 	
-	return createForFlow(identifier, body);
+	return connectControlFlows(callSites + createForFlow(identifier, body));
 }
 
 private ControlFlow process(whileNode: \while(condition, body)) {
+	list[ControlFlow] callSites = registerMethodCalls(condition);
 	int identifier = storeNode(whileNode);
-	ControlFlow whileFlow = ControlFlow({}, 0, {});
 	
+	ControlFlow whileFlow = ControlFlow({}, 0, {});
 	whileFlow.entryNode = identifier;
 	whileFlow.exitNodes += {identifier};
 	
@@ -138,21 +142,22 @@ private ControlFlow process(whileNode: \while(condition, body)) {
 	
 	scopeUp();
 	
-	return whileFlow;
+	return connectControlFlows(callSites + whileFlow);
 }
 
 private ControlFlow process(doNode: \do(body, condition)) {
+	list[ControlFlow] callSites = registerMethodCalls(condition);
 	int identifier = storeNode(doNode);
+	
 	ControlFlow doWhileFlow = ControlFlow({}, 0, {});
+	doWhileFlow.entryNode = identifier;
+	doWhileFlow.exitNodes += {identifier};
 	
 	scopeDown();
 	
 	// Process the body first, as it is always executed once.
 	ControlFlow bodyFlow = process(body);
 	bodyFlow.exitNodes += getContinueNodes();
-	
-	doWhileFlow.entryNode = identifier;
-	doWhileFlow.exitNodes += {identifier};
 	
 	doWhileFlow.graph += bodyFlow.graph;
 	doWhileFlow.graph += createConnectionEdges(bodyFlow, doWhileFlow);
@@ -164,7 +169,7 @@ private ControlFlow process(doNode: \do(body, condition)) {
 	
 	scopeUp();
 	
-	return doWhileFlow;
+	return connectControlFlows(callSites + doWhileFlow);
 }
 
 private list[ControlFlow] processCases(list[Statement] statements) {
@@ -198,7 +203,9 @@ private list[ControlFlow] processCases(list[Statement] statements) {
 }
 
 private ControlFlow process(switchNode: \switch(expression, statements)) {
+	list[ControlFlow] callSites = registerMethodCalls(expression);
 	int identifier = storeNode(switchNode);
+	
 	ControlFlow switchFlow = ControlFlow({}, 0, {});
 	
 	switchFlow.entryNode = identifier;
@@ -219,7 +226,7 @@ private ControlFlow process(switchNode: \switch(expression, statements)) {
 	
 	switchFlow.exitNodes = finalExitNodes + getBreakNodes();
 	
-	return switchFlow;
+	return connectControlFlows(callSites + switchFlow);
 }
 
 private ControlFlow createTryFlow(int identifier, Statement body, list[Statement] catchClauses) {
@@ -296,10 +303,12 @@ private ControlFlow process(breakNode: \break()) {
 }
 
 private ControlFlow process(breakNode: \break(expression)) {
+	list[ControlFlow] callSites = registerMethodCalls(expression);
 	int identifier = storeNode(breakNode);
+	
 	addBreakNode(identifier);
 	
-	return ControlFlow({}, identifier, {});
+	return connectControlFlows(callSites + ControlFlow({}, identifier, {}));
 }
 
 private ControlFlow process(continueNode: \continue()) {
@@ -310,10 +319,12 @@ private ControlFlow process(continueNode: \continue()) {
 }
 
 private ControlFlow process(continueNode: \continue(expression)) {
+	list[ControlFlow] callSites = registerMethodCalls(expression);
 	int identifier = storeNode(continueNode);
+	
 	addContinueNode(identifier);
 	
-	return ControlFlow({}, identifier, {});
+	return connectControlFlows(callSites + ControlFlow({}, identifier, {}));
 }
 
 private ControlFlow process(returnNode: \return()) {
@@ -341,14 +352,14 @@ private ControlFlow process(throwNode: \throw(expression)) {
 }
 
 private ControlFlow process(statementNode: \expressionStatement(statement)) {
-	list[ControlFlow] callsites = registerMethodCalls(statement);
+	list[ControlFlow] callSites = registerMethodCalls(statement);
 			
 	if(isMethodCall(statement)) {
-		return connectControlFlows(callsites);
+		return connectControlFlows(callSites);
 	}
 	
 	int identifier = storeNode(statementNode);
-	return connectControlFlows(callsites + ControlFlow({}, identifier, {identifier}));
+	return connectControlFlows(callSites + ControlFlow({}, identifier, {identifier}));
 }
 
 private ControlFlow process(Statement statement) {
