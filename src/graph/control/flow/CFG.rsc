@@ -8,69 +8,25 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
+import graph::control::flow::MethodNodes;
 import graph::control::flow::CFConnector;
+import graph::control::flow::TransferNodes;
 import graph::control::flow::JumpEnvironment;
 import graph::control::flow::NodeEnvironment;
 
-// The set of all the methods that are called by the currently
-// analysed method.
-private set[loc] calledMethods = {};
-
-// Maps a parameter node to its call-site node.
-private map[int, int] parameterNodes = ();
+alias GeneratedData = tuple[MethodData methodData, ControlFlow controlFlow];
 
 private str methodName = "";
 
-alias GeneratedData = tuple[MethodData methodData, ControlFlow controlFlow];
-
-private ControlFlow addReturnNodes(ControlFlow controlFlow, loc sourceLocation) {	
-	Statement returnOut = \expressionStatement(\variable("$<methodName>_return", 0, \simpleName("$<methodName>_result")));
-	returnOut@src = sourceLocation;
-	
-	int identifier = storeNode(returnOut, nodeType = Parameter());
-	parameterNodes[identifier] = ENTRYNODE;
-	
-	controlFlow.graph += { <returnNode, identifier> | returnNode <- getReturnNodes() };
-	controlFlow.exitNodes += { identifier };
-	
-	return controlFlow;
-}
-private list[ControlFlow] createParameterNodes(list[Declaration] parameters) {
-	list[ControlFlow] parameterAssignments = [];
-	
-	if(isEmpty(parameters)) {
-		return parameterAssignments;
-	}
-	
-	int parameterNumber = 0;
-	Statement parameterIn;
-	
-	for(parameter <- parameters) {
-		parameterIn = \expressionStatement(\variable(parameter.name, 0, \simpleName("$method_<methodName>_in_<parameterNumber>")));
-		parameterIn@src = parameter@src;
-		
-		int identifier = storeNode(parameterIn, nodeType = Parameter());
-		parameterNodes[identifier] = ENTRYNODE;
-		parameterAssignments += ControlFlow({}, identifier, {identifier});
-		
-		parameterNumber += 1;
-	}
-	
-	return parameterAssignments;
-}
-
 public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
-	calledMethods = {};
-	parameterNodes = ();
-	
 	methodName = name;
 	
-	list[ControlFlow] parameterFlows = createParameterNodes(parameters);
+	list[ControlFlow] parameterFlows = createParameterNodes(parameters, name);
 	
 	ControlFlow controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);
 	
 	if(\return != Type::\void()) {
-		controlFlow = addReturnNodes(controlFlow, methodNode@src);	
+		controlFlow = addReturnNodes(controlFlow, name, methodNode@src);	
 	} else {
 		controlFlow.exitNodes += getReturnNodes();
 	}
@@ -79,78 +35,13 @@ public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, p
 	
 	MethodData methodData = emptyMethodData();
 	methodData.nodeEnvironment = getNodeEnvironment();
-	methodData.parameterNodes = parameterNodes;
-	methodData.calledMethods = calledMethods;
+	methodData.parameterNodes = getTransferNodes();
+	methodData.calledMethods = getCalledMethods();
 	methodData.name = name;
 	
 	resetJumps();
 	
 	return <methodData, controlFlow>;
-}
-
-private ControlFlow addArgumentNodes(ControlFlow controlFlow, str calledMethod, list[Expression] arguments) {
-	if(isEmpty(arguments)) {
-		return controlFlow;
-	}
-	
-	list[ControlFlow] argumentAssignments = [];
-	int argumentNumber = 0;
-	Statement argumentIn;
-	
-	for(argument <- arguments) {
-		argumentIn = \expressionStatement(\variable("$method_<calledMethod>_in_<argumentNumber>", 0, argument));
-		argumentIn@src = argument@src;
-		
-		int identifier = storeNode(argumentIn, nodeType = Parameter());
-		parameterNodes[identifier] = controlFlow.entryNode;
-		
-		argumentAssignments += ControlFlow({}, identifier, {identifier});
-		argumentNumber += 1;
-	}
-	
-	return connectControlFlows([ controlFlow ] + argumentAssignments);
-}
-
-private ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, node returnType, loc sourceLocation) {
-	if("<returnType>" == "void()") {
-		return controlFlow;
-	}
-	
-	Statement returnValue = \expressionStatement(\variable("$method_<calledMethod>_return", 0, \simpleName("$<calledMethod>_return")));
-	returnValue@src = sourceLocation;
-	
-	int identifier = storeNode(returnValue, nodeType = Parameter());
-	parameterNodes[identifier] = controlFlow.entryNode;
-	
-	return connectControlFlows([ controlFlow, ControlFlow({}, identifier, {identifier}) ]);
-}
-
-private list[ControlFlow] registerMethodCalls(Expression expression) {
-	list[ControlFlow] callsites = [];
-	ControlFlow callsite;
-	
-	int identifier;
-	
-	visit(expression) {
-		case callNode: \methodCall(isSuper, name, arguments): {
-			identifier = storeNode(callNode, nodeType = CallSite());
-			calledMethods += callNode@decl;
-			
-			callsite = ControlFlow({}, identifier, {identifier});
-			callsite = addArgumentNodes(callsite, name, arguments);
-			callsite = addReturnOutNode(callsite, name, callNode@typ, callNode@decl);
-			
-			callsites += callsite;
-		}
-    	case callNode: \methodCall(isSuper, receiver, name, arguments): {
-    		identifier = storeNode(callNode, nodeType = CallSite());
-			calledMethods += callNode@decl;
-			
-			callsites += ControlFlow({}, identifier, {identifier});
-    	}
-	}
-	
-	return callsites;
 }
 
 private ControlFlow process(blockNode: \block(body)) {	
@@ -436,18 +327,8 @@ private ControlFlow process(returnNode: \return(expression)) {
 	list[ControlFlow] callSites = registerMethodCalls(expression);
 	int identifier = storeNode(returnNode);
 	
-	ControlFlow returnFlow = ControlFlow({}, 0, {});
-	returnFlow.entryNode = identifier;
-	returnFlow.exitNodes = {identifier};
-			
-	Statement resultOut = \expressionStatement(\variable("$<methodName>_result", 0, expression));
-	resultOut@src = expression@src;
-	
-	identifier = storeNode(resultOut, nodeType = Parameter());
-	ControlFlow resultFlow = ControlFlow({}, identifier, {});
-	parameterNodes[identifier] = returnFlow.entryNode;
-	
-	addReturnNode(identifier);
+	ControlFlow returnFlow = ControlFlow({}, identifier, {identifier});
+	ControlFlow resultFlow = createResultNode(returnFlow, methodName, expression);
 	
 	return connectControlFlows(callSites + [returnFlow, resultFlow]);
 }
