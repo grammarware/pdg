@@ -41,6 +41,14 @@ public node resolveNode(int identifier) {
 	return nodeEnvironment[identifier];
 }
 
+public bool isDefaultCase(Statement statement) {
+	return \defaultCase() := statement;
+}
+
+public bool isCase(Statement statement) {
+	return \case(_) := statement;
+}
+
 public bool isMethodCall(Expression expression) {
 	switch(expression) {
 		case \methodCall(_, _, _): {

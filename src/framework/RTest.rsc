@@ -35,6 +35,7 @@ public bool RTestFunction(str name, &U(&T param) t_function, map[&T, &U] asserti
 		}
 	}
 	
+		
 	return true;
 }
 

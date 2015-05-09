@@ -182,8 +182,7 @@ private list[ControlFlow] processCases(list[Statement] statements) {
 	caseFlow.entryNode = caseNode.entryNode;
 	caseFlow.exitNodes = caseNode.exitNodes;
 	
-	bool isNotDefault(Statement treeNode) = !(\defaultCase() := treeNode);
-	bool isNotCase(Statement treeNode) = (!(\case(_) := treeNode) && isNotDefault(treeNode));
+	bool isNotCase(Statement treeNode) = !isCase(treeNode) && !isDefaultCase(treeNode);
 	
 	list[Statement] caseBody = [ cast(#Statement, statement) | statement <- takeWhile(statements, isNotCase) ];
 	
@@ -213,8 +212,13 @@ private ControlFlow process(switchNode: \switch(expression, statements)) {
 	
 	list[ControlFlow] caseFlows = processCases(statements);
 	set[int] finalExitNodes = {};
+	bool hasDefaultCase = false;
 	
 	for(caseFlow <- caseFlows) {
+		if(isDefaultCase(resolveNode(caseFlow.entryNode))) {
+			hasDefaultCase = true;
+		}
+		
 		switchFlow.graph += caseFlow.graph + createConnectionEdges(switchFlow, caseFlow);
 		switchFlow.exitNodes += caseFlow.exitNodes;
 		
@@ -224,7 +228,9 @@ private ControlFlow process(switchNode: \switch(expression, statements)) {
 		finalExitNodes = caseFlow.exitNodes;
 	}
 	
-	switchFlow.exitNodes = finalExitNodes + getBreakNodes();
+	switchFlow.exitNodes = hasDefaultCase 
+		? finalExitNodes + getBreakNodes()
+		: { identifier } + finalExitNodes + getBreakNodes();
 	
 	return connectControlFlows(callSites + switchFlow);
 }
@@ -303,7 +309,7 @@ private ControlFlow process(breakNode: \break()) {
 }
 
 private ControlFlow process(breakNode: \break(expression)) {
-	list[ControlFlow] callSites = registerMethodCalls(expression);
+	list[ControlFlow] callSites = expression == "" ? [] : registerMethodCalls(expression);
 	int identifier = storeNode(breakNode);
 	
 	addBreakNode(identifier);

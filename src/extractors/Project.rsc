@@ -36,7 +36,7 @@ public loc createProjectLoc(str projectName) {
 	@return (M3) -
 		The M3 model for the project.
 }
-public M3 createM3(loc project) {
+public M3 createM3(loc project) {	
 	if(project notin M3Cache) {
 		M3Cache[project] = createM3FromEclipseProject(project);
 	}
