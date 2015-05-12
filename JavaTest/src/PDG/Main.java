@@ -18,10 +18,15 @@ public class Main {
 	}
 	
 	public static int Add(int a, int b) {
-		if(a > 10) {
-			return a + b;
-		}
 		return a + b;
+	}
+	
+	public void RefactoredMain(){
+		int i = 1;
+		
+		while(i < 11) {
+			i = i + 1;
+		}
 	}
 	
 	public void Recurse() {
