@@ -131,15 +131,15 @@ private void checkForUse(int identifier, Expression expression) {
 		storeUse(identifier, name);
 	}
 	
-	if(callNode: \methodCall(_, name, arguments) := expression) {
+	if(callNode: \methodCall(_, name, _) := expression) {
 		if(callNode@typ != \void()) {
-			storeUse(identifier, "$method_<name>_return");
+			storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
 		}
 	}
 	
-	if(callNode: \methodCall(_, _, name, arguments):= expression) {
+	if(callNode: \methodCall(_, _, name, _):= expression) {
 		if(callNode@typ != \void()) {
-			storeUse(identifier, "$method_<name>_return");
+			storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
 		}
 	}
 }
@@ -207,7 +207,7 @@ private void processStatement(int identifier, node statement) {
     	case \catch(_, _): {
     		return;
     	}
-		case \return(expression): {
+		case \return(_): {
 			return;
 		}
 		case \throw(expression): {

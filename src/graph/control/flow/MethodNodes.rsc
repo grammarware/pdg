@@ -2,6 +2,7 @@ module graph::control::flow::MethodNodes
 
 import Prelude;
 import lang::java::m3::AST;
+import analysis::m3::Registry;
 
 import graph::DataStructures;
 import graph::control::flow::CFConnector;
@@ -33,7 +34,9 @@ public list[ControlFlow] registerMethodCalls(Expression expression) {
 			
 			callsite = ControlFlow({}, identifier, {identifier});
 			callsite = addArgumentNodes(callsite, name, arguments);
-			callsite = addReturnOutNode(callsite, name, callNode@typ, callNode@decl);
+			callsite = addReturnOutNode(callsite, name, callNode@typ, callNode@src, resolveM3(callNode@decl));
+			
+			println(resolveM3(callNode@decl));
 			
 			callsites += callsite;
 		}
@@ -43,7 +46,7 @@ public list[ControlFlow] registerMethodCalls(Expression expression) {
 			
 			callsite = ControlFlow({}, identifier, {identifier});
 			callsite = addArgumentNodes(callsite, name, arguments);
-			callsite = addReturnOutNode(callsite, name, callNode@typ, callNode@decl);
+			callsite = addReturnOutNode(callsite, name, callNode@typ, callNode@src, resolveM3(callNode@decl));
 			
 			callsites += callsite;
     	}

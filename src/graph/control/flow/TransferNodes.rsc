@@ -57,7 +57,13 @@ public ControlFlow createResultNode(ControlFlow returnFlow, str methodName, Expr
 }
 
 public ControlFlow addReturnNodes(ControlFlow controlFlow, str methodName, loc sourceLocation) {	
-	Statement returnOut = \expressionStatement(\variable("$<methodName>_return", 0, \simpleName("$<methodName>_result")));
+	Statement returnOut = \expressionStatement(
+			\variable(
+				"$<methodName>_return", 
+				0, 
+				\simpleName("$<methodName>_result")
+			)
+		);
 	returnOut@src = sourceLocation;
 	
 	int identifier = storeNode(returnOut, nodeType = Parameter());
@@ -92,12 +98,20 @@ public ControlFlow addArgumentNodes(ControlFlow controlFlow, str calledMethod, l
 	return connectControlFlows([ controlFlow ] + argumentAssignments);
 }
 
-public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, node returnType, loc sourceLocation) {
+public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, node returnType, loc sourceLocation, loc declarationLocation) {
 	if("<returnType>" == "void()") {
 		return controlFlow;
 	}
 	
-	Statement returnValue = \expressionStatement(\variable("$method_<calledMethod>_return", 0, \simpleName("$<calledMethod>_return")));
+	println("$<calledMethod>_return_<declarationLocation.offset>");
+	
+	Statement returnValue = \expressionStatement(
+			\variable(
+				"$method_<calledMethod>_return_<sourceLocation.offset>", 
+				0, 
+				\simpleName("$<calledMethod>_return")
+			)
+		);
 	returnValue@src = sourceLocation;
 	
 	int identifier = storeNode(returnValue, nodeType = Parameter());
