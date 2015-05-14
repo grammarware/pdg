@@ -1,6 +1,9 @@
 package PDG.ControlFlow;
 
 public class Try {
+	/*
+	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 4>, <4,3>, <EXITNODE, 2>, <2,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testTry1() {
 		int i = 0; // 0
 		
@@ -11,6 +14,9 @@ public class Try {
 		}
 	}
 	
+	/*
+	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <5, 2>, <2,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testTry2() {
 		int i = 0; // 0
 		
@@ -23,6 +29,9 @@ public class Try {
 		i = i * 2; // 5
 	}
 	
+	/*
+	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <5, 2>, <2,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testTry3() {
 		int i = 0; // 0
 		
@@ -35,6 +44,9 @@ public class Try {
 		}
 	}
 	
+	/*
+	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 6>, <6,5>, <5,4>, <4,3>, <5, 2>, <2,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testTry4() {
 		int i = 0; // 0
 		
@@ -49,6 +61,9 @@ public class Try {
 		i = i * 2; // 6
 	}
 	
+	/*
+	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 7>, <7,6>, <6,5>, <7,4>, <4,3>, <7,2>, <2,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testTry5() {
 		int i = 0; // 0
 		
@@ -63,6 +78,9 @@ public class Try {
 		}
 	}
 	
+	/*
+	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 8>, <8,7>, <7,6>, <6,5>, <7,4>, <4,3>, <7,2>, <2,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testTry6() {
 		int i = 0; // 0
 		

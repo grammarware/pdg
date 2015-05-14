@@ -32,20 +32,6 @@ private Graph[int] getMethodPDT(loc methodLocation) {
 	return postDominator.tree;
 }
 
-private Graph[int] getMethodCFG(loc methodLocation) {
-	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
-	
-	GeneratedData generatedData = createCFG(cast(#Declaration, methodAST));
-	
-	return generatedData.controlFlow.graph;
-}
-
-private ControlFlow getMethodCF(loc methodLocation) {
-	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
-	
-	return createCFG(cast(#Declaration, methodAST)).controlFlow;
-}
-
 test bool testIf() {
 	projectModel = createM3(|project://JavaTest|);
 	
@@ -162,91 +148,91 @@ test bool testSwitch() {
 test bool testTry() {
 	projectModel = createM3(|project://JavaTest|);
 	
-	map[loc, ControlFlow] assertions = (
-		getMethodLocation("testTry1", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,4> }, 0, {2, 4}),
-		getMethodLocation("testTry2", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,5>, <2,3>, <3,4>, <4,5> }, 0, {5}),
-		getMethodLocation("testTry3", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,5>, <2,3>, <3,4>, <4,5> }, 0, {5}),
-		getMethodLocation("testTry4", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,5>, <2,3>, <3,4>, <4,5>, <5,6> }, 0, {6}),
-		getMethodLocation("testTry5", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <2,5>, <2,7>, <3,4>, <4,7>, <5,6>, <6,7> }, 0, {7}),
-		getMethodLocation("testTry6", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <2,5>, <2,7>, <3,4>, <4,7>, <5,6>, <6,7>, <7,8> }, 0, {8})
+	map[loc, Graph[int]] assertions = (
+		getMethodLocation("testTry1", projectModel):
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 4>, <4,3>, <EXITNODE, 2>, <2,1>, <1,0>, <0,STARTNODE> },
+		getMethodLocation("testTry2", projectModel):
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <5, 2>, <2,1>, <1,0>, <0,STARTNODE> },
+		getMethodLocation("testTry3", projectModel):
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <5, 2>, <2,1>, <1,0>, <0,STARTNODE> },
+		getMethodLocation("testTry4", projectModel):
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 6>, <6,5>, <5,4>, <4,3>, <5, 2>, <2,1>, <1,0>, <0,STARTNODE> },
+		getMethodLocation("testTry5", projectModel):
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 7>, <7,6>, <6,5>, <7,4>, <4,3>, <7,2>, <2,1>, <1,0>, <0,STARTNODE> },
+		getMethodLocation("testTry6", projectModel):
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 8>, <8,7>, <7,6>, <6,5>, <7,4>, <4,3>, <7,2>, <2,1>, <1,0>, <0,STARTNODE> }
 	);
 	
-	return RTestFunction("TestTry", getMethodCF, assertions);
+	return RTestFunction("TestTry", getMethodPDT, assertions);
 }
 
 test bool testThrow() {
 	projectModel = createM3(|project://JavaTest|);
 	
-	map[loc, ControlFlow] assertions = (
+	map[loc, Graph[int]] assertions = (
 		getMethodLocation("testThrow1", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3> }, 0, {2, 3}),
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testThrow1Alternate", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3> }, 0, {2, 3}),
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testThrow2", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3>, <3,4>, <4,5> }, 0, {2, 5}),
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testThrow2Alternate", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3>, <3,4>, <4,5> }, 0, {2, 5}),
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testThrow3", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3>, <3,4>, <4,7>, <4,5>, <5,6>, <6,7> }, 0, {2, 7}),
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 7>, <7,6>, <6,5>, <7,4>, <4,3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testThrow4", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3>, <3,4>, <4,8>, <4,5>, <5,6>, <6,7> }, 0, {2, 7, 8}),
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 8>, <EXITNODE, 7>, <7,6>, <6,5>, <EXITNODE, 4>, <4,3>, <EXITNODE,2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testThrow5", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <1,3>, <3,4>, <4,5>, <4,6>, <5,6>, <6,7>, <7,8> }, 0, {2, 8})
+			{ <EXITNODE, ENTRYNODE>, <EXITNODE, 8>, <8,7>, <7,6>, <6,5>, <6,4>, <4,3>, <EXITNODE,2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	);
 	
-	return RTestFunction("TestThrow", getMethodCF, assertions);
+	return RTestFunction("TestThrow", getMethodPDT, assertions);
 }
 
 test bool testBreak() {
 	projectModel = createM3(|project://JavaTest|);
 	
-	map[loc, ControlFlow] assertions = (
+	map[loc, Graph[int]] assertions = (
 		getMethodLocation("testBreak1", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <2,4>, <4,1> }, 0, {1, 3}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE, 1>, <1,4>, <1,0>, <0,STARTNODE>, <EXITNODE, 3>, <EXITNODE, 2> },
 		getMethodLocation("testBreak2", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <2,4>, <4,1>, <1,5>, <3,5> }, 0, {5}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE, 5>, <5,3>, <5,2>, <5,1>, <1,4>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testBreak3", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,4>, <3,5>, <4,6>, <5,2>, <2,6>, <6,1> }, 0, {1}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE, 1>, <6,2>, <6,3>, <6,4>, <2,5>, <1,6>, <1,0>, <0, STARTNODE> },
 		getMethodLocation("testBreak4", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,4>, <3,5>, <4,6>, <5,2>, <2,6>, <6,1>, <1,7> }, 0, {7})
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE, 7>, <7,1>, <6,2>, <6,3>, <6,4>, <2,5>, <1,6>, <1,0>, <0, STARTNODE> }
 	);
 	
-	return RTestFunction("TestBreak", getMethodCF, assertions);
+	return RTestFunction("TestBreak", getMethodPDT, assertions);
 }
 
 test bool testContinue() {
 	projectModel = createM3(|project://JavaTest|);
 	
-	map[loc, ControlFlow] assertions = (
+	map[loc, Graph[int]] assertions = (
 		getMethodLocation("testContinue1", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,1>, <2,4>, <4,1> }, 0, {1}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE,1>, <1,4>, <1,3>, <1,2>, <1,0>, <0,STARTNODE> },
 		getMethodLocation("testContinue2", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,1>, <2,4>, <4,1>, <1,5> }, 0, {5}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE,5>, <5,1>, <1,4>, <1,3>, <1,2>, <1,0>, <0,STARTNODE> },
 		getMethodLocation("testContinue3", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,4>, <4,2>, <3,5>, <5,2>, <2,6>, <6,1> }, 0, {1}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE,1>, <2,5>, <2,4>, <2,3>, <6,2>, <1,6>, <1,0>, <0,STARTNODE> },
 		getMethodLocation("testContinue4", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,4>, <4,2>, <3,5>, <5,2>, <2,6>, <6,1>, <1,7> }, 0, {7})
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE,7>, <7,1>, <6,2>, <2,5>, <2,4>, <2,3>, <1,6>, <1,0>, <0,STARTNODE> }
 	);
 	
-	return RTestFunction("TestContinue", getMethodCF, assertions);
+	return RTestFunction("TestContinue", getMethodPDT, assertions);
 }
 
 test bool testCompound() {
 	projectModel = createM3(|project://JavaTest|);
 	
-	map[loc, ControlFlow] assertions = (
+	map[loc, Graph[int]] assertions = (
 		getMethodLocation("testCompound1", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,2>, <2,4>, <4,8>, <1,5>, <5,6>, <6,7>, <7,5>, <5,8> }, 0, {8}),
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE,8>, <8,5>, <8,4>, <8,1>, <7,6>, <5,7>, <4,2>, <2,3>, <1,0>, <0,STARTNODE> },
 		getMethodLocation("testCompound2", projectModel): 
-			ControlFlow({ <0,1>, <1,2>, <2,3>, <3,4>, <4,5>, <5,6>, <4,7>, <7,8>, <8,9>, <9,10>, 
-							<2,11>, <11,12>, <12,13>, <2,14>, <14,15>, <15,16>, <16,17>, <6,18>, <10,18>, <13,18>, <17,18> }, 0, {18})
+			{ <EXITNODE,ENTRYNODE>, <EXITNODE,18>, <18,17>, <17,16>, <16,15>, <15,14>, <18,13>, <13,12>, <12,11>, <18,10>, <10,9>, <9,8>, 
+				<8,7>, <18,6>, <6,5>, <18,4>, <4,3>, <18,2>, <1,0>, <2,1>, <0,STARTNODE> }
 	);
 	
-	return RTestFunction("TestCompound", getMethodCF, assertions);
+	return RTestFunction("TestCompound", getMethodPDT, assertions);
 }

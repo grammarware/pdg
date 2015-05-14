@@ -1,6 +1,9 @@
 package PDG.ControlFlow;
 
 public class Compounds {
+	/*
+	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,8>, <5,7>, <7,6>, <8,5>, <8,4>, <2,3>, <4,2>, <8,1>, <1,0>, <0,STARTNODE> }
+	 */
 	public void testCompound1(){
 		int i = 0; // 0
 		
@@ -20,6 +23,10 @@ public class Compounds {
 		i = 42; // 8
 	}
 	
+	/*
+	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,18>, <18,17>, <17,16>, <16,15>, <15,14>, <18,13>, <13,12>, <12,11>, 
+	 * 			<18,10>, <10,9>, <9,8>, <8,7>, <18,6>, <6,5>, <18,4>, <4,3>, <18,2>, <1,0>, <2,1>, <0,STARTNODE> }
+	 */
 	public int testCompound2(){ // Expands to 18 for return.
 		int i = 3; // 0
 		int j = 4; // 1
