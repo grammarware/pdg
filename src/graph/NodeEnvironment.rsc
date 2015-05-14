@@ -1,4 +1,4 @@
-module graph::control::flow::NodeEnvironment
+module graph::NodeEnvironment
 
 import Prelude;
 import lang::java::m3::AST;
@@ -11,6 +11,11 @@ private map[int, node] nodeEnvironment = ();
 // A counter to identify nodes.
 private int nodeIdentifier = 0;
 
+public void initializeNodeEnvironment() {
+	nodeEnvironment = ();
+	nodeIdentifier = 0;
+}
+
 private int getIdentifier() {
 	int identifier = nodeIdentifier;
 	
@@ -20,12 +25,7 @@ private int getIdentifier() {
 }
 
 public map[int, node] getNodeEnvironment() {
-	map[int, node] returnedEnvironment = nodeEnvironment;
-	
-	nodeEnvironment = ();
-	nodeIdentifier = 0;
-	
-	return returnedEnvironment;
+	return nodeEnvironment;
 }
 
 public int storeNode(node treeNode, NodeType nodeType = Normal()) {

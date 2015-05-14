@@ -1,4 +1,4 @@
-module graph::control::flow::JumpEnvironment
+module graph::JumpEnvironment
 
 // Register break nodes, for post-process binding.
 set[int] breakNodes = {};
@@ -63,7 +63,7 @@ public set[int] getReturnNodes() {
 	return returns;
 }
 
-public void resetJumps() {
+public void initializeJumpEnvironment() {
 	breakNodes = {};
 	parentBreakNodes = {};
 	continueNodes = {};

@@ -1,22 +1,22 @@
-module graph::control::flow::TransferNodes
+module graph::TransferEnvironment
 
 import Prelude;
 import lang::java::m3::AST;
 
 import graph::DataStructures;
+import graph::JumpEnvironment;
+import graph::NodeEnvironment;
 import graph::control::flow::CFConnector;
-import graph::control::flow::JumpEnvironment;
-import graph::control::flow::NodeEnvironment;
 
 // Maps a parameter node to its call-site node.
 private map[int, int] transferNodes = ();
 
-public map[int, int] getTransferNodes() {
-	map[int, int] returnedTransfers = transferNodes;
-	
+public void initializeTransferEnvironment() {
 	transferNodes = ();
-	
-	return returnedTransfers;
+}
+
+public map[int, int] getTransferNodes() {
+	return transferNodes;
 }
 
 public list[ControlFlow] createParameterNodes(list[Declaration] parameters, str methodName) {
@@ -59,7 +59,7 @@ public ControlFlow createResultNode(ControlFlow returnFlow, str methodName, Expr
 public ControlFlow addReturnNodes(ControlFlow controlFlow, str methodName, loc sourceLocation) {	
 	Statement returnOut = \expressionStatement(
 			\variable(
-				"$<methodName>_return", 
+				"$<methodName>_return_<sourceLocation.offset>", 
 				0, 
 				\simpleName("$<methodName>_result")
 			)
@@ -103,13 +103,11 @@ public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, n
 		return controlFlow;
 	}
 	
-	println("$<calledMethod>_return_<declarationLocation.offset>");
-	
 	Statement returnValue = \expressionStatement(
 			\variable(
 				"$method_<calledMethod>_return_<sourceLocation.offset>", 
 				0, 
-				\simpleName("$<calledMethod>_return")
+				\simpleName("$<calledMethod>_return_<declarationLocation.offset>")
 			)
 		);
 	returnValue@src = sourceLocation;

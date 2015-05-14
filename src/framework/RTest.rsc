@@ -28,13 +28,14 @@ public bool RTestFunction(str name, &T(&T param) t_function, map[&T, &T] asserti
 
 public bool RTestFunction(str name, &U(&T param) t_function, map[&T, &U] assertions) {	
 	for(testCase <- assertions) {
-		if(t_function(testCase) != assertions[testCase]) {
-			println("|<name>|: \"<testCase>\" FAILED. Got " +
-				"<t_function(testCase)>. Expected <assertions[testCase]>.");
+		&U result = t_function(testCase);
+		if(result != assertions[testCase]) {
+			println("|<name>|: \"<testCase>\" FAILED.\n"
+			+ "\tGot <result>.\n"
+			+ "\tExpected <assertions[testCase]>.");
 			return false;
 		}
 	}
-	
 		
 	return true;
 }

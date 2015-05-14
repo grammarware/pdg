@@ -8,11 +8,11 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
-import graph::control::flow::MethodNodes;
+import graph::JumpEnvironment;
+import graph::NodeEnvironment;
+import graph::CallEnvironment;
+import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
-import graph::control::flow::TransferNodes;
-import graph::control::flow::JumpEnvironment;
-import graph::control::flow::NodeEnvironment;
 
 alias GeneratedData = tuple[MethodData methodData, ControlFlow controlFlow];
 
@@ -20,6 +20,11 @@ private str methodName = "";
 
 public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
 	methodName = name;
+	
+	initializeJumpEnvironment();
+	initializeNodeEnvironment();
+	initializeCallEnvironment();
+	initializeTransferEnvironment();
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, name);
 	
@@ -38,8 +43,6 @@ public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, p
 	methodData.parameterNodes = getTransferNodes();
 	methodData.calledMethods = getCalledMethods();
 	methodData.name = name;
-	
-	resetJumps();
 	
 	return <methodData, controlFlow>;
 }
@@ -360,7 +363,7 @@ private ControlFlow process(throwNode: \throw(expression)) {
 private ControlFlow process(statementNode: \expressionStatement(statement)) {
 	list[ControlFlow] callSites = registerMethodCalls(statement);
 			
-	if(isMethodCall(statement)) {
+	if(isMethodCall(statement) && !isEmpty(callSites)) {
 		return connectControlFlows(callSites);
 	}
 	
