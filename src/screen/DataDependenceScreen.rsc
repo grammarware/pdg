@@ -18,8 +18,8 @@ import graph::\data::DDG;
 
 @doc {
 	To run a test:
-		displayDataDependenceGraph(|project://pdg-JavaTest|, "testPDT");
-		displayDataDependenceGraph(|project://pdg-JavaTest|, "testPDT2");
+		displayDataDependenceGraph(|project://JavaTest|, "testPDT");
+		displayDataDependenceGraph(|project://JavaTest|, "testPDT2");
 		displayDataDependenceGraph(|project://QL|, "nextToken");
 }
 public void displayDataDependenceGraph(loc project, str methodName) {

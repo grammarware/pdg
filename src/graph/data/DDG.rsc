@@ -317,10 +317,12 @@ private void createDataDependenceGraph(int identifier, node tree) {
 			checkForUse(identifier, lhs);
 			checkForUse(identifier, rhs);
 		}
-		case \postfix(operand, _ ): {
+		case \postfix(operand, operator): {
+			checkForDefinition(identifier, operand);
 			checkForUse(identifier, operand);
 		}	
-		case \prefix(_, operand):{
+		case \prefix(operator, operand):{
+			checkForDefinition(identifier, operand);
 			checkForUse(identifier, operand);
 		}
 	}
