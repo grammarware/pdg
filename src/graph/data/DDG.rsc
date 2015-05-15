@@ -8,57 +8,49 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
+import graph::\data::VariableData;
+
 
 data DataDependence = EmptyDD() 
 					| DataDependence(Graph[int] graph, map[str, set[VariableData]] defs, map[int, set[str]] uses);
-
 alias DataDependences = map[MethodData, DataDependence];
-alias VariableData = tuple[str name, int origin];
 
 private alias ReachingDefs = tuple[
 			map[int, set[VariableData]] \in, 
 			map[int, set[VariableData]] \out
 		];
 
-private map[int, set[str]] uses = ();
-private map[str, set[VariableData]] definitions = ();
-private map[int, set[VariableData]] generators = ();
-private map[int, set[VariableData]] kills = ();
-
-private str methodName;
-
 public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
-	definitions = ();
-	uses = ();
-	generators = ();
-	kills = ();
-	
-	methodName = methodData.name;
+	initializeVariableData(methodData);
 	
 	for(identifier <- environmentDomain(methodData)) {
-		kills[identifier] = {};
-		generators[identifier] = {};
-		
 		process(identifier, resolveIdentifier(methodData, identifier));
 	}
 	
+	map[int, set[VariableData]] generators = getGenerators();
+	map[str, set[VariableData]] definitions = getDefinitions();
+	set[VariableData] killedSet;
+	
 	for(identifier <- generators) {
 		for(generated <- generators[identifier]) {
-			set[VariableData] killedSet = definitions[generated.name] - generated;
+			killedSet = definitions[generated.name] - generated;
 			storeKill(identifier, killedSet);
 		} 
 	}
 	
-	ReachingDefs reachingDefs = calculateReachingDefs(methodData, controlFlow);
+	ReachingDefs reachingDefs = calculateReachingDefs(methodData, controlFlow, generators);
 	DataDependence dataDependence = DataDependence({}, (), ());	
-
+	
+	map[int, set[str]] uses = getUses();
+	set[VariableData] variableDefs;
+	
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
 			if(usedVariable notin definitions) {
 				continue;
 			}
 			
-			set[VariableData] variableDefs = definitions[usedVariable];
+			variableDefs = definitions[usedVariable];
 
 			for(dependency <- reachingDefs.\in[identifier] & variableDefs) {
 				dataDependence.graph += { <dependency.origin, identifier> };
@@ -72,9 +64,10 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 	return dataDependence;
 }
 
-private ReachingDefs calculateReachingDefs(MethodData methodData, ControlFlow controlFlow) {
+private ReachingDefs calculateReachingDefs(MethodData methodData, ControlFlow controlFlow, map[int, set[VariableData]] generators) {
 	map[int, set[VariableData]] \in = ();
 	map[int, set[VariableData]] \out = ();
+	map[int, set[VariableData]] kills = getKills();
 	
 	bool changed = true;
 	
@@ -101,117 +94,56 @@ private ReachingDefs calculateReachingDefs(MethodData methodData, ControlFlow co
 	return <\in, \out>;
 }
 
-private void storeDefinition(str variableName, int statement) {
-	VariableData definition = <variableName, statement>;
-	
-	if(variableName in definitions) {
-		definitions[variableName] += { definition };
-	} else {
-		definitions[variableName] = { definition };
-	}
-}
-
-private void storeUse(int statement, str variableName) {
-	if(statement in uses) {
-		uses[statement] += { variableName };
-	} else {
-		uses[statement] = { variableName };
-	}
-}
-
-private void storeGenerator(int statement, str variableName) {
-	VariableData generated = <variableName, statement>;
-	
-	if(statement in generators) {
-		generators[statement] += { generated };
-	} else {
-		generators[statement] = { generated };
-	}
-}
-
-private void storeKill(int statement, set[VariableData] killSet) {
-	if(statement in kills) {
-		kills[statement] += killSet;
-	} else {
-		kills[statement] = killSet;
-	}
-}
-
-private void checkForUse(int identifier, Expression expression) {
-	if(\simpleName(name) := expression) {
-		storeUse(identifier, name);
-	}
-	
-	if(callNode: \methodCall(_, name, _) := expression) {
-		if(callNode@typ != \void()) {
-			storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
-		}
-	}
-	
-	if(callNode: \methodCall(_, _, name, _):= expression) {
-		if(callNode@typ != \void()) {
-			storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
-		}
-	}
-}
-
-private void checkForDefinition(int identifier, Expression expression) {
-	if(\simpleName(name) := expression) {
-		storeDefinition(name, identifier);
-		storeGenerator(identifier, name);
-	} 
-}
-
 private void process(int identifier, \if(condition, _)) {
 	checkForUse(identifier, condition);
-	createDataDependenceGraph(identifier, condition);
+	processExpression(identifier, condition);
 }
 
 private void process(int identifier, \if(condition, _, _)) {
 	checkForUse(identifier, condition);
-	createDataDependenceGraph(identifier, condition);
+	processExpression(identifier, condition);
 }
 
 private void process(int identifier, \for(initializers, updaters, _)) {
 	for(initializer <- initializers) {
 		checkForDefinition(identifier, initializer);
-		createDataDependenceGraph(identifier, initializer);
+		processExpression(identifier, initializer);
 	}
 	
 	for(updater <- updaters) {
 		checkForUse(identifier, updater);
-		createDataDependenceGraph(identifier, updater);
+		processExpression(identifier, updater);
 	}
 }
 
 private void process(int identifier, \for(initializers, condition, updaters, _)) {
 	for(initializer <- initializers) {
 		checkForDefinition(identifier, initializer);
-		createDataDependenceGraph(identifier, initializer);
+		processExpression(identifier, initializer);
 	}
 	
 	checkForUse(identifier, condition);
-	createDataDependenceGraph(identifier, condition);
+	processExpression(identifier, condition);
 	
 	for(updater <- updaters) {
 		checkForUse(identifier, updater);
-		createDataDependenceGraph(identifier, updater);
+		processExpression(identifier, updater);
 	}
 }
 
 private void process(int identifier, \while(condition, _)) {
 	checkForUse(identifier, condition);
-	createDataDependenceGraph(identifier, condition);
+	processExpression(identifier, condition);
 }
 
 private void process(int identifier, \do(_, condition)) {
 	checkForUse(identifier, condition);
-	createDataDependenceGraph(identifier, condition);
+	processExpression(identifier, condition);
 }
 
 private void process(int identifier, \switch(expression, _)) {
 	checkForUse(identifier, expression);
-	createDataDependenceGraph(identifier, expression);
+	processExpression(identifier, expression);
 }
 
 private void process(int identifier, \try(_, _)) {
@@ -232,22 +164,22 @@ private void process(int identifier, \return(_)) {
 
 private void process(int identifier, \throw(expression)) {
 	checkForUse(identifier, expression);
-	createDataDependenceGraph(identifier, expression);
+	processExpression(identifier, expression);
 }
 		
 private void process(int identifier, \expressionStatement(stmt)) {
-	createDataDependenceGraph(identifier, stmt);
+	processExpression(identifier, stmt);
 }
 		
 private void process(int identifier, Statement stmt) {
-	createDataDependenceGraph(identifier, stmt);
+	processExpression(identifier, stmt);
 }
 
 default void process(int identifier, node treeNode) {
 	return;
 }
 
-private void createDataDependenceGraph(int identifier, node tree) {
+private void processExpression(int identifier, node tree) {
 	visit(tree) {
 		case \arrayAccess(array, index): {
 			checkForUse(identifier, array);
