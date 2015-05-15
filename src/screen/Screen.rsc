@@ -18,7 +18,6 @@ import graph::control::flow::CFG;
 alias ControlFlows = map[MethodData, ControlFlow];
 alias PostDominators = map[MethodData, PostDominator];
 alias ControlDependences = map[MethodData, ControlDependence];
-alias DataDependences = map[MethodData, DataDependence];
 
 public loc getMethodLocation(str methodName, M3 projectModel) {
 	for(method <- getM3Methods(projectModel)) {

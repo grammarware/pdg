@@ -16,7 +16,7 @@ import creator::CFGCreator;
 import graph::DataStructures;
 import graph::\data::DDG;
 
-@doc {
+@doc{
 	To run a test:
 		displayDataDependenceGraph(|project://JavaTest|, "testPDT");
 		displayDataDependenceGraph(|project://JavaTest|, "testPDT2");

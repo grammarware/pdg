@@ -9,19 +9,25 @@ import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
 
-private map[str, set[int]] definitions = ();
+data DataDependence = EmptyDD() 
+					| DataDependence(Graph[int] graph, map[str, set[VariableData]] defs, map[int, set[str]] uses);
+
+alias DataDependences = map[MethodData, DataDependence];
+alias VariableData = tuple[str name, int origin];
+
+private alias ReachingDefs = tuple[
+			map[int, set[VariableData]] \in, 
+			map[int, set[VariableData]] \out
+		];
 
 private map[int, set[str]] uses = ();
-private map[int, set[str]] generators = ();
-
-private map[int, set[int]] kills = ();
+private map[str, set[VariableData]] definitions = ();
+private map[int, set[VariableData]] generators = ();
+private map[int, set[VariableData]] kills = ();
 
 private str methodName;
 
 public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
-	map[int, set[int]] \in = ();
-	map[int, set[int]] \out = ();
-	
 	definitions = ();
 	uses = ();
 	generators = ();
@@ -30,48 +36,21 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 	methodName = methodData.name;
 	
 	for(identifier <- environmentDomain(methodData)) {
-		\in[identifier] = {};
-		\out[identifier] = {};
 		kills[identifier] = {};
 		generators[identifier] = {};
 		
-		processStatement(identifier, resolveIdentifier(methodData, identifier));
+		process(identifier, resolveIdentifier(methodData, identifier));
 	}
 	
-	for(identifier <- domain(generators)) {
-		for(generator <- generators[identifier]) {
-			for(definition <- definitions[generator]) {
-				storeKill(identifier, definitions[generator] - identifier);
-			}
-		}
+	for(identifier <- generators) {
+		for(generated <- generators[identifier]) {
+			set[VariableData] killedSet = definitions[generated.name] - generated;
+			storeKill(identifier, killedSet);
+		} 
 	}
 	
-	bool changed = true;
-	
-	while(changed) {
-		changed = false;
-		
-		for(identifier <- environmentDomain(methodData)) {
-			set[int] oldIn = \in[identifier];
-			set[int] oldOut = \out[identifier];
-			
-			for(predecessor <- predecessors(controlFlow.graph, identifier)) {
-				\in[identifier] += \out[predecessor];
-			}
-			
-			if(!isEmpty(generators[identifier])) {
-				\out[identifier] = { identifier } + (\in[identifier] - kills[identifier]);
-			} else {
-				\out[identifier] = \in[identifier] - kills[identifier];
-			}
-			
-			if(oldIn != \in[identifier] || oldOut != \out[identifier]) {
-				changed = true;
-			}
-		}
-	}
-	
-	DataDependence dataDependence = DataDependence({}, (), (), (), ());	
+	ReachingDefs reachingDefs = calculateReachingDefs(methodData, controlFlow);
+	DataDependence dataDependence = DataDependence({}, (), ());	
 
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
@@ -79,26 +58,56 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 				continue;
 			}
 			
-			set[int] variableDefs = definitions[usedVariable];
-			for(dependency <- \in[identifier] & variableDefs) {
-				dataDependence.graph += { <dependency, identifier> };
+			set[VariableData] variableDefs = definitions[usedVariable];
+
+			for(dependency <- reachingDefs.\in[identifier] & variableDefs) {
+				dataDependence.graph += { <dependency.origin, identifier> };
 			}
 		}
 	}
-	
-	dataDependence.\in = \in;
-	dataDependence.\out = \out;
+
 	dataDependence.defs = definitions;
 	dataDependence.uses = uses;
 	
 	return dataDependence;
 }
 
+private ReachingDefs calculateReachingDefs(MethodData methodData, ControlFlow controlFlow) {
+	map[int, set[VariableData]] \in = ();
+	map[int, set[VariableData]] \out = ();
+	
+	bool changed = true;
+	
+	while(changed) {
+		changed = false;
+		
+		for(identifier <- environmentDomain(methodData)) {
+			set[VariableData] oldIn = identifier in \in ? \in[identifier] : {};
+			set[VariableData] oldOut = identifier in \out ? \out[identifier] : {};
+			
+			\in[identifier] = ( 
+					{} 
+					| it + \out[predecessor] 
+					| predecessor <- predecessors(controlFlow.graph, identifier), predecessor in \out
+				);
+			\out[identifier] = generators[identifier] + (\in[identifier] - kills[identifier]);
+			
+			if(oldIn != \in[identifier] || oldOut != \out[identifier]) {
+				changed = true;
+			}
+		}
+	}
+	
+	return <\in, \out>;
+}
+
 private void storeDefinition(str variableName, int statement) {
+	VariableData definition = <variableName, statement>;
+	
 	if(variableName in definitions) {
-		definitions[variableName] += { statement };
+		definitions[variableName] += { definition };
 	} else {
-		definitions[variableName] = { statement };
+		definitions[variableName] = { definition };
 	}
 }
 
@@ -111,14 +120,16 @@ private void storeUse(int statement, str variableName) {
 }
 
 private void storeGenerator(int statement, str variableName) {
+	VariableData generated = <variableName, statement>;
+	
 	if(statement in generators) {
-		generators[statement] += { variableName };
+		generators[statement] += { generated };
 	} else {
-		generators[statement] = { variableName };
+		generators[statement] = { generated };
 	}
 }
 
-private void storeKill(int statement, set[int] killSet) {
+private void storeKill(int statement, set[VariableData] killSet) {
 	if(statement in kills) {
 		kills[statement] += killSet;
 	} else {
@@ -151,76 +162,89 @@ private void checkForDefinition(int identifier, Expression expression) {
 	} 
 }
 
-private void processStatement(int identifier, node statement) {
-	top-down-break visit(statement) {
-		case \if(condition, _): {
-			checkForUse(identifier, condition);
-			createDataDependenceGraph(identifier, condition);
-		}
-		case \if(condition, _, _): {
-			checkForUse(identifier, condition);
-			createDataDependenceGraph(identifier, condition);
-		}
-		case \for(initializers, updaters, _): {
-			for(initializer <- initializers) {
-				checkForDefinition(identifier, initializer);
-				createDataDependenceGraph(identifier, initializer);
-			}
-			
-			for(updater <- updaters) {
-				checkForUse(identifier, updater);
-				createDataDependenceGraph(identifier, updater);
-			}
-		}
-		case \for(initializers, condition, updaters, _): {
-			for(initializer <- initializers) {
-				checkForDefinition(identifier, initializer);
-				createDataDependenceGraph(identifier, initializer);
-			}
-			
-			checkForUse(identifier, condition);
-			createDataDependenceGraph(identifier, condition);
-			
-			for(updater <- updaters) {
-				checkForUse(identifier, updater);
-				createDataDependenceGraph(identifier, updater);
-			}
-		}
-		case \while(condition, _): {
-			checkForUse(identifier, condition);
-			createDataDependenceGraph(identifier, condition);
-		}
-		case \do(_, condition): {
-			checkForUse(identifier, condition);
-			createDataDependenceGraph(identifier, condition);
-		}
-		case \switch(expression, _): {
-			checkForUse(identifier, expression);
-			createDataDependenceGraph(identifier, expression);
-		}
-		case \try(_, _): {
-			return;
-		}
-    	case \try(_, _, _): {
-    		return;
-    	}
-    	case \catch(_, _): {
-    		return;
-    	}
-		case \return(_): {
-			return;
-		}
-		case \throw(expression): {
-			checkForUse(identifier, expression);
-			createDataDependenceGraph(identifier, expression);
-		}
-		case \expressionStatement(stmt) : {
-			createDataDependenceGraph(identifier, stmt);
-		}
-		case Statement stmt: {
-			createDataDependenceGraph(identifier, stmt);
-		}
+private void process(int identifier, \if(condition, _)) {
+	checkForUse(identifier, condition);
+	createDataDependenceGraph(identifier, condition);
+}
+
+private void process(int identifier, \if(condition, _, _)) {
+	checkForUse(identifier, condition);
+	createDataDependenceGraph(identifier, condition);
+}
+
+private void process(int identifier, \for(initializers, updaters, _)) {
+	for(initializer <- initializers) {
+		checkForDefinition(identifier, initializer);
+		createDataDependenceGraph(identifier, initializer);
 	}
+	
+	for(updater <- updaters) {
+		checkForUse(identifier, updater);
+		createDataDependenceGraph(identifier, updater);
+	}
+}
+
+private void process(int identifier, \for(initializers, condition, updaters, _)) {
+	for(initializer <- initializers) {
+		checkForDefinition(identifier, initializer);
+		createDataDependenceGraph(identifier, initializer);
+	}
+	
+	checkForUse(identifier, condition);
+	createDataDependenceGraph(identifier, condition);
+	
+	for(updater <- updaters) {
+		checkForUse(identifier, updater);
+		createDataDependenceGraph(identifier, updater);
+	}
+}
+
+private void process(int identifier, \while(condition, _)) {
+	checkForUse(identifier, condition);
+	createDataDependenceGraph(identifier, condition);
+}
+
+private void process(int identifier, \do(_, condition)) {
+	checkForUse(identifier, condition);
+	createDataDependenceGraph(identifier, condition);
+}
+
+private void process(int identifier, \switch(expression, _)) {
+	checkForUse(identifier, expression);
+	createDataDependenceGraph(identifier, expression);
+}
+
+private void process(int identifier, \try(_, _)) {
+	return;
+}
+
+private void process(int identifier, \try(_, _, _)) {
+	return;
+}
+
+private void process(int identifier, \catch(_, _)) {
+	return;
+}
+
+private void process(int identifier, \return(_)) {
+	return;
+}
+
+private void process(int identifier, \throw(expression)) {
+	checkForUse(identifier, expression);
+	createDataDependenceGraph(identifier, expression);
+}
+		
+private void process(int identifier, \expressionStatement(stmt)) {
+	createDataDependenceGraph(identifier, stmt);
+}
+		
+private void process(int identifier, Statement stmt) {
+	createDataDependenceGraph(identifier, stmt);
+}
+
+default void process(int identifier, node treeNode) {
+	return;
 }
 
 private void createDataDependenceGraph(int identifier, node tree) {

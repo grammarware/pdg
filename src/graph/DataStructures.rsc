@@ -16,8 +16,6 @@ data PostDominator = EmptyPD()
 				   | PostDominator(Graph[int] tree, map[int, set[int]] dominators, map[int, set[int]] dominations);
 data ControlDependence = EmptyCD() 
 					   | ControlDependence(Graph[int] graph);
-data DataDependence = EmptyDD() 
-					| DataDependence(Graph[int] graph, map[int, set[int]] \in, map[int, set[int]] \out, map[str, set[int]] defs, map[int, set[str]] uses);
 data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, set[loc] calledMethods, map[int, int] parameterNodes); 
 
 data NodeType = Normal() | Parameter() | CallSite();

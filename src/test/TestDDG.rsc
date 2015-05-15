@@ -229,3 +229,31 @@ test bool testCompound() {
 	
 	return RTestFunction("TestCompound", getMethodDDG, assertions);
 }
+
+test bool testUse() {
+	projectModel = createM3(|project://JavaTest|);
+	
+	map[loc, Graph[int]] assertions = (
+		getMethodLocation("testUse1", projectModel): 
+			{ <0,1>, <1,2>, <2,2>, <0,4>, <1,4>, <2,4> },
+		getMethodLocation("testUse2", projectModel): 
+			{ <0,2>, <1,2>, <0,3>, <1,3>, <3,2>, <3,3>, <0,5>, <5,5>, <5,7>, <5,2>, <5,3>, <0,7>, <1,7>, <3,7>, <7,8> },
+		getMethodLocation("testUse3", projectModel):
+			{ <0,1>, <1,5>, <2,6>, <3,5>, <3,6>, <4,5>, <4,6>, <5,6>, <1,6> },
+		getMethodLocation("testUse4", projectModel):
+			{ <0,1>, <0,2>, <0,3>, <1,2> }
+	);
+	
+	return RTestFunction("TestUse", getMethodDDG, assertions);
+}
+
+test bool testDef() {
+	projectModel = createM3(|project://JavaTest|);
+	
+	map[loc, Graph[int]] assertions = (
+		getMethodLocation("testDef", projectModel): 
+			{ <1,2>, <1,6>, <1,2>, <1,3>, <2,4>, <4,5>, <6,6>, <6,8>, <5,8> }
+	);
+	
+	return RTestFunction("TestDef", getMethodDDG, assertions);
+}
