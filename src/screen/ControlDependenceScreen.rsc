@@ -17,7 +17,7 @@ import creator::CFGCreator;
 import graph::control::PDT;
 import graph::control::dependence::CDG;
 
-@doc  {
+@doc{
 	To run a test:
 		displayControlDependenceGraph(|project://JavaTest|, "testPDT");
 		displayControlDependenceGraph(|project://JavaTest|, "testPDT2");

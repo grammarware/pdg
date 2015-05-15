@@ -1,6 +1,9 @@
 package PDG.ControlFlow;
 
 public class Return {
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3> }
+	 */
 	public void testReturn1(){
 		int i = 0; // 0
 		
@@ -11,6 +14,9 @@ public class Return {
 		return; // 3
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3> }
+	 */
 	public void testReturn1Alternate(){
 		int i = 0; // 0
 		
@@ -19,6 +25,9 @@ public class Return {
 		return; // 3
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <1,5> }
+	 */
 	public void testReturn2(){
 		int i = 2; // 0
 		
@@ -34,6 +43,9 @@ public class Return {
 		return; // 5
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <1,5> }
+	 */
 	public void testReturn2Alternate(){
 		int i = 2; // 0
 		

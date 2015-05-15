@@ -1,6 +1,9 @@
 package PDG.ControlFlow;
 
 public class If {
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <ENTRYNODE, 3> }
+	 */
 	public void testIf1(){
 		int i = 0; // 0
 		
@@ -11,6 +14,9 @@ public class If {
 		i = 5; // 3
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <ENTRYNODE, 3> }
+	 */
 	public void testIf1Alternate(){
 		int i = 0; // 0
 		
@@ -19,6 +25,9 @@ public class If {
 		i = 5; // 3
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <ENTRYNODE, 4> }
+	 */
 	public void testIf2(){
 		int i = 0; // 0
 		
@@ -31,6 +40,9 @@ public class If {
 		i = 5; // 4
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <ENTRYNODE, 4> }
+	 */
 	public void testIf2Alternate(){
 		int i = 0; // 0
 		
@@ -40,6 +52,9 @@ public class If {
 		i = 5; // 4
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <3,4>, <ENTRYNODE, 5> }
+	 */
 	public void testIf3(){
 		int i = 0; // 0
 		
@@ -52,6 +67,9 @@ public class If {
 		i = 5; // 5
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <3,4>, <ENTRYNODE, 5> }
+	 */
 	public void testIf3Alternate(){
 		int i = 0; // 0
 		
@@ -61,6 +79,9 @@ public class If {
 		i = 5; // 5
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <3,4>, <3,5>, <ENTRYNODE, 6> }
+	 */
 	public void testIf4(){
 		int i = 0; // 0
 		
@@ -75,6 +96,9 @@ public class If {
 		i = 5; // 6
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <3,4>, <3,5>, <ENTRYNODE, 6> }
+	 */
 	public void testIf4Alternate(){
 		int i = 0; // 0
 		
@@ -85,6 +109,9 @@ public class If {
 		i = 5; // 6
 	}
 	
+	/*
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <4,5>, <4,6>, <4,7>, <4,8>, <ENTRYNODE, 9> }
+	 */
 	public void testIf5(){
 		int i = 0; // 0
 		

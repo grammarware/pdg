@@ -3,6 +3,7 @@ package PDG.ControlFlow;
 public class Continue {
 	/*
 	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,1>, <1,4>, <1,3>, <1,2>, <1,0>, <0,STARTNODE> }
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <2,3>, <2,4> }
 	 */
 	public void testContinue1(){
 		int i = 0; // 0
@@ -18,6 +19,7 @@ public class Continue {
 	
 	/*
 	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,5>, <5,1>, <1,4>, <1,3>, <1,2>, <1,0>, <0,STARTNODE> }
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <2,3>, <2,4>, <ENTRYNODE, 5> }
 	 */
 	public void testContinue2(){
 		int i = 0; // 0
@@ -35,6 +37,7 @@ public class Continue {
 	
 	/*
 	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,1>, <2,5>, <2,4>, <2,3>, <6,2>, <1,6>, <1,0>, <0,STARTNODE> }
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <2,3>, <3,4>, <3,5>, <1,6> }
 	 */
 	public void testContinue3(){
 		int i = 0; // 0
@@ -54,6 +57,7 @@ public class Continue {
 	
 	/*
 	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,7>, <7,1>, <6,2>, <2,5>, <2,4>, <2,3>, <1,6>, <1,0>, <0,STARTNODE> }
+	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <2,3>, <3,4>, <3,5>, <1,6>, <ENTRYNODE, 7> }
 	 */
 	public void testContinue4(){
 		int i = 0; // 0
