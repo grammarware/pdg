@@ -250,9 +250,13 @@ private void createDataDependenceGraph(int identifier, node tree) {
 		case \arrayInitializer(elements): {
 			throw "An array is initialized with: <elements>.";
 		}
-		case \assignment(lhs, _, rhs): {
+		case \assignment(lhs, operator, rhs): {
 			checkForDefinition(identifier, lhs);
 			checkForUse(identifier, rhs);
+			
+			if(operator != "=") {
+				checkForUse(identifier, lhs);
+			}
 			
 			if(\arrayAccess(\simpleName(name), index) := lhs) {
 				if(\simpleName(_) := index) {

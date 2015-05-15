@@ -4,6 +4,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3> }
+	 * DDG: { <0,1> }
 	 */
 	public void testThrow1(){
 		int i = 0; // 0
@@ -18,6 +19,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3> }
+	 * DDG: { <0,1> }
 	 */
 	public void testThrow1Alternate(){
 		int i = 0; // 0
@@ -30,6 +32,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <1,5> }
+	 * DDG: { <0,1>, <0,3> }
 	 */
 	public void testThrow2(){
 		int i = 2; // 0
@@ -49,6 +52,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 5>, <5,4>, <4,3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <1,5> }
+	 * DDG: { <0,1>, <0,3> }
 	 */
 	public void testThrow2Alternate(){
 		int i = 2; // 0
@@ -64,6 +68,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 7>, <7,6>, <6,5>, <7,4>, <4,3>, <EXITNODE, 2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <4,5>, <4,6>, <1,7> }
+	 * DDG: { <0,1>, <0,4> }
 	 */
 	public void testThrow3() {
 		int i = 0; // 0
@@ -84,6 +89,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 8>, <EXITNODE, 7>, <7,6>, <6,5>, <EXITNODE, 4>, <4,3>, <EXITNODE,2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <4,5>, <4,6>, <4,7>, <4,8> }
+	 * DDG: { <0,1>, <0,4> }
 	 */
 	public void testThrow4() {
 		int i = 0; // 0
@@ -105,6 +111,7 @@ public class Throw {
 	/*
 	 * PDT: { <EXITNODE, ENTRYNODE>, <EXITNODE, 8>, <8,7>, <7,6>, <6,5>, <6,4>, <4,3>, <EXITNODE,2>, <EXITNODE,1>, <1,0>, <0, STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <1,3>, <1,4>, <4,5>, <1,6>, <1,7>, <1,8> }
+	 * DDG: { <0,1>, <0,4> }
 	 */
 	public void testThrow5() {
 		int i = 0; // 0

@@ -4,6 +4,7 @@ public class Compounds {
 	/*
 	 * PDT: { <EXITNODE,ENTRYNODE>, <EXITNODE,8>, <5,7>, <7,6>, <8,5>, <8,4>, <2,3>, <4,2>, <8,1>, <1,0>, <0,STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <2,3>, <1,4>, <1,5>, <5,6>, <5,7>, <ENTRYNODE, 8> }
+	 * DDG: { <0,1>, <0,2>, <0,3>, <0,4>, <3,2>, <3,3>, <3,4>, <2,2>, <0,5>, <0,6>, <6,7>, <7,6>, <7,5> }
 	 */
 	public void testCompound1(){
 		int i = 0; // 0
@@ -29,6 +30,7 @@ public class Compounds {
 	 * 			<18,10>, <10,9>, <9,8>, <8,7>, <18,6>, <6,5>, <18,4>, <4,3>, <18,2>, <1,0>, <2,1>, <0,STARTNODE> }
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <ENTRYNODE, 2>, <2,3>, <2,4>, <4,5>, <5,6>, <4,7>, <7,8>, <4,9>, <9,10>,
 	 * 			<2,11>, <2,12>, <12,13>, <2,14>, <2,15>, <2,16>, <16,17>, <ENTRYNODE,18> }
+	 * DDG: { <0,2>, <1,4>, <0,15>, <6,18>, <10,18>, <13,18>, <17,18> }
 	 */
 	public int testCompound2(){ // Expands to 18 for return.
 		int i = 3; // 0

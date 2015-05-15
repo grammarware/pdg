@@ -3,6 +3,7 @@ package PDG.ControlFlow;
 public class For {
 	/*
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2> }
+	 * DDG: { <2,2>, <0,2>, <1,1> }
 	 */
 	public void testFor1(){
 		int m = 2; // 0
@@ -14,6 +15,7 @@ public class For {
 	
 	/*
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2> }
+	 * DDG: { <2,2>, <0,2>, <1,1> }
 	 */
 	public void testFor1Alternate(){
 		int m = 2; // 0
@@ -23,6 +25,7 @@ public class For {
 	
 	/*
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <ENTRYNODE, 3> }
+	 * DDG: { <2,1>, <0,1>, <1,1> }
 	 */
 	public void testFor2(){
 		int m = 2; // 0
@@ -36,6 +39,7 @@ public class For {
 	
 	/*
 	 * CDG: { <ENTRYNODE, 0>, <ENTRYNODE, 1>, <1,2>, <ENTRYNODE, 3> }
+	 * DDG: { <2,1>, <0,1>, <1,1> }
 	 */
 	public void testFor2Alternate(){
 		int m = 2; // 0
