@@ -42,7 +42,9 @@ public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, p
 	methodData.nodeEnvironment = getNodeEnvironment();
 	methodData.parameterNodes = getTransferNodes();
 	methodData.calledMethods = getCalledMethods();
+	methodData.callSites = getCallSites();
 	methodData.name = name;
+	methodData.abstractTree = methodNode;
 	
 	return <methodData, controlFlow>;
 }
@@ -303,6 +305,7 @@ private ControlFlow process(catchNode: \catch(exception, body)) {
 	
 	return catchFlow;
 }
+
 
 private ControlFlow process(breakNode: \break()) {
 	int identifier = storeNode(breakNode);

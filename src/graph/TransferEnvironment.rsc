@@ -98,6 +98,26 @@ public ControlFlow addArgumentNodes(ControlFlow controlFlow, str calledMethod, l
 	return connectControlFlows([ controlFlow ] + argumentAssignments);
 }
 
+public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, node returnType, loc sourceLocation) {
+	if("<returnType>" == "void()") {
+		return controlFlow;
+	}
+	
+	Statement returnValue = \expressionStatement(
+			\variable(
+				"$method_<calledMethod>_return_<sourceLocation.offset>", 
+				0, 
+				\simpleName("$<calledMethod>_return")
+			)
+		);
+	returnValue@src = sourceLocation;
+	
+	int identifier = storeNode(returnValue, nodeType = Parameter());
+	transferNodes[identifier] = controlFlow.entryNode;
+	
+	return connectControlFlows([ controlFlow, ControlFlow({}, identifier, {identifier}) ]);
+}
+
 public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, node returnType, loc sourceLocation, loc declarationLocation) {
 	if("<returnType>" == "void()") {
 		return controlFlow;

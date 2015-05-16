@@ -14,9 +14,7 @@ data ControlFlow = EmptyCF()
 				 | ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);
 data PostDominator = EmptyPD() 
 				   | PostDominator(Graph[int] tree, map[int, set[int]] dominators, map[int, set[int]] dominations);
-data ControlDependence = EmptyCD() 
-					   | ControlDependence(Graph[int] graph);
-data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, set[loc] calledMethods, map[int, int] parameterNodes); 
+data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, set[loc] calledMethods, set[int] callSites, map[int, int] parameterNodes); 
 
 data NodeType = Normal() | Parameter() | CallSite();
 
@@ -25,7 +23,7 @@ anno loc Expression@decl;
 anno NodeType node@nodeType;
 
 public MethodData emptyMethodData() {
-	return MethodData("", ""(), (), {}, ());
+	return MethodData("", ""(), (), {}, {}, ());
 }
 
 public set[int] environmentDomain(MethodData methodData) {

@@ -15,6 +15,7 @@ import extractors::Project;
 import creator::CFGCreator;
 import graph::DataStructures;
 import graph::\data::DDG;
+import graph::system::SDG;
 import graph::control::PDT;
 import graph::control::dependence::CDG;
 
@@ -29,68 +30,50 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 		
 	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
 	PostDominators postDominators = ( method : createPDT(method, controlFlows[method]) | method <- controlFlows );
-	ControlDependences controlDependences = 
-		( 
-			method : createCDG(method, controlFlows[method], postDominators[method]) 
-			| method <- postDominators 
-		);
+	ControlDependences controlDependences = ( 
+		  method : createCDG(method, controlFlows[method], postDominators[method]) 
+		| method <- postDominators 
+	);
 	DataDependences dataDependences = ( method : createDDG(method, controlFlows[method]) | method <- controlFlows );
+	SystemDependence systemDependence = createSDG(controlDependences, dataDependences);
 	
-	list[Edge] edges = [];
-	list[Figure] boxes = [];
+	list[Edge] edges = createEdges(systemDependence.controlDependence, "solid", "blue")
+		+ createEdges(systemDependence.dataDependence, "dash", "green")
+		+ createEdges(systemDependence.iControlDependence, "solid", "deepskyblue")
+		+ createEdges(systemDependence.iDataDependence, "dash", "lime");
 	
-	map[str, set[str]] totalDefs = ();
-	
-	for(method <- controlFlows) {
-		edges += createEdges(method.name, controlDependences[method].graph, "solid", "blue");
-		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
-		
-		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
-		
-		for(key <- dataDependences[method].defs) {
-			for(\value <- dataDependences[method].defs[key]) {
-				if(key in totalDefs) {
-					totalDefs[key] += { "<method.name>:<\value>" };
-				} else {
-					totalDefs[key] = { "<method.name>:<\value>" };
-				}
-			}
-		}
-	}
-	
-	for(method <- controlFlows) {
-		println("===== <method.name> =====");
-		
-		for(key <- domain(method.parameterNodes), key >= 0) {
-			if(key in dataDependences[method].uses) {
-				println("Key[<method.name>:<key>] uses: <dataDependences[method].uses[key]>");
-				
-				for(usedVariable <- dataDependences[method].uses[key]) {
-					if(/\$.*/ := usedVariable && usedVariable in totalDefs) {
-						println("Key[<method.name>:<key>] defs: <totalDefs[usedVariable]>");
-						
-						for(definition <- totalDefs[usedVariable]) {
-							edges += edge("<definition>", "<method.name>:<key>", 
-										lineStyle("dash"), lineColor("lime"), toArrow(box(size(10), 
-										fillColor("lime"))));
-						}
-					}
-				}
-			}
-			
-			int \value = method.parameterNodes[key];
-			
-			if(\value < 0) {
-				continue;
-			}
-			if(Expression expression := resolveIdentifier(method, \value)){
-				edges += edge("<method.name>:<\value>", "<expression.name>:<ENTRYNODE>", 
-					lineStyle("dash"), lineColor("deepskyblue"), toArrow(box(size(10), 
-					fillColor("deepskyblue"))));
-			}
-		}
-	}
+	list[Figure] boxes = ([] | it + createSDGBoxes(method) | method <- controlDependences);
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
+}
+
+public list[Edge] createEdges(Graph[str] graph, str style, str color) {
+	return [ edge(graphEdge.from, graphEdge.to, 
+					lineStyle(style), lineColor(color), toArrow(box(size(10), 
+					fillColor(color)))) | graphEdge <- graph ];
+}
+
+private str getBoxColor(NodeType nodeType) {
+	switch(nodeType) {
+		case Normal(): return "lightgreen";
+		case CallSite(): return "lightpink";
+		case Parameter(): return "beige";
+	}
+}
+
+public Figures createSDGBoxes(MethodData methodData) {
+	return [ box(
+				text("<methodData.name>:<treeNode>"), 
+				id(encodeVertex(methodData, treeNode)), 
+				size(50), 
+				fillColor(getBoxColor(resolveIdentifier(methodData, treeNode)@nodeType)), 
+				onMouseDown(
+					goToSource(
+						getLocation(
+							resolveIdentifier(methodData, treeNode)
+						)
+					)
+				)
+			) | treeNode <- environmentDomain(methodData) ]
+			+ box(text("ENTRY <methodData.name>"), id(encodeVertex(methodData, ENTRYNODE)), size(50), fillColor("lightblue"));
 }
