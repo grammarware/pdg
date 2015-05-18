@@ -13,7 +13,7 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
-import graph::control::flow::CFG;
+
 
 @doc{
 	Maps the node to all nodes that dominate it.

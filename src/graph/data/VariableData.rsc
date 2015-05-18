@@ -1,11 +1,8 @@
 module graph::\data::VariableData
 
 import lang::java::m3::AST;
-
 import graph::DataStructures;
 
-
-alias VariableData = tuple[str name, int origin];
 
 private map[int, set[str]] uses = ();
 private map[str, set[VariableData]] definitions = ();

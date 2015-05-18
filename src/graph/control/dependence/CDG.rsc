@@ -1,12 +1,10 @@
 module graph::control::dependence::CDG
 
 import Prelude;
-import graph::DataStructures;
 import analysis::graphs::Graph;
 
-data ControlDependence = EmptyCD() 
-					   | ControlDependence(Graph[int] graph);
-alias ControlDependences = map[MethodData, ControlDependence];
+import graph::DataStructures;
+
 
 private map[int, int] getImmediatePostDominators(Graph[int] postDominator) {
 	map[int, int] immediatePostDominators = ();

@@ -5,13 +5,8 @@ import lang::java::m3::AST;
 import analysis::m3::Registry;
 import analysis::graphs::Graph;
 
-import graph::\data::DDG;
 import graph::DataStructures;
-import graph::control::dependence::CDG;
 
-data SystemDependence = EmptySD()
-					  | SystemDependence(Graph[str] controlDependence, Graph[str] iControlDependence,
-					  					 Graph[str] dataDependence, Graph[str] iDataDependence);
 			
 public str encodeVertex(MethodData method, int vertex) {
 	return "<method.abstractTree@src.file>:<method.abstractTree@src.offset>:<method.name>:<vertex>";

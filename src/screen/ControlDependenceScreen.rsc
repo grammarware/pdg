@@ -13,9 +13,8 @@ import screen::Screen;
 import extractors::Project;
 
 import graph::DataStructures;
-import creator::CFGCreator;
-import graph::control::PDT;
 import graph::control::dependence::CDG;
+import graph::factory::GraphFactory;
 
 @doc{
 	To run a test:
@@ -27,13 +26,7 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
-	PostDominators postDominators = ( method : createPDT(method, controlFlows[method]) | method <- controlFlows );
-	ControlDependences controlDependences = 
-					( 
-						method : createCDG(method, controlFlows[method], postDominators[method]) 
-						| method <- postDominators 
-					);
+	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, true);
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];

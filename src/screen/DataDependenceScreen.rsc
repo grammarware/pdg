@@ -11,10 +11,9 @@ import lang::java::m3::AST;
 
 import screen::Screen;
 import extractors::Project;
-
-import creator::CFGCreator;
 import graph::DataStructures;
-import graph::\data::DDG;
+import graph::factory::GraphFactory;
+
 
 @doc{
 	To run a test:
@@ -27,8 +26,7 @@ public void displayDataDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
-	DataDependences dataDependences = ( method : createDDG(method, controlFlows[method]) | method <- controlFlows );
+	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, true);
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];

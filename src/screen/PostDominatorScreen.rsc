@@ -11,12 +11,11 @@ import lang::java::m3::AST;
 
 import screen::Screen;
 import extractors::Project;
-
-import creator::CFGCreator;
 import graph::DataStructures;
-import graph::control::PDT;
+import graph::factory::GraphFactory;
 
-@doc {
+
+@doc{
 	To run a test:
 		displayPostDominatorTree(|project://JavaTest|, "testPDT");
 		displayPostDominatorTree(|project://JavaTest|, "testPDT2");
@@ -27,8 +26,7 @@ public void displayPostDominatorTree(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
-	PostDominators postDominators = ( method : createPDT(method, controlFlows[method]) | method <- controlFlows );
+	PostDominators postDominators = createPostDominators(methodLocation, methodAST, projectModel, true);
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];

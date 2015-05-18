@@ -10,13 +10,8 @@ import util::Editors;
 import lang::java::m3::AST;
 
 import extractors::Project;
-
 import graph::DataStructures;
-import graph::control::PDT;
-import graph::control::flow::CFG;
 
-alias ControlFlows = map[MethodData, ControlFlow];
-alias PostDominators = map[MethodData, PostDominator];
 
 public loc getMethodLocation(str methodName, M3 projectModel) {
 	for(method <- getM3Methods(projectModel)) {

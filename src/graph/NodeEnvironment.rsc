@@ -5,6 +5,7 @@ import lang::java::m3::AST;
 
 import graph::DataStructures;
 
+
 // Storage for all the visited nodes with their identifier as key.
 private map[int, node] nodeEnvironment = ();
 

@@ -14,6 +14,7 @@ import graph::CallEnvironment;
 import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
 
+
 alias GeneratedData = tuple[MethodData methodData, ControlFlow controlFlow];
 
 private str methodName = "";

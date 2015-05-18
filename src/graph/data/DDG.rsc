@@ -11,14 +11,11 @@ import graph::DataStructures;
 import graph::\data::VariableData;
 
 
-data DataDependence = EmptyDD() 
-					| DataDependence(Graph[int] graph, map[str, set[VariableData]] defs, map[int, set[str]] uses);
-alias DataDependences = map[MethodData, DataDependence];
-
 private alias ReachingDefs = tuple[
 			map[int, set[VariableData]] \in, 
 			map[int, set[VariableData]] \out
 		];
+
 
 public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
 	initializeVariableData(methodData);

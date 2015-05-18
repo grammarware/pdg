@@ -9,6 +9,7 @@ import graph::NodeEnvironment;
 import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
 
+
 // The set of all the methods that are called by the currently
 // analysed method.
 private set[loc] calledMethods = {};
@@ -30,8 +31,6 @@ public set[int] getCallSites() {
 private ControlFlow createCallSiteFlow(Expression callNode) {
 	int identifier = storeNode(callNode, nodeType = CallSite());
 	
-	calledMethods += callNode@decl;
-	
 	callsite = ControlFlow({}, identifier, {identifier});
 	callsite = addArgumentNodes(callsite, callNode.name, callNode.arguments);
 	
@@ -40,6 +39,7 @@ private ControlFlow createCallSiteFlow(Expression callNode) {
 		loc resolved = resolveM3(callNode@decl);
 	
 		callSites += {identifier};
+		calledMethods += callNode@decl;
 		callsite = addReturnOutNode(callsite, callNode.name, callNode@typ, callNode@src, resolved);
 	}
 	// It is not part of the project. Handle it differently.
