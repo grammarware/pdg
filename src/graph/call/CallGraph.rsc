@@ -31,7 +31,9 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 		
 		str methodVertex = getVertexName(method);
 		
-		locations[methodVertex] = methodAST@src;
+		try locations[methodVertex] = methodAST@decl;
+		catch: println(methodAST);
+		
 		methodCalls[methodVertex] = {};
 		
 		visit(methodAST) {

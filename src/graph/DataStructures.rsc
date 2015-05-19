@@ -9,35 +9,34 @@ public int ENTRYNODE = -3;
 public int STARTNODE = -2;
 public int EXITNODE = -1;
 
-data CallGraph = EmptyCG()
-				| CallGraph(Graph[str] graph, map[str,loc] locations, map[str, set[str]] methodCalls);
-
-data ControlFlow = EmptyCF() 
-				 | ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);
-alias ControlFlows = map[MethodData, ControlFlow];
-
-data PostDominator = EmptyPD() 
-				   | PostDominator(Graph[int] tree, map[int, set[int]] dominators, map[int, set[int]] dominations);
-alias PostDominators = map[MethodData, PostDominator];
-
-data ControlDependence = EmptyCD() 
-					   | ControlDependence(Graph[int] graph);
-alias ControlDependences = map[MethodData, ControlDependence];
-
-alias VariableData = tuple[str name, int origin];
-data DataDependence = EmptyDD() 
-					| DataDependence(Graph[int] graph, map[str, set[VariableData]] defs, map[int, set[str]] uses);
-alias DataDependences = map[MethodData, DataDependence];
-
-data SystemDependence = EmptySD()
-					  | SystemDependence(Graph[str] controlDependence, Graph[str] iControlDependence,
-					  					 Graph[str] dataDependence, Graph[str] iDataDependence);
-
 data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, 
 					set[loc] calledMethods, set[int] callSites, map[int, int] parameterNodes); 
 
+data CallGraph = CallGraph(Graph[str] graph, map[str,loc] locations, map[str, set[str]] methodCalls);
+
+data ControlFlow = ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);
+alias ControlFlows = map[MethodData, ControlFlow];
+
+data PostDominator = PostDominator(Graph[int] tree, map[int, set[int]] dominators, map[int, set[int]] dominations);
+alias PostDominators = map[MethodData, PostDominator];
+
+data ControlDependence = ControlDependence(Graph[int] graph);
+alias ControlDependences = map[MethodData, ControlDependence];
+
+alias VariableData = tuple[str name, int origin];
+
+data DataDependence = DataDependence(Graph[int] graph, map[str, set[VariableData]] defs, map[int, set[str]] uses);
+alias DataDependences = map[MethodData, DataDependence];
+
+data ProgramDependence = ProgramDependence(Graph[int] controlDependence, Graph[int] dataDependence);
+alias ProgramDependences = map[MethodData, ProgramDependence];
+
+data SystemDependence = SystemDependence(Graph[str] controlDependence, Graph[str] iControlDependence,
+					  					 Graph[str] dataDependence, Graph[str] iDataDependence);
+
 data NodeType = Normal() | Parameter() | CallSite();
 
+anno loc node@decl;
 anno loc node@src;
 anno loc Expression@decl;
 anno NodeType node@nodeType;

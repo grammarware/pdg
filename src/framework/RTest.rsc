@@ -10,7 +10,7 @@ public bool RTestFunction(str name, bool(&T param) t_function, map[&T, &T] asser
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 

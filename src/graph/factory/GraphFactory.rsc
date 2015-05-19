@@ -11,6 +11,7 @@ import graph::control::PDT;
 import graph::control::flow::CFG;
 import graph::control::dependence::CDG;
 import graph::\data::DDG;
+import graph::program::PDG;
 
 
 private set[loc] generatedMethods = {};
@@ -71,4 +72,13 @@ public ControlDependences createControlDependences(loc methodLocation, node abst
 public DataDependences createDataDependences(loc methodLocation, node abstractTree, M3 projectModel, bool includeCalls) {
 	ControlFlows controlFlows = createControlFlows(methodLocation, abstractTree, projectModel, includeCalls);
 	return ( method : createDDG(method, controlFlows[method]) | method <- controlFlows );
+}
+
+public ProgramDependences createProgramDependences(loc methodLocation, node abstractTree, M3 projectModel, bool includeCalls) {
+	ControlDependences controlDependences = createControlDependences(methodLocation, abstractTree, projectModel, includeCalls);
+	DataDependences dataDependences = createDataDependences(methodLocation, abstractTree, projectModel, includeCalls);
+	
+	return ( method : createPDG(controlDependences[method], dataDependences[method]) 
+			| method <- controlDependences
+		 	);
 }
