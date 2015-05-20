@@ -12,10 +12,12 @@ import graph::call::CallGraph;
 import graph::DataStructures;
 import graph::factory::GraphFactory;
 
-alias InitialSeeds = rel[loc, loc];
+data InternalSeed = InternalSeed(map[int, node] nodes, int identifier);
+
+alias InitialSeeds = rel[set[loc], set[loc]];
 alias MethodSeeds = rel[ProgramDependences, ProgramDependences];
 alias MethodSeed = tuple[ProgramDependences first, ProgramDependences second];
-alias StatementSeeds = rel[int, int];
+alias StatementSeeds = rel[InternalSeed, InternalSeed];
 alias GraphSeeds = map[MethodSeed, StatementSeeds];
 
 public InitialSeeds generateSeeds(str firstProject, str secondProject) {
@@ -40,18 +42,9 @@ public InitialSeeds generateSeeds(str firstProject, str secondProject) {
 
 public void magic(GraphSeeds graphSeeds) {
 	for(methodSeed <- graphSeeds) {
-		println(methodSeed.first);
-		println(methodSeed.second);
-		
 		for(<firstSeed, secondSeed> <- graphSeeds[methodSeed]) {
-			println(graphSeeds[methodSeed]);
-			for(methodData <- methodSeed.first) {
-				println(resolveIdentifier(methodData, firstSeed)@src);
-			}
-			
-			for(methodData <- methodSeed.second) {
-				println(resolveIdentifier(methodData, secondSeed)@src);
-			}
+			println(firstSeed.nodes[firstSeed.identifier]@src);
+			println(secondSeed.nodes[secondSeed.identifier]@src);
 		}
 	}
 }
@@ -70,10 +63,16 @@ public InitialSeeds generateInitialSeeds(CallGraph firstCallGraph, CallGraph sec
 		set[str] secondCalls = secondCallGraph.methodCalls[method];
 		
 		if(firstCalls != secondCalls) {
-			loc firstLoc = firstCallGraph.locations[method];
-			loc secondLoc = secondCallGraph.locations[method];
+			set[loc] firstLocs = { firstCallGraph.locations[method] };
+			set[loc] secondLocs = { secondCallGraph.locations[method] };
 			
-			seeds += <firstLoc, secondLoc>;
+			if(size(firstCalls) > size(secondCalls)) {
+				firstLocs += { firstCallGraph.locations[location] | location <- firstCalls - secondCalls };
+			} else {
+				secondLocs += { secondCallGraph.locations[location] | location <- secondCalls - firstCalls };
+			}
+			
+			seeds += <firstLocs, secondLocs>;
 			seedAmount += 1;
 		}
 	}
@@ -81,13 +80,24 @@ public InitialSeeds generateInitialSeeds(CallGraph firstCallGraph, CallGraph sec
 	return seeds;
 }
 
-public ProgramDependences getProgramDependences(M3 projectModel, loc methodLocation) {
-	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
-	return createProgramDependences(methodLocation, methodAST, projectModel, false);
+public ProgramDependences getProgramDependences(M3 projectModel, set[loc] methodLocations) {
+	ProgramDependences programDependences = ();
+	node methodAST;
+	
+	for(methodLocation <- methodLocations) {
+		methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
+		ProgramDependences createdPD = createProgramDependences(methodLocation, methodAST, projectModel, false);
+		
+		for(methodData <- createdPD) {
+			programDependences[methodData] = createdPD[methodData];
+		}
+	}
+	
+	return programDependences;
 }
 
 public GraphSeeds detectGraphSeeds(MethodSeeds methodSeeds) {
-	map[node, set[int]] statements = ();
+	map[node, set[InternalSeed]] statements = ();
 	StatementSeeds statementSeeds = {};
 	GraphSeeds graphSeeds = ();
 	
@@ -97,23 +107,20 @@ public GraphSeeds detectGraphSeeds(MethodSeeds methodSeeds) {
 		
 		for(methodData <- first) {
 			for(identifier <- environmentDomain(methodData)) {
-				println("First <methodData.name>: <identifier>");
 				node statement = resolveIdentifier(methodData, identifier);
-				statements[statement] = statement in statements ? statements[statement] + { identifier } : { identifier };
+				
+				statements[statement] = statement in statements 
+					? statements[statement] + { InternalSeed(methodData.nodeEnvironment, identifier) } 
+					: { InternalSeed(methodData.nodeEnvironment, identifier) };
 			}
 		}
 		
-		println(second);
-		
 		for(methodData <- second) {
-			println(environmentDomain(methodData));
 			for(identifier <- environmentDomain(methodData)) {
 				node statement = resolveIdentifier(methodData, identifier);
 				
 				if(statement in statements) {
-					println(statements[statement]);
-					println("Second <methodData.name>: <identifier>");
-					statementSeeds += statements[statement] * { identifier };
+					statementSeeds += statements[statement] * { InternalSeed(methodData.nodeEnvironment, identifier) };
 				}
 			}
 		}

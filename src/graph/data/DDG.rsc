@@ -192,16 +192,16 @@ private void processExpression(int identifier, node tree) {
 				}
 			}
 		}
-		case \newArray(\type, dimensions, init): {
-			throw "Array with <\type> created. Dimensions: <dimensions>. Initialization: <init>.";
+		case n: \newArray(\type, dimensions, init): {
+			throw "Not implemented: <n@src>";
 		}
 		case \newArray(\type, dimensions): {
 			for(dimension <- dimensions) {
 				checkForUse(identifier, dimension);
 			}
 		}
-		case \arrayInitializer(elements): {
-			throw "An array is initialized with: <elements>.";
+		case n: \arrayInitializer(elements): {
+			throw "Not implemented: <n@src>";
 		}
 		case \assignment(lhs, operator, rhs): {
 			checkForDefinition(identifier, lhs);
@@ -226,7 +226,22 @@ private void processExpression(int identifier, node tree) {
 		case \cast(_, expression): {
 			checkForUse(identifier, expression);
 		}
-    	case \newObject(\type, args): {
+    	case n: \newObject(expr, \type, args, class): {
+			throw "Not implemented: <n@src>";
+		}
+		case \newObject(Expression expr, Type \type, list[Expression] args): {
+			checkForUse(expr);
+			
+			for(argument <- args) {
+    			checkForUse(identifier, argument);
+    		}
+		}
+		case \newObject(Type \type, list[Expression] args, Declaration class): {
+			for(argument <- args) {
+    			checkForUse(identifier, argument);
+    		}
+		}
+		case \newObject(\type, args): {
     		for(argument <- args) {
     			checkForUse(identifier, argument);
     		}
@@ -236,8 +251,16 @@ private void processExpression(int identifier, node tree) {
     		checkForUse(identifier, thenBranch);
     		checkForUse(identifier, elseBranch);
     	}
+    	// TODO: Check if ignoring the name and type thereof makes a difference.
+    	case \fieldAccess(isSuper, expression, name): {
+			checkForUse(identifier, expression);
+		}
+		case n: \fieldAccess(isSuper, name): {
+			throw "Not implemented: <n@src>";
+		}
+		// TODO: Check if the right side can also be an expression.
 		case \instanceof(leftSide, rightSide): {
-			throw "Not implemented instanceof(<leftSide>, <rightSide>)";
+			checkForUse(identifier, leftSide);
 		}
     	case \variable(name, extraDimensions): {
     		storeDefinition(name, identifier);
