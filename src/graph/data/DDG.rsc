@@ -226,15 +226,6 @@ private void processExpression(int identifier, node tree) {
 		case \cast(_, expression): {
 			checkForUse(identifier, expression);
 		}
-		case \newObject(expr, \type, args, class): {
-			throw "Not implemented newObject(Expression, Type, Arguments, Class). <expr>, <\type>, <args>, <class>";
-		}
-		case \newObject(expr, \type, args): {
-			throw "Not implemented newObject(Expression, Type, Arguments). <expr>, <\type>, <args>";
-		}
-		case \newObject(\type, args, class): {
-			throw "Not implemented newObject(Type, Arguments, Class). <\type>, <args>, <class>";
-		}
     	case \newObject(\type, args): {
     		for(argument <- args) {
     			checkForUse(identifier, argument);
@@ -245,12 +236,6 @@ private void processExpression(int identifier, node tree) {
     		checkForUse(identifier, thenBranch);
     		checkForUse(identifier, elseBranch);
     	}
-		case \fieldAccess(isSuper, expression, name): {
-			throw "Not implemented fieldAccess(<isSuper>, <expression>, <name>)";
-		}
-		case \fieldAccess(isSuper, name): {
-			throw "Not implemented fieldAccess(<isSuper>, <name>)";
-		}
 		case \instanceof(leftSide, rightSide): {
 			throw "Not implemented instanceof(<leftSide>, <rightSide>)";
 		}

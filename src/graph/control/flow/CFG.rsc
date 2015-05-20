@@ -19,6 +19,30 @@ alias GeneratedData = tuple[MethodData methodData, ControlFlow controlFlow];
 
 private str methodName = "";
 
+public GeneratedData createCFG(methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
+	methodName = name;
+	
+	initializeJumpEnvironment();
+	initializeNodeEnvironment();
+	initializeCallEnvironment();
+	initializeTransferEnvironment();
+	
+	list[ControlFlow] parameterFlows = createParameterNodes(parameters, name);
+	
+	ControlFlow controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);	
+	controlFlow.exitNodes += getThrowNodes();
+	
+	MethodData methodData = emptyMethodData();
+	methodData.nodeEnvironment = getNodeEnvironment();
+	methodData.parameterNodes = getTransferNodes();
+	methodData.calledMethods = getCalledMethods();
+	methodData.callSites = getCallSites();
+	methodData.name = name;
+	methodData.abstractTree = methodNode;
+	
+	return <methodData, controlFlow>;
+}
+
 public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
 	methodName = name;
 	

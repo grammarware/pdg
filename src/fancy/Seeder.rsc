@@ -12,27 +12,52 @@ import graph::call::CallGraph;
 import graph::DataStructures;
 import graph::factory::GraphFactory;
 
-public rel[set[loc], set[loc]] generateSeeds(str firstProject, str secondProject) {
+alias InitialSeeds = rel[loc, loc];
+alias MethodSeeds = rel[ProgramDependences, ProgramDependences];
+alias MethodSeed = tuple[ProgramDependences first, ProgramDependences second];
+alias StatementSeeds = rel[int, int];
+alias GraphSeeds = map[MethodSeed, StatementSeeds];
+
+public InitialSeeds generateSeeds(str firstProject, str secondProject) {
 	M3 firstModel = createM3(|project://<firstProject>|);
 	CallGraph firstCallGraph = createCG(firstModel, |project://<firstProject>|);
 	
 	M3 secondModel = createM3(|project://<secondProject>|);
 	CallGraph secondCallGraph = createCG(secondModel, |project://<secondProject>|);
 	
-	rel[set[loc], set[loc]] seeds = generateInitialSeeds(firstCallGraph, secondCallGraph);
-	rel[ProgramDependences, ProgramDependences] pdgSeeds = {};
+	InitialSeeds seeds = generateInitialSeeds(firstCallGraph, secondCallGraph);	
+	MethodSeeds methodSeeds = {
+		<getProgramDependences(firstModel, first), getProgramDependences(secondModel, second)>
+		| <first, second> <- seeds
+	};
 	
-	for(<first, second> <- seeds) {
-		pdgSeeds += <getProgramDependences(firstModel, first), getProgramDependences(secondModel, second)>;
-	}
+	GraphSeeds graphSeeds = detectGraphSeeds(methodSeeds);
 	
-	detectMethodSeeds(pdgSeeds);
+	magic(graphSeeds);
 	
 	return seeds;
 }
 
-public rel[set[loc], set[loc]] generateInitialSeeds(CallGraph firstCallGraph, CallGraph secondCallGraph) {
-	rel[set[loc], set[loc]] seeds = {};
+public void magic(GraphSeeds graphSeeds) {
+	for(methodSeed <- graphSeeds) {
+		println(methodSeed.first);
+		println(methodSeed.second);
+		
+		for(<firstSeed, secondSeed> <- graphSeeds[methodSeed]) {
+			println(graphSeeds[methodSeed]);
+			for(methodData <- methodSeed.first) {
+				println(resolveIdentifier(methodData, firstSeed)@src);
+			}
+			
+			for(methodData <- methodSeed.second) {
+				println(resolveIdentifier(methodData, secondSeed)@src);
+			}
+		}
+	}
+}
+
+public InitialSeeds generateInitialSeeds(CallGraph firstCallGraph, CallGraph secondCallGraph) {
+	InitialSeeds seeds = {};
 	
 	int seedAmount = 1;
 	
@@ -45,16 +70,10 @@ public rel[set[loc], set[loc]] generateInitialSeeds(CallGraph firstCallGraph, Ca
 		set[str] secondCalls = secondCallGraph.methodCalls[method];
 		
 		if(firstCalls != secondCalls) {
-			set[loc] firstLocs = { firstCallGraph.locations[method] };
-			set[loc] secondLocs = { secondCallGraph.locations[method] };
+			loc firstLoc = firstCallGraph.locations[method];
+			loc secondLoc = secondCallGraph.locations[method];
 			
-			if(size(firstCalls) > size(secondCalls)) {
-				firstLocs += { firstCallGraph.locations[location] | location <- firstCalls - secondCalls };
-			} else {
-				secondLocs += { secondCallGraph.locations[location] | location <- secondCalls - firstCalls };
-			}
-			
-			seeds += <firstLocs, secondLocs>;
+			seeds += <firstLoc, secondLoc>;
 			seedAmount += 1;
 		}
 	}
@@ -62,44 +81,45 @@ public rel[set[loc], set[loc]] generateInitialSeeds(CallGraph firstCallGraph, Ca
 	return seeds;
 }
 
-public ProgramDependences getProgramDependences(M3 projectModel, set[loc] methodLocations) {
-	ProgramDependences programDependences = ();
-	node methodAST;
-	
-	for(methodLocation <- methodLocations) {
-		methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
-		ProgramDependences createdPD = createProgramDependences(methodLocation, methodAST, projectModel, false);
-		
-		for(methodData <- createdPD) {
-			programDependences[methodData] = createdPD[methodData];
-		}
-	}
-	
-	return programDependences;
+public ProgramDependences getProgramDependences(M3 projectModel, loc methodLocation) {
+	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
+	return createProgramDependences(methodLocation, methodAST, projectModel, false);
 }
 
-public set[rel[loc, loc]] detectMethodSeeds(rel[ProgramDependences, ProgramDependences] pdgSeeds) {
-	map[node, set[loc]] locs = ();
-	rel[loc, loc] methodSeeds = {};
-	set[rel[loc, loc]] pdgMethodSeeds = {};
+public GraphSeeds detectGraphSeeds(MethodSeeds methodSeeds) {
+	map[node, set[int]] statements = ();
+	StatementSeeds statementSeeds = {};
+	GraphSeeds graphSeeds = ();
 	
-	for(<first, second> <- pdgSeeds) {
+	for(pdgPair: <first, second> <- methodSeeds) {
+		statements = ();
+		statementSeeds = {};
+		
 		for(methodData <- first) {
-			for(n <- range(methodData.nodeEnvironment)) {
-				locs[n] = n in locs ? locs[n] + { n@src } : { n@src };
+			for(identifier <- environmentDomain(methodData)) {
+				println("First <methodData.name>: <identifier>");
+				node statement = resolveIdentifier(methodData, identifier);
+				statements[statement] = statement in statements ? statements[statement] + { identifier } : { identifier };
 			}
 		}
 		
+		println(second);
+		
 		for(methodData <- second) {
-			for(n <- range(methodData.nodeEnvironment)) {
-				if(n in locs) {
-					methodSeeds += locs[n] * { n@src };
+			println(environmentDomain(methodData));
+			for(identifier <- environmentDomain(methodData)) {
+				node statement = resolveIdentifier(methodData, identifier);
+				
+				if(statement in statements) {
+					println(statements[statement]);
+					println("Second <methodData.name>: <identifier>");
+					statementSeeds += statements[statement] * { identifier };
 				}
 			}
 		}
 		
-		pdgMethodSeeds += { methodSeeds };
+		graphSeeds[pdgPair] = statementSeeds;
 	}
 	
-	return pdgMethodSeeds;
+	return graphSeeds;
 }
