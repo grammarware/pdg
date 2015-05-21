@@ -7,6 +7,7 @@ import vis::Figure;
 import vis::Render;
 import vis::KeySym;
 import util::Editors;
+import analysis::m3::Registry;
 import lang::java::m3::AST;
 
 import screen::Screen;
@@ -25,8 +26,8 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 		
-	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, true);
-	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, true);
+	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, File());
+	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, File());
 	SystemDependence systemDependence = createSDG(controlDependences, dataDependences);
 	
 	list[Edge] edges = createEdges(systemDependence.controlDependence, "solid", "blue")

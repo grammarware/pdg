@@ -7,6 +7,8 @@ import analysis::graphs::Graph;
 
 import graph::DataStructures;
 
+
+map[str, node] encodedNodeEnvironment = ();
 			
 public str encodeVertex(MethodData method, int vertex) {
 	return "<method.abstractTree@src.file>:<method.abstractTree@src.offset>:<method.name>:<vertex>";
@@ -36,7 +38,18 @@ private Graph[str] encodeGraph(MethodData method, Graph[int] graph) {
 	Graph[str] encodedGraph = {};
 	
 	for(<from, to> <- graph) {
-		encodedGraph += { <encodeVertex(method, from), encodeVertex(method, to)> };
+		str encodedFrom = encodeVertex(method, from);
+		str encodedTo = encodeVertex(method, to);
+		
+		if(from >= 0) {
+			encodedNodeEnvironment[encodedFrom] = resolveIdentifier(method, from);
+		}
+		
+		if(to >= 0) {
+			encodedNodeEnvironment[encodedTo] = resolveIdentifier(method, to);
+		}
+		
+		encodedGraph += { <encodedFrom, encodedTo> };
 	}
 	
 	return encodedGraph;
@@ -47,6 +60,7 @@ private bool isParameterVariable(str variable) {
 }
 
 public SystemDependence createSDG(ControlDependences controlDependences, DataDependences dataDependences) {
+	encodedNodeEnvironment = ();
 	map[str, set[str]] allDefinitions = ();
 	
 	for(method <- controlDependences) {
@@ -83,8 +97,9 @@ public SystemDependence createSDG(ControlDependences controlDependences, DataDep
 		}
 	}
 	
-	SystemDependence systemDependence = SystemDependence({}, {}, {}, {});
+	SystemDependence systemDependence = SystemDependence((), {}, {}, {}, {});
 	
+	systemDependence.nodeEnvironment = encodedNodeEnvironment;
 	systemDependence.controlDependence = controlDependenceGraph;
 	systemDependence.iControlDependence = iControlDependenceGraph;
 	systemDependence.dataDependence = dataDependenceGraph;

@@ -31,8 +31,9 @@ alias DataDependences = map[MethodData, DataDependence];
 data ProgramDependence = ProgramDependence(Graph[int] controlDependence, Graph[int] dataDependence);
 alias ProgramDependences = map[MethodData, ProgramDependence];
 
-data SystemDependence = SystemDependence(Graph[str] controlDependence, Graph[str] iControlDependence,
-					  					 Graph[str] dataDependence, Graph[str] iDataDependence);
+data SystemDependence = SystemDependence(map[str, node] nodeEnvironment,
+										Graph[str] controlDependence, Graph[str] iControlDependence,
+					  					Graph[str] dataDependence, Graph[str] iDataDependence);
 
 data NodeType = Normal() | Parameter() | CallSite();
 

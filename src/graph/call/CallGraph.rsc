@@ -18,8 +18,6 @@ public str getVertexName(loc location) {
 }
 
 public CallGraph createCG(M3 projectModel, loc projectLocation) {
-	registerProject(projectLocation, projectModel);
-	
 	Graph[str] callGraph = {};
 	map[str, set[str]] methodCalls = ();
 	map[str, loc] locations = ();
@@ -55,8 +53,6 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 	    	}
 		}		
 	}
-	
-	unregisterProject(projectLocation);
 	
 	return CallGraph(callGraph, locations, methodCalls);
 }
