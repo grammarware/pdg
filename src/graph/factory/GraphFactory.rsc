@@ -18,23 +18,28 @@ data Scope = Intra() | File() | Project();
 
 private set[loc] generatedMethods = {};
 
-private map[MethodData, ControlFlow] getCalledMethods(set[loc] calledMethods, M3 projectModel) {
+private map[MethodData, ControlFlow] getCalledMethods(loc origin, set[loc] calledMethods, M3 projectModel, Scope scope) {
 	map[MethodData, ControlFlow] methodCollection = ();
 	node methodAST;
 	GeneratedData generatedData;
 	MethodData methodData;
 	ControlFlow controlFlow;
 	
+	calledMethods = filterCalledMethods(origin, calledMethods, scope);
+	
 	for(calledMethod <- calledMethods, calledMethod notin generatedMethods) {
 		methodAST = getMethodASTEclipse(calledMethod, model = projectModel);
 		generatedData = createCFG(cast(#Declaration, methodAST));
 		
 		methodData = generatedData.methodData;
+		methodData.callSites = filterCallSites(calledMethod, methodData, scope);
+		
 		controlFlow = generatedData.controlFlow;
 		methodCollection[methodData] = controlFlow;
 		
 		generatedMethods += calledMethod;
-		methodCollection += getCalledMethods(methodData.calledMethods, projectModel);
+		
+		methodCollection += getCalledMethods(origin, methodData.calledMethods, projectModel, scope);
 	}
 	
 	return methodCollection;
@@ -45,25 +50,38 @@ public set[loc] filterCalledMethods(loc origin, set[loc] calledMethods, Intra())
 }
 
 public set[loc] filterCalledMethods(loc origin, set[loc] calledMethods, File()) {
-	return { calledMethod | calledMethod <- calledMethods, calledMethod.parent.file == origin.parent.file };
+ 	return { calledMethod | calledMethod <- calledMethods, calledMethod.parent.file == origin.parent.file };
 }
 
 public set[loc] filterCalledMethods(loc origin, set[loc] calledMethods, Project()) {
 	return calledMethods;
 }
 
+public set[int] filterCallSites(loc origin, MethodData methodData, Intra()) {
+	return {};
+}
+
+public set[int] filterCallSites(loc origin, MethodData methodData, File()) {
+ 	return { callSite | callSite <- methodData.callSites, origin.parent.file == resolveIdentifier(methodData, callSite)@decl.parent.file };
+}
+
+public set[int] filterCallSites(loc origin, MethodData methodData, Project()) {
+	return methodData.callSites;
+}
+
 public ControlFlows createControlFlows(loc methodLocation, node abstractTree, M3 projectModel, Scope scope) {
 	GeneratedData generatedData = createCFG(cast(#Declaration, abstractTree));
 	
 	MethodData methodData = generatedData.methodData;
+	methodData.callSites = filterCallSites(methodLocation, methodData, scope);
+	
 	ControlFlow controlFlow = generatedData.controlFlow;
 	
 	map[MethodData, ControlFlow] controlFlows = ( methodData : controlFlow );
 	
 	generatedMethods = { methodLocation };
 	
-	set[loc] calledMethods = filterCalledMethods(methodLocation, methodData.calledMethods, scope);
-	controlFlows += getCalledMethods(calledMethods, projectModel);
+	controlFlows += getCalledMethods(methodLocation, methodData.calledMethods, projectModel, scope);
 	
 	return controlFlows;
 }
