@@ -31,6 +31,10 @@ private map[MethodData, ControlFlow] getCalledMethods(loc origin, set[loc] calle
 		methodAST = getMethodASTEclipse(calledMethod, model = projectModel);
 		generatedData = createCFG(cast(#Declaration, methodAST));
 		
+		if(generatedData == EmptyGD()) {
+			continue;
+		}
+		
 		methodData = generatedData.methodData;
 		methodData.callSites = filterCallSites(calledMethod, methodData, scope);
 		

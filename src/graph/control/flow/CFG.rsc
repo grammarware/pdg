@@ -15,7 +15,8 @@ import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
 
 
-alias GeneratedData = tuple[MethodData methodData, ControlFlow controlFlow];
+data GeneratedData = EmptyGD() 
+					| GeneratedData(MethodData methodData, ControlFlow controlFlow);
 
 private str methodName = "";
 
@@ -40,7 +41,7 @@ public GeneratedData createCFG(methodNode: Declaration::\constructor(name, param
 	methodData.name = name;
 	methodData.abstractTree = methodNode;
 	
-	return <methodData, controlFlow>;
+	return GeneratedData(methodData, controlFlow);
 }
 
 public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
@@ -71,7 +72,11 @@ public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, p
 	methodData.name = name;
 	methodData.abstractTree = methodNode;
 	
-	return <methodData, controlFlow>;
+	return GeneratedData(methodData, controlFlow);
+}
+
+default GeneratedData createCFG(node tree) {
+	return EmptyGD();
 }
 
 private ControlFlow process(blockNode: \block(body)) {	
