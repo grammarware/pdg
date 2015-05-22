@@ -400,7 +400,8 @@ private ControlFlow process(statementNode: \expressionStatement(statement)) {
 }
 
 private ControlFlow process(Statement statement) {
-	int identifier = storeNode(statement);
+	list[ControlFlow] callSites = registerMethodCalls(statement);
 	
-	return ControlFlow({}, identifier, {identifier});
+	int identifier = storeNode(statement);
+	return connectControlFlows(callSites + ControlFlow({}, identifier, {identifier}));
 }

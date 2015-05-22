@@ -28,8 +28,8 @@ public set[int] getCallSites() {
 	return callSites;
 }
 
-private ControlFlow createCallSiteFlow(Expression callNode) {
-	int identifier = storeNode(callNode, nodeType = CallSite());
+private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = CallSite()) {
+	int identifier = storeNode(callNode, nodeType = nType);
 	
 	callsite = ControlFlow({}, identifier, {identifier});
 	callsite = addArgumentNodes(callsite, callNode.name, callNode.arguments);
@@ -50,15 +50,21 @@ private ControlFlow createCallSiteFlow(Expression callNode) {
 	return callsite;
 }
 
-public list[ControlFlow] registerMethodCalls(Expression expression) {
+public list[ControlFlow] registerMethodCalls(node expression) {
 	list[ControlFlow] callsites = [];
 	
 	visit(expression) {
 		case callNode: \methodCall(isSuper, name, arguments): {
-			callsites += createCallSiteFlow(callNode);
+			callsites += 
+				callNode == expression
+				? createCallSiteFlow(callNode, nType = Normal()) 
+				: createCallSiteFlow(callNode);
 		}
     	case callNode: \methodCall(isSuper, receiver, name, arguments): {
-    		callsites += createCallSiteFlow(callNode);
+    		callsites += 
+				callNode == expression
+				? createCallSiteFlow(callNode, nType = Normal()) 
+				: createCallSiteFlow(callNode);
     	}
 	}
 	

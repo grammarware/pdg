@@ -17,11 +17,13 @@ import graph::factory::GraphFactory;
 data InternalSeed = InternalSeed(MethodData methodData, ProgramDependence programDependence, int identifier);
 
 public InitialSeeds generateSeeds(str firstProject, str secondProject) {
-	M3 firstModel = createM3(|project://<firstProject>|);
-	CallGraph firstCallGraph = createCG(firstModel, |project://<firstProject>|);
+	loc firstProjectLoc = |project://<firstProject>|;
+	M3 firstModel = createM3(firstProjectLoc);
+	CallGraph firstCallGraph = createCG(firstModel, firstProjectLoc);
 	
-	M3 secondModel = createM3(|project://<secondProject>|);
-	CallGraph secondCallGraph = createCG(secondModel, |project://<secondProject>|);
+	loc secondProjectLoc = |project://<secondProject>|;
+	M3 secondModel = createM3(secondProjectLoc);
+	CallGraph secondCallGraph = createCG(secondModel, secondProjectLoc);
 	
 	InitialSeeds seeds = generateInitialSeeds(firstCallGraph, secondCallGraph);
 	MethodSeeds methodSeeds = {
@@ -30,6 +32,9 @@ public InitialSeeds generateSeeds(str firstProject, str secondProject) {
 	};
 	
 	magic(methodSeeds);
+	
+	unregisterProject(firstProjectLoc);
+	unregisterProject(secondProjectLoc);
 	
 	return seeds;
 }

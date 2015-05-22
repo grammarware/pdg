@@ -21,9 +21,9 @@ import graph::factory::GraphFactory;
 	To run a test:
 		displaySystemDependenceGraph(|project://JavaTest|, "main");
 }
-public void displaySystemDependenceGraph(loc project, str methodName) {
+public void displaySystemDependenceGraph(loc project, str methodName, str fileName) {
 	M3 projectModel = createM3(project);
-	loc methodLocation = getMethodLocation(methodName, projectModel);
+	loc methodLocation = getMethodLocation(methodName, fileName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 		
 	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, File());
@@ -38,6 +38,17 @@ public void displaySystemDependenceGraph(loc project, str methodName) {
 	list[Figure] boxes = ([] | it + createSDGBoxes(method) | method <- controlDependences);
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
+}
+
+public loc getMethodLocation(str methodName, str fileName, M3 projectModel) {
+	for(method <- getM3Methods(projectModel)) {
+		if(/<name:.*>\(/ := method.file, name == methodName
+			, method.parent.file == fileName) {
+			return method;
+		}
+	}
+	
+	throw "Method \"<methodName>\" does not exist.";
 }
 
 public list[Edge] createEdges(Graph[str] graph, str style, str color) {
