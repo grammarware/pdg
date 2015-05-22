@@ -167,6 +167,10 @@ private void process(int identifier, \throw(expression)) {
 private void process(int identifier, \expressionStatement(stmt)) {
 	processExpression(identifier, stmt);
 }
+
+private void process(int identifier, \methodCall(_, Expression receiver, _, _)) {
+	checkForUse(identifier, receiver);
+}
 		
 private void process(int identifier, Statement stmt) {
 	processExpression(identifier, stmt);
