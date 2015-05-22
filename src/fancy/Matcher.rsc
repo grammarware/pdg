@@ -9,7 +9,9 @@ import graph::DataStructures;
 
 
 private str getNodeName(node treeNode) {
-	if(/^<name:\w*>/ := "<treeNode>") {
+	str expressionStatement = "expressionStatement(";
+	if(/^<expressionStatement><name:\w*>/ := "<treeNode>" ||
+		/^<name:\w*>/ := "<treeNode>"	) {
 		return name;
 	}
 	
