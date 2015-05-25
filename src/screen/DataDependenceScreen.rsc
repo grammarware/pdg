@@ -26,7 +26,7 @@ public void displayDataDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, true);
+	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, File());
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];
