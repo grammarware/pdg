@@ -35,7 +35,7 @@ data SystemDependence = SystemDependence(map[str, node] nodeEnvironment,
 										Graph[str] controlDependence, Graph[str] iControlDependence,
 					  					Graph[str] dataDependence, Graph[str] iDataDependence);
 
-data NodeType = Normal() | Parameter() | CallSite();
+data NodeType = Normal() | Parameter() | CallSite() | Result();
 
 anno loc node@decl;
 anno loc node@src;

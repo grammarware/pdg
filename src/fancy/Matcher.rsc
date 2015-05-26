@@ -10,69 +10,75 @@ import fancy::DataStructures;
 import graph::DataStructures;
 
 
-public bool match(map[str, str] firstEnv, str seed1, map[str, str] secondEnv, str seed2) {
-	return firstEnv[seed1] == secondEnv[seed2];
-}
+alias Translations = rel[tuple[str, str], Flow];
 
-public set[str] nextFrontier(map[str, node] environment, Graph[str] graph, str startNode) {
-	 set[str] frontier = successors(graph, startNode);
-	 
-	 for(frontNode <- frontier) {
-	 	if(frontNode in environment && environment[frontNode] != Normal()
-	 		|| frontNode notin environment) {
-	 		frontier += nextFrontier(environment, graph, frontNode);
-	 	}
-	 }
-	 
-	 return { frontNode | frontNode <- frontier
-	 		, frontNode in environment
-	 		, environment[frontNode]@nodeType == Normal()
-	 		};
-}
-
-map[Graph[str], set[loc]] matchSet1 = ();
-map[Graph[str], set[loc]] matchSet2 = ();
-
-public void prs(map[str, node] firstEnv, Graph[str] cd1, set[str] firstMatchSet,
-				 map[str, node] secondEnv, Graph[str] cd2, set[str] secondMatchSet) {
-	map[str, str] stripped1 = stripEnvironment(firstEnv);
-	map[str, str] stripped2 = stripEnvironment(secondEnv);
+public Translations translateFlows(map[str, node] environment, set[Flow] flows) {
+	map[str, str] strippedEnvironment = stripEnvironment(environment);
 	
-	for(<match1, match2> <- firstMatchSet * secondMatchSet) {				
-		if(match(stripped1, match1, stripped2, match2)) {
-			matchSet1[cd1] += { firstEnv[match1]@src };
-			matchSet2[cd2] += { secondEnv[match2]@src };
-			
-			prs(firstEnv, cd1, nextFrontier(firstEnv, cd1, match1), 
-				secondEnv, cd2, nextFrontier(secondEnv, cd2, match2));
+	return { < <strippedEnvironment[flow.root], strippedEnvironment[flow.target]>, flow > | flow <- flows };
+}
+
+public void printSources(map[str, node] firstEnv, Flow first, map[str, node] secondEnv, Flow second) {
+	loc firstFile = toLocation(firstEnv[first.root]@src.uri);
+	loc secondFile = toLocation(secondEnv[second.root]@src.uri);
+	
+	if(firstFile notin lineMatches) {
+		lineMatches[firstFile] = {};
+		lineMatches[secondFile] = {};
+	}
+
+	lineMatches[firstFile] += { firstEnv[first.root]@src.begin.line };
+	lineMatches[firstFile] += { firstEnv[inter]@src.begin.line | inter <- first.intermediates, inter in firstEnv };
+	lineMatches[firstFile] += { firstEnv[first.target]@src.begin.line };
+	
+	lineMatches[secondFile] += { secondEnv[second.root]@src.begin.line };
+	lineMatches[secondFile] += { secondEnv[inter]@src.begin.line | inter <- second.intermediates, inter in secondEnv };
+	lineMatches[secondFile] += { secondEnv[second.target]@src.begin.line };
+}
+
+map[loc, set[int]] lineMatches = ();
+
+public void flowMatcher(map[str, node] firstEnv, set[Flow] first, map[str, node] secondEnv, set[Flow] second) {
+	Translations firstTranslations = translateFlows(firstEnv, first);
+	Translations secondTranslations = translateFlows(secondEnv, second);
+	
+	for(<key, val> <- firstTranslations) {
+		println("[First] <key>, Root: <firstEnv[val.root]@src>, Target: <firstEnv[val.target]@src>");
+	}
+	
+	for(<key, val> <- secondTranslations) {
+		println("[Second] <key>, Root: <secondEnv[val.root]@src>, Target: <secondEnv[val.target]@src>");
+	}
+	
+	for(key <- domain(firstTranslations)) {
+		if(key in domain(secondTranslations)) {
+			for(f <- firstTranslations[key], s <- secondTranslations[key])
+				printSources(firstEnv, f, secondEnv, s);
 		}
 	}
-}
+}	
 
-public void magic(MethodSeeds methodSeeds) {
-	matchSet1 = ();
-	matchSet2 = ();
+public map[loc, set[int]] magic(MethodSeeds methodSeeds) {
+	lineMatches = ();
 
 	for(<firstSDG, secondSDG>  <- methodSeeds) {
 		Graph[str] cd1 = firstSDG.controlDependence + firstSDG.iControlDependence;
-		matchSet1[cd1] = {};
-		
 		Graph[str] dd1 = firstSDG.dataDependence + firstSDG.iDataDependence;
 		
 		Graph[str] cd2 = secondSDG.controlDependence + secondSDG.iControlDependence;
-		matchSet2[cd2] = {};
+		Graph[str] dd2 = secondSDG.dataDependence + secondSDG.iDataDependence;
 		
-		for(fron <- frontier(firstSDG.nodeEnvironment, cd1, top(cd1)))
-			println(fron);
+		set[Flow] controls1 = createFlows(firstSDG.nodeEnvironment, cd1);
+		set[Flow] controls2 = createFlows(secondSDG.nodeEnvironment, cd2);	
 		
-		println(top(dd1));
+		flowMatcher(firstSDG.nodeEnvironment, controls1, secondSDG.nodeEnvironment, controls2);
 		
-		for(fron <- frontier(firstSDG.nodeEnvironment, dd1, top(dd1)))
-			println(fron);
+		set[Flow] datas1 = createFlows(firstSDG.nodeEnvironment, dd1);
+		set[Flow] datas2 = createFlows(secondSDG.nodeEnvironment, dd2);
 		
-		set[str] firstMatchSet = nextFrontier(firstSDG.nodeEnvironment, cd1, getOneFrom(top(cd1)));
-		set[str] secondMatchSet = nextFrontier(secondSDG.nodeEnvironment, cd2, getOneFrom(top(cd2)));
-		
-		prs(firstSDG.nodeEnvironment, cd1, firstMatchSet, secondSDG.nodeEnvironment, cd2, secondMatchSet);
+		flowMatcher(firstSDG.nodeEnvironment, datas1, secondSDG.nodeEnvironment, datas2);
 	}
+	
+	println(lineMatches);
+	return lineMatches;
 }

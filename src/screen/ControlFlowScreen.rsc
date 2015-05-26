@@ -8,6 +8,7 @@ import vis::Render;
 
 import screen::Screen;
 import graph::DataStructures;
+import graph::factory::GraphFactory;
 import extractors::Project;
 
 
@@ -20,7 +21,7 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel);
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel, File());
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];

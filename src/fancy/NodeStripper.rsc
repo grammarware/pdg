@@ -6,6 +6,7 @@ import analysis::graphs::Graph;
 import lang::java::m3::AST;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
+import lang::java::m3::TypeSymbol;
 
 
 public map[str, str] stripEnvironment(map[str, node] environment) {
@@ -35,9 +36,9 @@ private str process(Declaration declaration) {
     	case \initializer(Statement initializerBody):
     		return "initializer";
     	case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):
-    		return "method-impl <\return>";
+    		return "method-impl <process(\return)>";
     	case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions):
-    		return "method <\return>";
+    		return "method <process(\return)>";
     	case \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):
     		return "constructor";
     	case \import(str name):
@@ -92,13 +93,13 @@ private str process(Statement statement) {
 		case \return():
 			return "return";
 		case \return(expression):
-			return "return <expression@typ>";
+			return "return <process(expression)>";
 		case \switch(expression, statements): 
-			return "switch <expression@typ>";
+			return "switch <process(expression@typ)>";
 		case \synchronizedStatement(Expression lock, Statement body):
-			return "synchronizedStatement <lock@typ>";
+			return "synchronizedStatement <process(lock)>";
 		case \throw(expression):
-			return "throw <process(expression)>";
+			return "throw <process(expression@typ)>";
 		case \try(body, catchClauses):
 			return "try-catch";
 		case \try(body, catchClauses, finalClause):
@@ -131,7 +132,7 @@ private str process(Expression expr) {
     	case \arrayInitializer(list[Expression] elements):
     		return "arrayInitializer";
     	case \assignment(Expression lhs, str operator, Expression rhs):
-    		return "assignment <lhs@typ> <operator> <rhs@typ>";
+    		return "assignment <process(lhs@typ)> <operator> <process(rhs@typ)>";
     	case \cast(Type \type, Expression expression):
     		return "cast <process(\type)>";
     	case \characterLiteral(str charValue):
@@ -244,5 +245,62 @@ private str process(Type typ) {
     		return "boolean";
     	default:
     		return "type";
+	}
+}
+
+private str process(TypeSymbol typ) {
+	switch(typ) {
+		case \class(_, _):
+			return "class"; 
+		case \interface(_, _):
+			return "interface";
+		case \enum(_):
+			return "enum";
+		case \method(_, _, returnType, _):
+			return process(returnType);
+		case \constructor(_, _):
+			return "constructor";
+		case \typeParameter(_, _):
+			return "typeParameter"; 
+		case \typeArgument(_):
+			return "typeArgument";
+		case \wildcard(_):
+			return "wildcard";
+		case \capture(_, _):
+			return "capture";
+		case \intersection(_):
+			return "intersection";
+		case \union(_):
+			return "union";
+		case \object():
+			return "object";
+		case \int():
+			return "int";
+		case \float():
+			return "float";
+		case \double():
+			return "double";
+		case \short():
+			return "short";
+		case \boolean():
+			return "boolean";
+		case \char():
+			return "char";
+		case \byte():
+			return "byte";
+		case \long():
+			return "long";
+		case \void():
+			return "void";
+		case \null():
+			return "null";
+		case \array(_, _):
+			return "array";
+		case \typeVariable(_):
+			return "typeVariable";
+		case \unresolved():
+			return "unresolved";
+		default:
+			return "typeSymbol";
 	}
 }

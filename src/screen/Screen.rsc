@@ -58,7 +58,7 @@ public bool(int button, map[KeyModifier,bool] modifiers) goToSource(loc location
 	bool(int button, map[KeyModifier,bool] modifiers)
 	{ 
 	    if(button == 1) {
-	        edit(location,[]);
+	        edit(location,[highlight(1, "Waddap my man")]);
 	        return true;
 	    }
 	    return false;

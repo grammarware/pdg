@@ -10,11 +10,12 @@ import graph::DataStructures;
 data Flow = Flow(str root, set[str] intermediates, str target);
 
 public set[Flow] flowForward(Graph[str] graph, Flow flow) {
-	return { Flow(flow.root, flow.intermediates + { flow.target } - { flow.root }, successor) | successor <- successors(graph, flow.target) };
+	println(successors(graph, flow.target));
+	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target) };
 }
 
 public bool isIntermediate(map[str, node] environment, str vertex) {
-	if(environment[vertex]@nodeType != Normal()) {
+	if(vertex notin environment || environment[vertex]@nodeType != Normal()) {
 		return true;
 	}
 	
@@ -22,7 +23,8 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 		case m: \methodCall(_, _, _):
 			return m@src.parent.file == resolveM3(m@decl).parent.file;
     	case m: \methodCall(_, _, _, _):
-    		return m@src.parent.file == m@decl.parent.file;
+    		try return m@src.parent.file == resolveM3(m@decl).parent.file;
+    		catch: return false;
     	case \do(_, _):
     		return true;
     	case \for(_, _, _, _):
@@ -35,6 +37,8 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
     		return true;
 		case \switch(_, _):
 			return true;
+		case \while(_, _):
+			return true;
 	}
 	
 	return false;
@@ -42,13 +46,14 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 
 public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] flows) {
 	set[Flow] expanded = {};
-	bool changed = false;
 	set[Flow] addedFlow = {};
+	bool changed = false;
 	
 	for(flow <- flows) {
+		println(flow);
 		addedFlow = { flow };
 
-		if(flow.target notin environment || isIntermediate(environment, flow.target)) {
+		if(isIntermediate(environment, flow.target)) {
 			addedFlow = flowForward(graph, flow);
 			changed = true;
 		}
@@ -56,16 +61,21 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 		expanded += addedFlow;
 	}
 	
-	
 	return changed ? expand(environment, graph, expanded) : expanded;
 }
 
 public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str] startNodes) {
+	rel[str, str] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successors(graph, startNode) } | startNode <- startNodes );
+	
 	return expand(environment, graph, 
 				{ Flow(root, {}, nextNode) |
-					root <- startNodes
+					<root, nextNode> <- seeds
 					, root in environment
-					, environment[root]@nodeType == Normal() 
-					, nextNode <- successors(graph, root)
+					, environment[root]@nodeType == Normal()
 				});
+}
+
+public set[Flow] createFlows(map[str, node] environment, Graph[str] graph) {
+	println(carrier(graph));
+	return frontier(environment, graph, domain(environment));
 }
