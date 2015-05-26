@@ -2,6 +2,8 @@ module fancy::Matcher
 
 import Prelude;
 import lang::java::m3::AST;
+import lang::java::m3::Core;
+import analysis::m3::Registry;
 import analysis::graphs::Graph;
 
 import fancy::Flow;
@@ -42,13 +44,13 @@ public void flowMatcher(map[str, node] firstEnv, set[Flow] first, map[str, node]
 	Translations firstTranslations = translateFlows(firstEnv, first);
 	Translations secondTranslations = translateFlows(secondEnv, second);
 	
-	for(<key, val> <- firstTranslations) {
-		println("[First] <key>, Root: <firstEnv[val.root]@src>, Target: <firstEnv[val.target]@src>");
-	}
-	
-	for(<key, val> <- secondTranslations) {
-		println("[Second] <key>, Root: <secondEnv[val.root]@src>, Target: <secondEnv[val.target]@src>");
-	}
+	//for(<key, val> <- firstTranslations) {
+	//	println("[First] <key>, Root: <firstEnv[val.root]@src>, Target: <firstEnv[val.target]@src>");
+	//}
+	//
+	//for(<key, val> <- secondTranslations) {
+	//	println("[Second] <key>, Root: <secondEnv[val.root]@src>, Target: <secondEnv[val.target]@src>");
+	//}
 	
 	for(key <- domain(firstTranslations)) {
 		if(key in domain(secondTranslations)) {
@@ -58,24 +60,28 @@ public void flowMatcher(map[str, node] firstEnv, set[Flow] first, map[str, node]
 	}
 }	
 
-public map[loc, set[int]] magic(MethodSeeds methodSeeds) {
+public map[loc, set[int]] magic(MethodSeeds methodSeeds, loc project1, M3 projectModel1, loc project2, M3 projectModel2) {
 	lineMatches = ();
 
 	for(<firstSDG, secondSDG>  <- methodSeeds) {
 		Graph[str] cd1 = firstSDG.controlDependence + firstSDG.iControlDependence;
 		Graph[str] dd1 = firstSDG.dataDependence + firstSDG.iDataDependence;
+		println(cd1);
 		
 		Graph[str] cd2 = secondSDG.controlDependence + secondSDG.iControlDependence;
 		Graph[str] dd2 = secondSDG.dataDependence + secondSDG.iDataDependence;
 		
+		registerProject(project1, projectModel1);
 		set[Flow] controls1 = createFlows(firstSDG.nodeEnvironment, cd1);
-		set[Flow] controls2 = createFlows(secondSDG.nodeEnvironment, cd2);	
+		set[Flow] datas1 = createFlows(firstSDG.nodeEnvironment, dd1);
+		unregisterProject(project1);
+		
+		registerProject(project2, projectModel2);
+		set[Flow] controls2 = createFlows(secondSDG.nodeEnvironment, cd2);
+		set[Flow] datas2 = createFlows(secondSDG.nodeEnvironment, dd2);
+		unregisterProject(project2);
 		
 		flowMatcher(firstSDG.nodeEnvironment, controls1, secondSDG.nodeEnvironment, controls2);
-		
-		set[Flow] datas1 = createFlows(firstSDG.nodeEnvironment, dd1);
-		set[Flow] datas2 = createFlows(secondSDG.nodeEnvironment, dd2);
-		
 		flowMatcher(firstSDG.nodeEnvironment, datas1, secondSDG.nodeEnvironment, datas2);
 	}
 	

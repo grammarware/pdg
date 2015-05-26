@@ -55,12 +55,24 @@ public InitialSeeds generateSeeds(str firstProject, str secondProject) {
 	CallGraph secondCallGraph = createCG(secondModel, secondProjectLoc);
 	
 	InitialSeeds seeds = generateInitialSeeds(firstCallGraph, secondCallGraph);
-	MethodSeeds methodSeeds = {
-		<getSystemDependence(firstModel, first), getSystemDependence(secondModel, second)>
-		| <first, second> <- seeds
-	};
+	MethodSeeds methodSeeds = {};
 	
-	map[loc, set[int]] clones = magic(methodSeeds);
+	for(<first, second> <- seeds) {
+		unregisterProject(firstProjectLoc);
+		unregisterProject(secondProjectLoc);
+	
+		registerProject(firstProjectLoc, firstModel);
+		SystemDependence firstGraph = getSystemDependence(firstModel, first);
+		unregisterProject(firstProjectLoc);
+		
+		registerProject(secondProjectLoc, secondModel);
+		SystemDependence secondGraph = getSystemDependence(secondModel, second);
+		unregisterProject(secondProjectLoc);
+		
+		methodSeeds += { <firstGraph, secondGraph> };
+	}
+	
+	map[loc, set[int]] clones = magic(methodSeeds, firstProjectLoc, firstModel, secondProjectLoc, secondModel);
 	
 	unregisterProject(firstProjectLoc);
 	unregisterProject(secondProjectLoc);

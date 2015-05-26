@@ -10,7 +10,11 @@ import graph::DataStructures;
 data Flow = Flow(str root, set[str] intermediates, str target);
 
 public set[Flow] flowForward(Graph[str] graph, Flow flow) {
-	println(successors(graph, flow.target));
+	set[str] succ = successors(graph, flow.target);
+	
+	println("[<flow.target>]: <succ>");
+	println("Graph: <graph>");
+	
 	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target) };
 }
 
@@ -50,7 +54,6 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 	bool changed = false;
 	
 	for(flow <- flows) {
-		println(flow);
 		addedFlow = { flow };
 
 		if(isIntermediate(environment, flow.target)) {
