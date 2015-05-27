@@ -5,6 +5,7 @@ import lang::java::m3::AST;
 import analysis::graphs::Graph;
 
 
+public int GLOBALNODE = -4;
 public int ENTRYNODE = -3;
 public int STARTNODE = -2;
 public int EXITNODE = -1;

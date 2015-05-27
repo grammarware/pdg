@@ -46,8 +46,9 @@ public void flowMatcher(map[str, node] firstEnv, set[Flow] first, map[str, node]
 	
 	for(key <- domain(firstTranslations)) {
 		if(key in domain(secondTranslations)) {
-			for(f <- firstTranslations[key], s <- secondTranslations[key])
+			for(f <- firstTranslations[key], s <- secondTranslations[key]) {
 				printSources(firstEnv, f, secondEnv, s);
+			}
 		}
 	}
 }	

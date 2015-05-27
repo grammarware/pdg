@@ -6,6 +6,7 @@ import analysis::m3::Registry;
 import analysis::graphs::Graph;
 
 import graph::DataStructures;
+import graph::\data::GlobalData;
 
 
 map[str, node] encodedNodeEnvironment = ();

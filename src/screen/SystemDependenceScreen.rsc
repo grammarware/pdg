@@ -35,14 +35,14 @@ public void displaySystemDependenceGraph(loc project, str methodName, str fileNa
 		+ createEdges(systemDependence.iControlDependence, "solid", "deepskyblue")
 		+ createEdges(systemDependence.iDataDependence, "dash", "lime");
 	
-	list[Figure] boxes = ([] | it + createSDGBoxes(method) | method <- controlDependences);
+	list[Figure] boxes = ([ box(text("GLOBAL"), id("<GLOBALNODE>"), size(50), fillColor("darkorange")) ] | it + createSDGBoxes(method) | method <- controlDependences);
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
 
 public loc getMethodLocation(str methodName, str fileName, M3 projectModel) {
 	for(method <- getM3Methods(projectModel)) {
-		if(/<name:.*>\(/ := method.file, name == methodName
+		if(/<name:.*>/ := method.file, name == methodName
 			, method.parent.file == fileName) {
 			return method;
 		}

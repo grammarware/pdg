@@ -9,6 +9,7 @@ import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
 import graph::\data::VariableData;
+import graph::\data::GlobalData;
 
 
 private alias ReachingDefs = tuple[
@@ -16,7 +17,9 @@ private alias ReachingDefs = tuple[
 			map[int, set[VariableData]] \out
 		];
 
-
+private bool isParameterVariable(str variableName) {
+	return /^\$/ := variableName;
+}
 public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
 	initializeVariableData(methodData);
 	
@@ -44,6 +47,10 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 	for(identifier <- uses) {
 		for(usedVariable <- uses[identifier]) {
 			if(usedVariable notin definitions) {
+				if(!isParameterVariable(usedVariable)) {
+					addGlobal(methodData, identifier);
+					println("<usedVariable> is not defined anywhere");
+				}
 				continue;
 			}
 			
