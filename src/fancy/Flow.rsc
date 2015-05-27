@@ -14,7 +14,7 @@ public set[Flow] flowForward(Graph[str] graph, Flow flow) {
 }
 
 public bool isIntermediate(map[str, node] environment, str vertex) {
-	if(vertex notin environment || environment[vertex]@nodeType != Normal()) {
+	if(vertex notin environment || environment[vertex]@nodeType != Normal() && environment[vertex]@nodeType != Global()) {
 		return true;
 	}
 	
@@ -72,6 +72,7 @@ public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str]
 					<root, nextNode> <- seeds
 					, root in environment
 					, environment[root]@nodeType == Normal()
+					|| environment[root]@nodeType == Global()
 				});
 }
 

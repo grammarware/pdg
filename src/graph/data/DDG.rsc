@@ -48,8 +48,10 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 		for(usedVariable <- uses[identifier]) {
 			if(usedVariable notin definitions) {
 				if(!isParameterVariable(usedVariable)) {
-					addGlobal(methodData, identifier);
-					println("<usedVariable> is not defined anywhere");
+					addGlobal(methodData, getDeclarationLoc(usedVariable), identifier);
+					//println("<usedVariable> is not defined anywhere");
+					//println(getDeclarationLoc(usedVariable));
+					//println(methodData.nodeEnvironment[identifier]);
 				}
 				continue;
 			}
@@ -112,8 +114,6 @@ private void process(int identifier, \foreach(\parameter(_, name, _), collection
 	checkForDefinition(identifier, \simpleName(name));
 	checkForUse(identifier, collection);
 	
-	println(name);
-	
 	processExpression(identifier, collection);
 }
 
@@ -167,8 +167,8 @@ private void process(int identifier, \try(_, _, _)) {
 	return;
 }
 
-private void process(int identifier, \catch(_, _)) {
-	return;
+private void process(int identifier, \catch(\parameter(_, name, _), _)) {
+	checkForDefinition(identifier, \simpleName(name));
 }
 
 private void process(int identifier, \return(_)) {

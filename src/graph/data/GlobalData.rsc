@@ -1,22 +1,23 @@
 module graph::\data::GlobalData
 
 import Prelude;
+import analysis::m3::Registry;
 
 import graph::DataStructures;
 
 
-private map[MethodData, set[int]] globalLinks = ();
+private map[loc, rel[MethodData, int]] globalLinks = ();
 
-public void addGlobal(MethodData methodData, int vertex) {
-	if(methodData in globalLinks) {
-		globalLinks[methodData] += { vertex };
+public void addGlobal(MethodData methodData, loc location, int vertex) {
+	if(location in globalLinks) {
+		globalLinks[location] += { <methodData, vertex> };
 	} else {
-		globalLinks[methodData] = { vertex };
+		globalLinks[location] = { <methodData, vertex> };
 	}
 }
 
-public map[MethodData, set[int]] getGlobalLinks() {
-	map[MethodData, set[int]] returnLinks = globalLinks;
+public map[loc, rel[MethodData, int]] getGlobalLinks() {
+	map[loc, rel[MethodData, int]] returnLinks = globalLinks;
 	globalLinks = ();
 	
 	return returnLinks;

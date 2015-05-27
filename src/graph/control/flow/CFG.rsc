@@ -144,8 +144,6 @@ private ControlFlow createForFlow(int identifier, Statement body) {
 }
 
 private ControlFlow process(forEachNode: \foreach(parameter, collection, body)) {
-	println(parameter);
-	
 	list[ControlFlow] callSites = registerMethodCalls(collection);
 	int identifier = storeNode(forEachNode);
 	

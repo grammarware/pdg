@@ -58,10 +58,10 @@ public map[loc, set[int]] magic(MethodSeeds methodSeeds, loc project1, M3 projec
 
 	for(<firstSDG, secondSDG>  <- methodSeeds) {
 		Graph[str] cd1 = firstSDG.controlDependence + firstSDG.iControlDependence;
-		Graph[str] dd1 = firstSDG.dataDependence + firstSDG.iDataDependence;
+		Graph[str] dd1 = firstSDG.dataDependence + firstSDG.globalDataDependence + firstSDG.iDataDependence;
 		
 		Graph[str] cd2 = secondSDG.controlDependence + secondSDG.iControlDependence;
-		Graph[str] dd2 = secondSDG.dataDependence + secondSDG.iDataDependence;
+		Graph[str] dd2 = secondSDG.dataDependence + secondSDG.globalDataDependence + secondSDG.iDataDependence;
 		
 		registerProject(project1, projectModel1);
 		set[Flow] controls1 = createFlows(firstSDG.nodeEnvironment, cd1);

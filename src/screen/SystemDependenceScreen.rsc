@@ -33,9 +33,11 @@ public void displaySystemDependenceGraph(loc project, str methodName, str fileNa
 	list[Edge] edges = createEdges(systemDependence.controlDependence, "solid", "blue")
 		+ createEdges(systemDependence.dataDependence, "dash", "green")
 		+ createEdges(systemDependence.iControlDependence, "solid", "deepskyblue")
-		+ createEdges(systemDependence.iDataDependence, "dash", "lime");
+		+ createEdges(systemDependence.iDataDependence, "dash", "lime")
+		+ createEdges(systemDependence.globalDataDependence, "dash", "lime");
 	
-	list[Figure] boxes = ([ box(text("GLOBAL"), id("<GLOBALNODE>"), size(50), fillColor("darkorange")) ] | it + createSDGBoxes(method) | method <- controlDependences);
+	list[Figure] boxes = ([] | it + createSDGBoxes(method) | method <- controlDependences);
+	boxes += createGlobalBoxes(systemDependence.nodeEnvironment, systemDependence.globalDataDependence);
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
@@ -62,7 +64,24 @@ private str getBoxColor(NodeType nodeType) {
 		case Normal(): return "lightgreen";
 		case CallSite(): return "lightpink";
 		case Parameter(): return "beige";
+		case Global(): return "darkorange";
 	}
+}
+
+public Figures createGlobalBoxes(map[str, node] environment, Graph[str] graph) {
+	return [ box(
+				text(vertex), 
+				id(vertex), 
+				size(50), 
+				fillColor(getBoxColor(environment[vertex]@nodeType)), 
+				onMouseDown(
+					goToSource(
+						getLocation(
+							environment[vertex]
+						)
+					)
+				)
+			) | vertex <- domain(graph) ];
 }
 
 public Figures createSDGBoxes(MethodData methodData) {

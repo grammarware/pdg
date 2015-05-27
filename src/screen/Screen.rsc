@@ -34,6 +34,7 @@ private str getBoxColor(NodeType nodeType) {
 		case Normal(): return "lightgreen";
 		case CallSite(): return "lightpink";
 		case Parameter(): return "beige";
+		case Global(): return "darkorange";
 	}
 }
 

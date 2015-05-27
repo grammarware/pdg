@@ -60,6 +60,28 @@ private bool isParameterVariable(str variable) {
 	return /\$.*/ := variable;
 }
 
+private Graph[str] getGlobalEdges() {
+	map[loc, rel[MethodData, int]] globalLinks = getGlobalLinks();
+	Graph[str] globalEdges = {};
+	
+	for(location <- globalLinks) {
+		loc resolvedLocation = resolveM3(location);
+		
+		str globalVertex = "<resolvedLocation.file>:<resolvedLocation.offset>";
+		node globalNode = \simpleName(location.file);
+		globalNode@src = resolvedLocation;
+		globalNode@nodeType = Global();
+		
+		encodedNodeEnvironment[globalVertex] = globalNode;
+		
+		for(<method, vertex> <- globalLinks[location]) {
+			globalEdges += { <globalVertex, encodeVertex(method, vertex)> };
+		}
+	}
+	
+	return globalEdges;
+}
+
 public SystemDependence createSDG(ControlDependences controlDependences, DataDependences dataDependences) {
 	encodedNodeEnvironment = ();
 	map[str, set[str]] allDefinitions = ();
@@ -98,13 +120,14 @@ public SystemDependence createSDG(ControlDependences controlDependences, DataDep
 		}
 	}
 	
-	SystemDependence systemDependence = SystemDependence((), {}, {}, {}, {});
+	SystemDependence systemDependence = SystemDependence((), {}, {}, {}, {}, {});
 	
-	systemDependence.nodeEnvironment = encodedNodeEnvironment;
 	systemDependence.controlDependence = controlDependenceGraph;
 	systemDependence.iControlDependence = iControlDependenceGraph;
 	systemDependence.dataDependence = dataDependenceGraph;
+	systemDependence.globalDataDependence = getGlobalEdges();
 	systemDependence.iDataDependence = iDataDependenceGraph;
+	systemDependence.nodeEnvironment = encodedNodeEnvironment;
 	
 	return systemDependence;
 }

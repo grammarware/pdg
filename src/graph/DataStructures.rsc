@@ -34,14 +34,17 @@ alias ProgramDependences = map[MethodData, ProgramDependence];
 
 data SystemDependence = SystemDependence(map[str, node] nodeEnvironment,
 										Graph[str] controlDependence, Graph[str] iControlDependence,
-					  					Graph[str] dataDependence, Graph[str] iDataDependence);
+					  					Graph[str] dataDependence, Graph[str] globalDataDependence, Graph[str] iDataDependence);
 
-data NodeType = Normal() | Parameter() | CallSite() | Result();
+data NodeType = Normal() | Parameter() | CallSite() | Result() | Global();
 
 anno loc node@decl;
 anno loc node@src;
 anno loc Expression@decl;
 anno NodeType node@nodeType;
+
+public bool isParameterVariable(str variable) =
+	/^\$/ := variable;
 
 public MethodData emptyMethodData() {
 	return MethodData("", ""(), (), {}, {}, ());
