@@ -53,7 +53,11 @@ private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = Cal
 public list[ControlFlow] registerMethodCalls(node expression) {
 	list[ControlFlow] callsites = [];
 	
-	visit(expression) {
+	top-down visit(expression) {
+		// A nested class is out of scope, so don't process any further.
+		case \class(_): {
+			return callsites;
+		}
 		case callNode: \methodCall(isSuper, name, arguments): {
 			callsites += 
 				callNode == expression

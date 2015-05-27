@@ -197,7 +197,10 @@ default void process(int identifier, node treeNode) {
 }
 
 private void processExpression(int identifier, node tree) {
-	visit(tree) {
+	top-down visit(tree) {
+		case \class(_): {
+			return;
+		}
 		case \arrayAccess(array, index): {
 			checkForUse(identifier, array);
 			checkForUse(identifier, index);
