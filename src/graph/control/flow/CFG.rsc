@@ -143,6 +143,15 @@ private ControlFlow createForFlow(int identifier, Statement body) {
 	return forFlow;
 }
 
+private ControlFlow process(forEachNode: \foreach(parameter, collection, body)) {
+	println(parameter);
+	
+	list[ControlFlow] callSites = registerMethodCalls(collection);
+	int identifier = storeNode(forEachNode);
+	
+	return connectControlFlows(callSites + createForFlow(identifier, body));
+}
+
 private ControlFlow process(forNode: \for(initializers, updaters, body)) {
 	int identifier = storeNode(forNode);
 	

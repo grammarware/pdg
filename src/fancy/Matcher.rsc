@@ -44,14 +44,6 @@ public void flowMatcher(map[str, node] firstEnv, set[Flow] first, map[str, node]
 	Translations firstTranslations = translateFlows(firstEnv, first);
 	Translations secondTranslations = translateFlows(secondEnv, second);
 	
-	//for(<key, val> <- firstTranslations) {
-	//	println("[First] <key>, Root: <firstEnv[val.root]@src>, Target: <firstEnv[val.target]@src>");
-	//}
-	//
-	//for(<key, val> <- secondTranslations) {
-	//	println("[Second] <key>, Root: <secondEnv[val.root]@src>, Target: <secondEnv[val.target]@src>");
-	//}
-	
 	for(key <- domain(firstTranslations)) {
 		if(key in domain(secondTranslations)) {
 			for(f <- firstTranslations[key], s <- secondTranslations[key])
@@ -66,7 +58,6 @@ public map[loc, set[int]] magic(MethodSeeds methodSeeds, loc project1, M3 projec
 	for(<firstSDG, secondSDG>  <- methodSeeds) {
 		Graph[str] cd1 = firstSDG.controlDependence + firstSDG.iControlDependence;
 		Graph[str] dd1 = firstSDG.dataDependence + firstSDG.iDataDependence;
-		println(cd1);
 		
 		Graph[str] cd2 = secondSDG.controlDependence + secondSDG.iControlDependence;
 		Graph[str] dd2 = secondSDG.dataDependence + secondSDG.iDataDependence;
@@ -85,6 +76,5 @@ public map[loc, set[int]] magic(MethodSeeds methodSeeds, loc project1, M3 projec
 		flowMatcher(firstSDG.nodeEnvironment, datas1, secondSDG.nodeEnvironment, datas2);
 	}
 	
-	println(lineMatches);
 	return lineMatches;
 }

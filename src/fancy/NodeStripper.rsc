@@ -148,13 +148,13 @@ private str process(Expression expr) {
     	case \qualifiedName(Expression qualifier, Expression expression):
     		return "qualifiedName";
     	case \conditional(Expression expression, Expression thenBranch, Expression elseBranch):
-    		return "conditional <expression@typ>";
+    		return "conditional <process(expression@typ)>";
     	case \fieldAccess(bool isSuper, Expression expression, str name):
-    		return "fieldAccess <expression@typ>";
+    		return "fieldAccess <process(expression@typ)>";
     	case \fieldAccess(bool isSuper, str name):
     		return "fieldAccess";
     	case \instanceof(Expression leftSide, Type rightSide):
-    		return "instanceof <rightSide>";
+    		return "instanceof <process(rightSide)>";
     	case \methodCall(bool isSuper, str name, list[Expression] arguments):
     		return "methodCall";
     	case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments):
@@ -168,27 +168,27 @@ private str process(Expression expr) {
     	case \stringLiteral(str stringValue):
     		return "string";
     	case \type(Type \type):
-    		return "<process(\type)>";
+    		return "type <process(\type)>";
     	case \variable(str name, int extraDimensions):
     		return "variable";
     	case \variable(str name, int extraDimensions, Expression \initializer):
     		return "variable-init";
     	case \bracket(Expression expression):
-    		return "bracket <expression@typ>";
+    		return "bracket <process(expression@typ)>";
     	case \this():
     		return "this";
     	case \this(Expression thisExpression):
-    		return "this <thisExpression@typ>";
+    		return "this <process(thisExpression@typ)>";
     	case \super():
     		return "super";
     	case \declarationExpression(Declaration decl):
     		return "declarationExpression <process(decl)>";
     	case \infix(Expression lhs, str operator, Expression rhs):
-    		return "infix <lhs@typ> <operator> <rhs@typ>";
+    		return "infix <process(lhs@typ)> <operator> <process(rhs@typ)>";
     	case \postfix(Expression operand, str operator):
-    		return "postfix <operand@typ> <operator>";
+    		return "postfix <process(operand@typ)> <operator>";
     	case \prefix(str operator, Expression operand):
-    		return "prefix <operator> <operand@typ>";
+    		return "prefix <operator> <process(operand@typ)>";
    		case \simpleName(str name):
    			return "simpleName";
     	case \markerAnnotation(str typeName):
@@ -196,7 +196,7 @@ private str process(Expression expr) {
     	case \normalAnnotation(str typeName, list[Expression] memberValuePairs):
     		return "normalAnnotation <typeName>";
     	case \memberValuePair(str name, Expression \value):
-    		return "memberValuePair <\value@typ>";       
+    		return "memberValuePair <process(\value@typ)>";       
     	case \singleMemberAnnotation(str typeName, Expression \value):
     		return "singleMemberAnnotation <typeName>";
 		default: {

@@ -10,11 +10,6 @@ import graph::DataStructures;
 data Flow = Flow(str root, set[str] intermediates, str target);
 
 public set[Flow] flowForward(Graph[str] graph, Flow flow) {
-	set[str] succ = successors(graph, flow.target);
-	
-	println("[<flow.target>]: <succ>");
-	println("Graph: <graph>");
-	
 	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target) };
 }
 
@@ -30,6 +25,8 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
     		try return m@src.parent.file == resolveM3(m@decl).parent.file;
     		catch: return false;
     	case \do(_, _):
+    		return true;
+    	case \foreach(_, _, _):
     		return true;
     	case \for(_, _, _, _):
     		return true;
@@ -79,6 +76,5 @@ public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str]
 }
 
 public set[Flow] createFlows(map[str, node] environment, Graph[str] graph) {
-	println(carrier(graph));
 	return frontier(environment, graph, domain(environment));
 }

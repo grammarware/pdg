@@ -101,6 +101,15 @@ private void process(int identifier, \if(condition, _, _)) {
 	processExpression(identifier, condition);
 }
 
+private void process(int identifier, \foreach(\parameter(_, name, _), collection, _)) {
+	checkForDefinition(identifier, \simpleName(name));
+	checkForUse(identifier, collection);
+	
+	println(name);
+	
+	processExpression(identifier, collection);
+}
+
 private void process(int identifier, \for(initializers, updaters, _)) {
 	for(initializer <- initializers) {
 		checkForDefinition(identifier, initializer);
