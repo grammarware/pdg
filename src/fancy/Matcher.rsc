@@ -77,5 +77,5 @@ public map[loc, set[int]] magic(MethodSeeds methodSeeds, loc project1, M3 projec
 		flowMatcher(firstSDG.nodeEnvironment, datas1, secondSDG.nodeEnvironment, datas2);
 	}
 	
-	return lineMatches;
+	return ( key : lineMatches[key] | key <- lineMatches, size(lineMatches[key]) > 3 );
 }

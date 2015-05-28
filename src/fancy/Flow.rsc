@@ -19,11 +19,13 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 	}
 	
 	switch(environment[vertex]) {
-		case m: \methodCall(_, _, _):
-			return m@src.parent.file == resolveM3(m@decl).parent.file;
-    	case m: \methodCall(_, _, _, _):
-    		try return m@src.parent.file == resolveM3(m@decl).parent.file;
+		case m: \methodCall(_, _, _): {
+			return m@src.file == "<m@decl.parent.file>.java";
+		}
+    	case m: \methodCall(_, _, _, _): {
+    		try return m@src.file == "<m@decl.parent.file>.java";
     		catch: return false;
+    	}
     	case \do(_, _):
     		return true;
     	case \foreach(_, _, _):
@@ -66,6 +68,7 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 
 public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str] startNodes) {
 	rel[str, str] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successors(graph, startNode) } | startNode <- startNodes );
+	seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
 	
 	return expand(environment, graph, 
 				{ Flow(root, {}, nextNode) |
