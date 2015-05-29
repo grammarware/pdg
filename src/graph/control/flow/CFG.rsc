@@ -319,8 +319,24 @@ private ControlFlow process(tryNode: \try(body, catchClauses, finalClause)) {
 	ControlFlow tryFlow = createTryFlow(identifier, body, catchClauses);
 	ControlFlow finalFlow = process(finalClause);
 	
-	tryFlow.graph += createConnectionEdges(tryFlow, finalFlow);
-	tryFlow.exitNodes = finalFlow.exitNodes;	
+	set[int] bottomNodes = bottom(tryFlow.graph);
+	set[int] catchExits = { exit | exit <- bottomNodes, isExitNode(resolveNode(exit)) };
+	
+	if(!isEmpty(catchExits)) {
+		// No need to make a new one if there is only one needed.
+		ControlFlow altFinalFlow = catchExits != bottomNodes ? process(finalClause) : finalFlow;
+		
+		// Execute the final block before returning, throwing, breaking, or continuing.
+		for(exit <- catchExits, predecessor <- predecessors(tryFlow.graph, exit)) {
+			tryFlow.graph -= { <predecessor, exit> };
+			tryFlow.graph += { <predecessor, altFinalFlow.entryNode> };
+			tryFlow.graph += { <finalExit, exit> | finalExit <- altFinalFlow.exitNodes };
+		}
+	}
+	if(catchExits != bottomNodes) {
+		tryFlow.graph += createConnectionEdges(tryFlow, finalFlow);
+		tryFlow.exitNodes = finalFlow.exitNodes;
+	}
 	
 	return tryFlow;
 }

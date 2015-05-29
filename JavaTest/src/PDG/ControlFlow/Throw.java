@@ -129,4 +129,45 @@ public class Throw {
 		
 		i = 5; // 8
 	}
+	
+	public void testThrow6() throws Exception {
+		int i = 0; // 0
+		
+		if(i > 1) { // 1
+			throw new NullPointerException(); // 2
+		}
+		
+		try { // 3
+			i = i * 3; // 4
+			throw new NullPointerException(); // 5
+		} catch(Exception exception) { // 6
+			i = 10; // 7
+			throw exception;
+		} finally {
+			i = 11;
+		}
+	}
+	
+	public void testThrow7() throws Exception {
+		int i = 0; // 0
+		
+		if(i > 1) { // 1
+			throw new NullPointerException(); // 2
+		}
+		
+		try { // 3
+			i = i * 3; // 4
+			throw new NullPointerException(); // 5
+		} catch(NoClassDefFoundError exception) { // 6
+			i = 10; // 7
+		} catch(NullPointerException exception) { // 6
+			throw exception;
+		} catch(UnsupportedOperationException exception) { // 6
+			throw exception;
+		} catch(Exception exception) { // 6
+			throw exception;
+		} finally {
+			i = 11;
+		}
+	}
 }

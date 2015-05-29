@@ -215,16 +215,20 @@ private void processExpression(int identifier, node tree) {
 				}
 			}
 		}
-		case n: \newArray(\type, dimensions, init): {
-			throw "Not implemented: <n@src>";
+		case \newArray(\type, dimensions, init): {
+			for(dimension <- dimensions) {
+				checkForUse(identifier, dimension);
+			}
 		}
 		case \newArray(\type, dimensions): {
 			for(dimension <- dimensions) {
 				checkForUse(identifier, dimension);
 			}
 		}
-		case n: \arrayInitializer(elements): {
-			throw "Not implemented: <n@src>";
+		case \arrayInitializer(elements): {
+			for(element <- elements) {
+				checkForUse(identifier, element);
+			}
 		}
 		case \assignment(lhs, operator, rhs): {
 			checkForDefinition(identifier, lhs);

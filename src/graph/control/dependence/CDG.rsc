@@ -47,7 +47,7 @@ public ControlDependence createCDG(MethodData methodData, ControlFlow controlFlo
 	
 	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, 
 												from notin reach(postDominator.tree, { to }) - { to } };
-	
+	println(methodData);
 	for(<from, to> <- inspectionEdges) {
 		// Immediate dominator (idom)
 		int idom = getOneFrom(predecessors(postDominator.tree, from));

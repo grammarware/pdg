@@ -12,7 +12,7 @@ import graph::factory::GraphFactory;
 import extractors::Project;
 
 
-@doc {
+@doc{
 	To run a test:
 		displayControlFlowGraph(|project://JavaTest|, "testCDG");
 }

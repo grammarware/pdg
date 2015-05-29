@@ -63,6 +63,34 @@ public bool isMethodCall(Expression expression) {
 	return false;
 }
 
+public bool isExitNode(node treeNode) {
+	switch(treeNode) {
+		case \break(): {
+			return false;
+		}
+		case \break(_): {
+			return false;
+		}
+		case \continue(): {
+			return false;
+		}
+		case \continue(_): {
+			return false;
+		}
+		case \return(): {
+			return false;
+		}
+		case \return(_): {
+			return false;
+		}
+		case \throw(_): {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 public bool isPotentialThrow(node treeNode) {
 	switch(treeNode) {	
 		case \block(_): {
