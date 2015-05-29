@@ -40,4 +40,20 @@ public class Main {
 		
 		return i;
 	}
+	
+	public void Trying() {
+		int i;
+		
+		try {
+			i = 5;
+		} catch(Exception exception) {
+			i = 10;
+		} finally {
+			MethodCall();
+		}
+	}
+	
+	public boolean MethodCall() {
+		return true;
+	}
 }

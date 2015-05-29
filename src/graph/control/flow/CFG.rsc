@@ -318,7 +318,7 @@ private ControlFlow process(tryNode: \try(body, catchClauses, finalClause)) {
 	
 	ControlFlow tryFlow = createTryFlow(identifier, body, catchClauses);
 	ControlFlow finalFlow = process(finalClause);
-	
+
 	set[int] bottomNodes = bottom(tryFlow.graph);
 	set[int] catchExits = { exit | exit <- bottomNodes, isExitNode(resolveNode(exit)) };
 	
@@ -332,8 +332,12 @@ private ControlFlow process(tryNode: \try(body, catchClauses, finalClause)) {
 			tryFlow.graph += { <predecessor, altFinalFlow.entryNode> };
 			tryFlow.graph += { <finalExit, exit> | finalExit <- altFinalFlow.exitNodes };
 		}
+		
+		tryFlow.graph += altFinalFlow.graph;
 	}
+	
 	if(catchExits != bottomNodes) {
+		tryFlow.graph += finalFlow.graph;
 		tryFlow.graph += createConnectionEdges(tryFlow, finalFlow);
 		tryFlow.exitNodes = finalFlow.exitNodes;
 	}

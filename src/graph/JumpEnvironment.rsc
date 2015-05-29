@@ -75,9 +75,9 @@ public void initializeJumpEnvironment() {
 
 // Scoping functions to account for block scope.
 public void scopeDown() {
-	parentBreakNodes = breakNodes;
-	parentContinueNodes = continueNodes;
-	parentThrowNodes = throwNodes;
+	parentBreakNodes += breakNodes;
+	parentContinueNodes += continueNodes;
+	parentThrowNodes += throwNodes;
 	
 	breakNodes = {};
 	continueNodes = {};

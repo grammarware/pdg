@@ -13,6 +13,18 @@ import extractors::Project;
 import graph::DataStructures;
 
 
+public loc getMethodLocation(str methodName, str fileName, M3 projectModel) {
+	for(method <- getM3Methods(projectModel)) {
+		if(/<name:.*>/ := method.file, name == methodName
+			, method.parent.file == fileName) {
+			return method;
+		}
+	}
+	
+	throw "Method \"<methodName>\" does not exist.";
+}
+
+
 public loc getMethodLocation(str methodName, M3 projectModel) {
 	for(method <- getM3Methods(projectModel)) {
 		if(/<name:.*>\(/ := method.file, name == methodName) {

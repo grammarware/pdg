@@ -170,4 +170,14 @@ public class Throw {
 			i = 11;
 		}
 	}
+	
+	public void testThrow8() {
+		for(int i = 10; i > 0; i --) {
+			if(i == 5) {
+				throw new NullPointerException();
+			}
+		}
+		
+		System.out.println("Whatever mate.");
+	}
 }

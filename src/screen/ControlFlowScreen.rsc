@@ -43,3 +43,34 @@ public void displayControlFlowGraph(loc project, str methodName) {
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
+
+public void displayControlFlowGraph(loc project, str methodName, str fileName) {
+	M3 projectModel = createM3(project);
+	loc methodLocation = getMethodLocation(methodName, fileName, projectModel);
+	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
+	
+	ControlFlows controlFlows = createControlFlows(methodLocation, methodAST, projectModel, File());
+	
+	list[Edge] edges = [];
+	list[Figure] boxes = [];
+	
+	for(method <- controlFlows) {
+		println(top(controlFlows[method].graph));
+		println(bottom(controlFlows[method].graph));
+		
+		edges += createEdges(method.name, controlFlows[method].graph, "solid", "blue");
+		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<controlFlows[method].entryNode>", 
+						lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
+		
+		for(exitNode <- controlFlows[method].exitNodes) {
+			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
+							lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
+		}
+		
+		boxes += createBoxes(method);
+		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
+		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
+	}
+	
+	render(graph(boxes, edges, hint("layered"), gap(50)));
+}

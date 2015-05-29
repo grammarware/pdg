@@ -42,17 +42,6 @@ public void displaySystemDependenceGraph(loc project, str methodName, str fileNa
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
 
-public loc getMethodLocation(str methodName, str fileName, M3 projectModel) {
-	for(method <- getM3Methods(projectModel)) {
-		if(/<name:.*>/ := method.file, name == methodName
-			, method.parent.file == fileName) {
-			return method;
-		}
-	}
-	
-	throw "Method \"<methodName>\" does not exist.";
-}
-
 public list[Edge] createEdges(Graph[str] graph, str style, str color) {
 	return [ edge(graphEdge.from, graphEdge.to, 
 					lineStyle(style), lineColor(color), toArrow(box(size(10), 
