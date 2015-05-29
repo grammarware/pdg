@@ -38,13 +38,7 @@ public loc createProjectLoc(str projectName) {
 		The M3 model for the project.
 }
 public M3 createM3(loc project) {	
-	if(project notin M3Cache) {
-		M3Cache[project] = createM3FromEclipseProject(project);
-	}
-	
-	registerProject(project, M3Cache[project]);
-	
-	return M3Cache[project];
+	return createM3FromEclipseProject(project);
 }
 
 @doc {

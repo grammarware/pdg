@@ -6,8 +6,8 @@ import analysis::m3::Registry;
 import analysis::graphs::Graph;
 
 import graph::DataStructures;
+import fancy::DataStructures;
 
-data Flow = Flow(str root, set[str] intermediates, str target);
 
 public set[Flow] flowForward(Graph[str] graph, Flow flow) {
 	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target) };
@@ -79,6 +79,14 @@ public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str]
 				});
 }
 
-public set[Flow] createFlows(map[str, node] environment, Graph[str] graph) {
-	return frontier(environment, graph, domain(environment));
+public set[Flow] createDataFs(SystemDependence systemDependence) {
+	Graph[str] graph = systemDependence.dataDependence + systemDependence.globalDataDependence + systemDependence.iDataDependence;
+		
+	return frontier(systemDependence.nodeEnvironment, graph, domain(systemDependence.nodeEnvironment));
+}
+
+public set[Flow] createControlFs(SystemDependence systemDependence) {
+	Graph[str] graph = systemDependence.controlDependence + systemDependence.iControlDependence;
+	
+	return frontier(systemDependence.nodeEnvironment, graph, domain(systemDependence.nodeEnvironment));
 }

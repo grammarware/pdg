@@ -2,6 +2,7 @@ module graph::DataStructures
 
 import Prelude;
 import lang::java::m3::AST;
+import lang::java::m3::Core;
 import analysis::graphs::Graph;
 
 
@@ -32,7 +33,8 @@ alias DataDependences = map[MethodData, DataDependence];
 data ProgramDependence = ProgramDependence(Graph[int] controlDependence, Graph[int] dataDependence);
 alias ProgramDependences = map[MethodData, ProgramDependence];
 
-data SystemDependence = SystemDependence(map[str, node] nodeEnvironment,
+data SystemDependence = EmptySD(M3 model, loc location)
+						| SystemDependence(map[str, node] nodeEnvironment,
 										Graph[str] controlDependence, Graph[str] iControlDependence,
 					  					Graph[str] dataDependence, Graph[str] globalDataDependence, Graph[str] iDataDependence);
 

@@ -9,6 +9,9 @@ import lang::java::jdt::m3::Core;
 import lang::java::m3::TypeSymbol;
 
 
+public str stripNode(node \node) {
+	return process(\node);
+}
 public map[str, str] stripEnvironment(map[str, node] environment) {
 	return ( key : process(environment[key]) | key <- environment);
 }

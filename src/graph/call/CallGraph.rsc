@@ -12,9 +12,7 @@ import graph::DataStructures;
 
 
 public str getVertexName(loc location) {
-	loc resolvedLocation = resolveM3(location);
-	
-	return "<resolvedLocation.file>:<location.file>";
+	return "<location.parent.file>:<location.file>";
 }
 
 public CallGraph createCG(M3 projectModel, loc projectLocation) {
