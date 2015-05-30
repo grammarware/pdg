@@ -55,7 +55,7 @@ private bool isEligible(str origin, set[str] firstCalls, set[str] secondCalls) {
 	if(firstCalls == secondCalls) {
 		return false;
 	}
-	
+		
 	set[str] difference = size(firstCalls) > size(secondCalls) ? firstCalls - secondCalls : secondCalls - firstCalls;
 	
 	str originName = "";

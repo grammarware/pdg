@@ -6,6 +6,7 @@ import analysis::m3::Registry;
 
 import graph::DataStructures;
 import graph::NodeEnvironment;
+import graph::JumpEnvironment;
 import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
 
@@ -30,7 +31,6 @@ public set[int] getCallSites() {
 
 private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = CallSite()) {
 	int identifier = storeNode(callNode, nodeType = nType);
-	
 	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
 	
 	// See if the called method is part of the project.

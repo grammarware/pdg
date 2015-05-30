@@ -182,4 +182,27 @@ public class Switch {
 		
 		i = 5; // 8
 	}
+	
+	public void testSwitch10(){
+		int i = 0; // 0
+		
+		switch(i) { // 1
+			case 0: // 2 
+				i = 2; // 3
+			case 1: // 4 
+				try {
+					i = i + i;
+					
+					if(i == 10) {
+						break;
+					}
+				} catch(Exception exception) {
+					i = -5;
+				}
+			case 2: // 6 
+				i = 4; // 7
+		}
+		
+		i = 5; // 8
+	}
 }

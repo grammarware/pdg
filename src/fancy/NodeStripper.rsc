@@ -75,7 +75,7 @@ private str process(Statement statement) {
 			return "assert-message";
 		case \break():
 			return "break";
-		case \break(expression):
+		case \break(Expression expression):
 			return "break " + process(expression);
 		case \continue():
 			return "continue";
