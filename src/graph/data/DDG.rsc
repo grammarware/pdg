@@ -33,6 +33,18 @@ private str getArrayName(str variableName) {
 	return "";
 }
 
+private bool isGlobalVariable(map[str, set[VariableData]] definitions, MethodData methodData, int identifier, str variableName) {
+	if(variableName notin definitions) {
+		if(!isParameterVariable(variableName) && !isArrayVariable(variableName)) {
+			addGlobal(methodData, getDeclarationLoc(variableName), identifier);
+		}
+		
+		return true;
+	}
+	
+	return false;
+}
+
 public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
 	initializeVariableData(methodData);
 	
@@ -59,16 +71,13 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 	
 	for(identifier <- uses
 		, usedVariable <- uses[identifier]) {
-		if(usedVariable notin definitions && !isArrayVariable(usedVariable)) {
-			if(!isParameterVariable(usedVariable)) {
-				addGlobal(methodData, getDeclarationLoc(usedVariable), identifier);
+		if(isGlobalVariable(definitions, methodData, identifier, usedVariable)) {
+			if(isArrayVariable(usedVariable) 
+				&& !isGlobalVariable(definitions, methodData, identifier, getArrayName(usedVariable))) {
+				variableDefs = definitions[getArrayName(usedVariable)];
+			} else {
+				continue;
 			}
-			
-			continue;
-		}
-		
-		if(usedVariable notin definitions && isArrayVariable(usedVariable)) {
-			variableDefs = definitions[getArrayName(usedVariable)];
 		} else {
 			variableDefs = definitions[usedVariable];
 		}

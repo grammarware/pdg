@@ -168,4 +168,18 @@ public class Switch {
 		
 		i = 5; // 8
 	}
+	
+	public void testSwitch9(){
+		int i = 0; // 0
+		
+		switch(i) { // 1
+			case 0: // 2 
+				i = 2; // 3
+			case 1: // 4 
+			case 2: // 6 
+				i = 4; // 7
+		}
+		
+		i = 5; // 8
+	}
 }

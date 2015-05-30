@@ -31,8 +31,7 @@ public set[int] getCallSites() {
 private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = CallSite()) {
 	int identifier = storeNode(callNode, nodeType = nType);
 	
-	callsite = ControlFlow({}, identifier, {identifier});
-	callsite = addArgumentNodes(callsite, callNode.name, callNode.arguments);
+	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
 	
 	// See if the called method is part of the project.
 	try {
@@ -40,10 +39,12 @@ private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = Cal
 	
 		callSites += {identifier};
 		calledMethods += callNode@decl;
-		callsite = addReturnOutNode(callsite, callNode.name, callNode@typ, callNode@src, resolved);
+		callsite = addArgumentNodes(callsite, "<callNode.name>:<resolved.offset>", callNode.arguments);
+		callsite = addReturnOutNode(callsite, "<callNode.name>:<resolved.offset>", callNode@typ, callNode@src, resolved);
 	}
 	// It is not part of the project. Handle it differently.
 	catch: {
+		callsite = addArgumentNodes(callsite, callNode.name, callNode.arguments);
 		callsite = addReturnOutNode(callsite, callNode.name, callNode@typ, callNode@src);
 	}
 	

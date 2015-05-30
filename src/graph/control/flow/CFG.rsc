@@ -21,14 +21,15 @@ data GeneratedData = EmptyGD()
 private str methodName = "";
 
 public GeneratedData createCFG(methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
-	methodName = name;
+	println(methodNode@src);
+	methodName = "<name>:<methodNode@src.offset>";
 	
 	initializeJumpEnvironment();
 	initializeNodeEnvironment();
 	initializeCallEnvironment();
 	initializeTransferEnvironment();
 	
-	list[ControlFlow] parameterFlows = createParameterNodes(parameters, name);
+	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
 	
 	ControlFlow controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);	
 	controlFlow.exitNodes += getThrowNodes();
@@ -38,26 +39,27 @@ public GeneratedData createCFG(methodNode: Declaration::\constructor(name, param
 	methodData.parameterNodes = getTransferNodes();
 	methodData.calledMethods = getCalledMethods();
 	methodData.callSites = getCallSites();
-	methodData.name = name;
+	methodData.name = methodName;
 	methodData.abstractTree = methodNode;
 	
 	return GeneratedData(methodData, controlFlow);
 }
 
 public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
-	methodName = name;
+	println(methodNode@src);
+	methodName = "<name>:<methodNode@src.offset>";
 	
 	initializeJumpEnvironment();
 	initializeNodeEnvironment();
 	initializeCallEnvironment();
 	initializeTransferEnvironment();
 	
-	list[ControlFlow] parameterFlows = createParameterNodes(parameters, name);
+	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
 	
 	ControlFlow controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);
 	
 	if(\return != Type::\void()) {
-		controlFlow = addReturnNodes(controlFlow, name, methodNode@src);	
+		controlFlow = addReturnNodes(controlFlow, methodName, methodNode@src);	
 	} else {
 		controlFlow.exitNodes += getReturnNodes();
 	}
@@ -69,7 +71,7 @@ public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, p
 	methodData.parameterNodes = getTransferNodes();
 	methodData.calledMethods = getCalledMethods();
 	methodData.callSites = getCallSites();
-	methodData.name = name;
+	methodData.name = methodName;
 	methodData.abstractTree = methodNode;
 	
 	return GeneratedData(methodData, controlFlow);
@@ -231,8 +233,10 @@ private list[ControlFlow] processCases(list[Statement] statements) {
 	ControlFlow caseBodyFlow = process(\block(caseBody));
 	statements -= caseBody;
 	
-	caseFlow.graph = caseBodyFlow.graph + createConnectionEdges(caseFlow, caseBodyFlow);
-	caseFlow.exitNodes = caseBodyFlow.exitNodes;
+	if(caseBodyFlow != EmptyCF()) {
+		caseFlow.graph = caseBodyFlow.graph + createConnectionEdges(caseFlow, caseBodyFlow);
+		caseFlow.exitNodes = caseBodyFlow.exitNodes;
+	}
 	
 	list[ControlFlow] caseFlows = [caseFlow];
 	
@@ -288,6 +292,11 @@ private ControlFlow createTryFlow(int identifier, Statement body, list[Statement
 	ControlFlow bodyFlow = process(body);
 	tryFlow.graph = bodyFlow.graph + createConnectionEdges(tryFlow, bodyFlow);
 	tryFlow.exitNodes = bodyFlow.exitNodes;
+	
+	if(isEmpty(catchClauses)) {
+		scopeUp();
+		return tryFlow;
+	}
 
 	set[int] throwNodes = getThrowNodes();
 	set[int] potentialThrows = throwNodes 
@@ -327,10 +336,12 @@ private ControlFlow process(tryNode: \try(body, catchClauses, finalClause)) {
 		ControlFlow altFinalFlow = catchExits != bottomNodes ? process(finalClause) : finalFlow;
 		
 		// Execute the final block before returning, throwing, breaking, or continuing.
-		for(exit <- catchExits, predecessor <- predecessors(tryFlow.graph, exit)) {
-			tryFlow.graph -= { <predecessor, exit> };
-			tryFlow.graph += { <predecessor, altFinalFlow.entryNode> };
-			tryFlow.graph += { <finalExit, exit> | finalExit <- altFinalFlow.exitNodes };
+		for(exit <- catchExits) {
+			for(predecessor <- predecessors(tryFlow.graph, exit)) {
+				tryFlow.graph -= { <predecessor, exit> };
+				tryFlow.graph += { <predecessor, altFinalFlow.entryNode> };
+				tryFlow.graph += { <finalExit, exit> | finalExit <- altFinalFlow.exitNodes };
+			}
 		}
 		
 		tryFlow.graph += altFinalFlow.graph;
@@ -357,6 +368,10 @@ private ControlFlow process(catchNode: \catch(exception, body)) {
 	
 	scopeUp();
 	
+	if(bodyFlow == EmptyCF()) {
+		return catchFlow;
+	}
+
 	catchFlow.graph = bodyFlow.graph + createConnectionEdges(catchFlow, bodyFlow);
 	catchFlow.exitNodes = bodyFlow.exitNodes;
 	

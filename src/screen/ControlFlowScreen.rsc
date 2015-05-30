@@ -41,7 +41,7 @@ public void displayControlFlowGraph(loc project, str methodName) {
 		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}
 	
-	render(graph(boxes, edges, hint("layered"), gap(50)));
+	render(graph(dup(boxes), edges, hint("layered"), gap(50)));
 }
 
 public void displayControlFlowGraph(loc project, str methodName, str fileName) {
@@ -55,9 +55,6 @@ public void displayControlFlowGraph(loc project, str methodName, str fileName) {
 	list[Figure] boxes = [];
 	
 	for(method <- controlFlows) {
-		println(top(controlFlows[method].graph));
-		println(bottom(controlFlows[method].graph));
-		
 		edges += createEdges(method.name, controlFlows[method].graph, "solid", "blue");
 		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<controlFlows[method].entryNode>", 
 						lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));

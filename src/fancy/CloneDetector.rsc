@@ -35,6 +35,7 @@ public CandidatePairs expandDomain(CandidatePairs candidates) {
 }
 
 public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {
+	unregisterProject(projects.first.location);
 	unregisterProject(projects.second.location);
 	
 	registerProject(projects.first.location, projects.first.model);

@@ -7,6 +7,10 @@ import graph::DataStructures;
 
 
 public ControlFlow connectControlFlows(list[ControlFlow] controlFlows) {
+	if(isEmpty(controlFlows)) {
+		return EmptyCF();
+	}
+	
 	tuple[ControlFlow popped, list[ControlFlow] rest] popTuple = pop(controlFlows);
 	
 	ControlFlow first = popTuple.popped;

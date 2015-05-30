@@ -180,4 +180,31 @@ public class Throw {
 		
 		System.out.println("Whatever mate.");
 	}
+	
+	public void testThrow9() throws Exception {
+		int i = 0; // 0
+		
+		if(i > 1) { // 1
+			throw new NullPointerException(); // 2
+		}
+		
+		try { // 3
+			i = i * 3; // 4
+			throw new NullPointerException(); // 5
+		} catch(Exception exception) { // 6
+		} finally {
+			i = 11;
+		}
+	}
+	
+	public void testThrow10() throws Exception {
+		int i = 0; // 0
+		
+		try { // 3
+			i = i * 3; // 4
+			throw new NullPointerException(); // 5
+		} finally {
+			i = 11;
+		}
+	}
 }

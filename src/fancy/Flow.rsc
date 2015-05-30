@@ -10,7 +10,7 @@ import fancy::DataStructures;
 
 
 public set[Flow] flowForward(Graph[str] graph, Flow flow) {
-	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target) };
+	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target), successor notin flow.intermediates };
 }
 
 public bool isIntermediate(map[str, node] environment, str vertex) {

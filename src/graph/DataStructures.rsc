@@ -16,7 +16,8 @@ data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnv
 
 data CallGraph = CallGraph(Graph[str] graph, map[str,loc] locations, map[str, set[str]] methodCalls);
 
-data ControlFlow = ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);
+data ControlFlow = EmptyCF()
+					| ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);
 alias ControlFlows = map[MethodData, ControlFlow];
 
 data PostDominator = PostDominator(Graph[int] tree, map[int, set[int]] dominators, map[int, set[int]] dominations);

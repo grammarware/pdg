@@ -42,3 +42,25 @@ public void displayProgramDependenceGraph(loc project, str methodName) {
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
+
+public void displayProgramDependenceGraph(loc project, str methodName, str fileName) {
+	M3 projectModel = createM3(project);
+	loc methodLocation = getMethodLocation(methodName, fileName, projectModel);
+	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
+		
+	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, File());
+	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, File());
+	
+	list[Edge] edges = [];
+	list[Figure] boxes = [];
+	
+	for(method <- controlDependences) {
+		edges += createEdges(method.name, controlDependences[method].graph, "solid", "blue");
+		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
+		
+		boxes += createBoxes(method);
+		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
+	}
+	
+	render(graph(boxes, edges, hint("layered"), gap(50)));
+}

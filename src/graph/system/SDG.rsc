@@ -12,13 +12,13 @@ import graph::\data::GlobalData;
 map[str, node] encodedNodeEnvironment = ();
 			
 public str encodeVertex(MethodData method, int vertex) {
-	return "<method.abstractTree@src.file>:<method.abstractTree@src.offset>:<method.name>:<vertex>";
+	return "<method.abstractTree@src.file>:<method.name>:<vertex>";
 }
 
 private str encodeVertex(Expression methodCall, int vertex) {
 	loc resolvedCall = resolveM3(methodCall@decl);
 	
-	return "<resolvedCall.file>:<resolvedCall.offset>:<methodCall.name>:<vertex>";
+	return "<resolvedCall.file>:<methodCall.name>:<resolvedCall.offset>:<vertex>";
 }
 
 private map[str, set[str]] encodeDefinitionMap(map[str, set[str]] definitions, MethodData method, DataDependence dataDependence) {
