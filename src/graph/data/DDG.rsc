@@ -20,6 +20,19 @@ private alias ReachingDefs = tuple[
 private bool isParameterVariable(str variableName) {
 	return /^\$/ := variableName;
 }
+
+private bool isArrayVariable(str variableName) {
+	return /^.*\[/ := variableName;
+}
+
+private str getArrayName(str variableName) {
+	if(/^<name:.*>\[/ := variableName) {
+		return name;
+	}
+	
+	return "";
+}
+
 public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
 	initializeVariableData(methodData);
 	
@@ -44,23 +57,24 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 	map[int, set[str]] uses = getUses();
 	set[VariableData] variableDefs;
 	
-	for(identifier <- uses) {
-		for(usedVariable <- uses[identifier]) {
-			if(usedVariable notin definitions) {
-				if(!isParameterVariable(usedVariable)) {
-					addGlobal(methodData, getDeclarationLoc(usedVariable), identifier);
-					//println("<usedVariable> is not defined anywhere");
-					//println(getDeclarationLoc(usedVariable));
-					//println(methodData.nodeEnvironment[identifier]);
-				}
-				continue;
+	for(identifier <- uses
+		, usedVariable <- uses[identifier]) {
+		if(usedVariable notin definitions && !isArrayVariable(usedVariable)) {
+			if(!isParameterVariable(usedVariable)) {
+				addGlobal(methodData, getDeclarationLoc(usedVariable), identifier);
 			}
 			
+			continue;
+		}
+		
+		if(usedVariable notin definitions && isArrayVariable(usedVariable)) {
+			variableDefs = definitions[getArrayName(usedVariable)];
+		} else {
 			variableDefs = definitions[usedVariable];
-
-			for(dependency <- reachingDefs.\in[identifier] & variableDefs) {
-				dataDependence.graph += { <dependency.origin, identifier> };
-			}
+		}
+		
+		for(dependency <- reachingDefs.\in[identifier] & variableDefs) {
+			dataDependence.graph += { <dependency.origin, identifier> };
 		}
 	}
 
