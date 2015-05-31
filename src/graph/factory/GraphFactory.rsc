@@ -29,7 +29,7 @@ private map[MethodData, ControlFlow] getCalledMethods(loc origin, set[loc] calle
 	
 	for(calledMethod <- calledMethods, calledMethod notin generatedMethods) {
 		methodAST = getMethodASTEclipse(calledMethod, model = projectModel);
-		generatedData = createCFG(cast(#Declaration, methodAST));
+		generatedData = createCFG(projectModel, cast(#Declaration, methodAST));
 		
 		if(generatedData == EmptyGD()) {
 			continue;
@@ -74,7 +74,7 @@ public set[int] filterCallSites(loc origin, MethodData methodData, Project()) {
 }
 
 public ControlFlows createControlFlows(loc methodLocation, node abstractTree, M3 projectModel, Scope scope) {
-	GeneratedData generatedData = createCFG(cast(#Declaration, abstractTree));
+	GeneratedData generatedData = createCFG(projectModel, cast(#Declaration, abstractTree));
 	
 	MethodData methodData = generatedData.methodData;
 	methodData.callSites = filterCallSites(methodLocation, methodData, scope);

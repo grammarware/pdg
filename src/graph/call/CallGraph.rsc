@@ -10,19 +10,13 @@ import analysis::graphs::Graph;
 import extractors::Project;
 import graph::DataStructures;
 
-set[loc] projectMethods = {};
-
-public bool inProject(loc location) {
-	return location in projectMethods;
-}
-
 private str getVertexName(loc location) {
 	return "<location.parent.file>:<location.file>";
 }
 
 public CallGraph createCG(M3 projectModel, loc projectLocation) {
 	Graph[str] callGraph = {};
-	projectMethods = getM3Methods(projectModel);
+	set[loc] projectMethods = getM3Methods(projectModel);
 	
 	map[str, set[str]] methodCalls = ();
 	map[str, loc] locations = ();
@@ -32,7 +26,7 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 		locations[getVertexName(method)] = method;
 	}
 	
-	for(<caller, callee> <- projectModel@methodInvocation, inProject(caller), inProject(callee)) {
+	for(<caller, callee> <- projectModel@methodInvocation, caller in projectMethods, callee in projectMethods) {
 		str methodVertex = getVertexName(caller);
 		str calledVertex = getVertexName(callee);
 			

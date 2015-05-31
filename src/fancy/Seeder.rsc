@@ -36,10 +36,7 @@ public Seeds generateSeeds(Projects projects) {
 		
 		loc secondLoc = secondCallGraph.locations[method];
 		
-		set[str] firstCalls = firstCallGraph.methodCalls[method];
-		set[str] secondCalls = secondCallGraph.methodCalls[method];
-		
-		if(isEligible(method, firstCalls, secondCalls)) {
+		if(isEligible(method, firstCallGraph, secondCallGraph)) {
 			Candidate firstCandidate = Candidate(EmptySD(projects.first.model, firstLoc), <{}, {}>, ());
 			Candidate secondCandidate = Candidate(EmptySD(projects.second.model, secondLoc), <{}, {}>, ());
 			
@@ -51,24 +48,31 @@ public Seeds generateSeeds(Projects projects) {
 	return seeds;
 }
 
-private bool isEligible(str origin, set[str] firstCalls, set[str] secondCalls) {
-	if(firstCalls == secondCalls) {
-		return false;
+private bool sameFile(str file, str method) {
+	if(/^<name:.*>:.*/ := method) {
+		return file == name;
 	}
-		
-	set[str] difference = size(firstCalls) > size(secondCalls) ? firstCalls - secondCalls : secondCalls - firstCalls;
 	
+	return false;
+}
+
+private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
 	str originName = "";
 	
 	if(/^<name:.*>:.*/ := origin) {
 		originName = name;
 	}
 	
-	for(n <- difference, /^<name:.*>:.*/ := n) {
-		if(originName == name) {
-			return true;
-		}
+	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], sameFile(originName, call) };
+	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(originName, call) };
+		
+	if(firstCalls == secondCalls) {
+		return false;
 	}
 	
-	return false;
+	if(size(firstCalls) > 7 || size(secondCalls) > 7) {
+		return false;
+	}
+	
+	return true;
 }

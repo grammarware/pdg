@@ -20,12 +20,12 @@ data GeneratedData = EmptyGD()
 
 private str methodName = "";
 
-public GeneratedData createCFG(methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
+public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
 	methodName = methodNode@decl.file;
 	
 	initializeJumpEnvironment();
 	initializeNodeEnvironment();
-	initializeCallEnvironment();
+	initializeCallEnvironment(projectModel);
 	initializeTransferEnvironment();
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
@@ -44,12 +44,12 @@ public GeneratedData createCFG(methodNode: Declaration::\constructor(name, param
 	return GeneratedData(methodData, controlFlow);
 }
 
-public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
+public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
 	methodName = methodNode@decl.file;
 	
 	initializeJumpEnvironment();
 	initializeNodeEnvironment();
-	initializeCallEnvironment();
+	initializeCallEnvironment(projectModel);
 	initializeTransferEnvironment();
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
@@ -75,7 +75,7 @@ public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, p
 	return GeneratedData(methodData, controlFlow);
 }
 
-default GeneratedData createCFG(node tree) {
+default GeneratedData createCFG(M3 projectModel, node tree) {
 	return EmptyGD();
 }
 

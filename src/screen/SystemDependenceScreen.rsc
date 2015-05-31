@@ -17,7 +17,7 @@ import graph::DataStructures;
 import graph::factory::GraphFactory;
 
 
-@doc {
+@doc{
 	To run a test:
 		displaySystemDependenceGraph(|project://JavaTest|, "main");
 }

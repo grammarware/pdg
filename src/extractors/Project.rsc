@@ -11,7 +11,6 @@ import lang::java::jdt::m3::Core;
 private map[loc, M3] M3Cache = ();
 private map[loc, set[Declaration]] ASTCache = ();
 private map[M3, set[loc]] classCache = ();
-private map[M3, set[loc]] methodCache = ();
 private map[M3, set[loc]] fileCache = ();
 
 @doc {

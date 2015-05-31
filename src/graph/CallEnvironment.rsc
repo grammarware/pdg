@@ -1,10 +1,10 @@
 module graph::CallEnvironment
 
 import Prelude;
+import lang::java::m3::Core;
 import lang::java::m3::AST;
 import analysis::m3::Registry;
 
-import graph::call::CallGraph;
 import graph::DataStructures;
 import graph::NodeEnvironment;
 import graph::JumpEnvironment;
@@ -12,12 +12,14 @@ import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
 
 
+private set[loc] projectMethods;
 // The set of all the methods that are called by the currently
 // analysed method.
 private set[loc] calledMethods = {};
 private set[int] callSites = {};
 
-public void initializeCallEnvironment() {
+public void initializeCallEnvironment(M3 projectModel) {
+	projectMethods = methods(projectModel);
 	calledMethods = {};
 	callSites = {};
 }
@@ -35,7 +37,7 @@ private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = Cal
 	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
 	
 	// See if the called method is part of the project.
-	if(inProject(callNode@decl)) {
+	if(callNode@decl in projectMethods) {
 		callSites += {identifier};
 		calledMethods += callNode@decl;
 		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);

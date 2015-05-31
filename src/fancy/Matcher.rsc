@@ -15,7 +15,13 @@ public Translations translateFlows(map[str, node] environment, set[Flow] flows) 
 }
 
 public Highlights addHighlights(Highlights highlights, map[str, node] environment, Flow flow) {
-	loc file = toLocation(environment[flow.root]@src.uri);
+	loc file = environment[flow.root]@src;
+	file.offset = 0;
+	file.length = 0;
+	file.begin.line = 0;
+	file.begin.column = 0;
+	file.end.line = 0;
+	file.end.column = 0;
 	
 	if(file notin highlights) {
 		highlights[file] = {};
