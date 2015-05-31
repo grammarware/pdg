@@ -21,6 +21,8 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 	map[str, loc] locations = ();
 	set[loc] projectMethods = getM3Methods(projectModel);
 	
+	println("Method count: <size(projectMethods)>");
+	
 	for(method <- projectMethods) {
 		try node methodAST = getMethodASTEclipse(method, model = projectModel);
 		catch: continue;

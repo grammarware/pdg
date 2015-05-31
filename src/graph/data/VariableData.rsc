@@ -3,6 +3,7 @@ module graph::\data::VariableData
 import Prelude;
 import lang::java::m3::AST;
 import graph::DataStructures;
+import analysis::m3::Registry;
 
 
 private map[int, set[str]] uses = ();
@@ -93,13 +94,17 @@ public void checkForUse(int identifier, Expression expression) {
 	
 	if(callNode: \methodCall(_, name, _) := expression) {
 		if(callNode@typ != \void()) {
-			storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
+			loc resolved = resolveM3(callNode@decl);
+			
+			storeUse(identifier, "$method_<name>:<resolved.offset>_return_<callNode@src.offset>");
 		}
 	}
 	
 	if(callNode: \methodCall(_, _, name, _):= expression) {
 		if(callNode@typ != \void()) {
-			storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
+			loc resolved = resolveM3(callNode@decl);
+			
+			storeUse(identifier, "$method_<name>:<resolved.offset>_return_<callNode@src.offset>");
 		}
 	}
 }

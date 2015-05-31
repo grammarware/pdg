@@ -21,6 +21,27 @@ import graph::factory::GraphFactory;
 	To run a test:
 		displaySystemDependenceGraph(|project://JavaTest|, "main");
 }
+public void displaySystemDependenceGraph(loc project, str methodName) {
+	M3 projectModel = createM3(project);
+	loc methodLocation = getMethodLocation(methodName, projectModel);
+	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
+		
+	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, File());
+	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, File());
+	SystemDependence systemDependence = createSDG(controlDependences, dataDependences);
+	
+	list[Edge] edges = createEdges(systemDependence.controlDependence, "solid", "blue")
+		+ createEdges(systemDependence.dataDependence, "dash", "green")
+		+ createEdges(systemDependence.iControlDependence, "solid", "deepskyblue")
+		+ createEdges(systemDependence.iDataDependence, "dash", "lime")
+		+ createEdges(systemDependence.globalDataDependence, "dash", "lime");
+	
+	list[Figure] boxes = ([] | it + createSDGBoxes(method) | method <- controlDependences);
+	boxes += createGlobalBoxes(systemDependence.nodeEnvironment, systemDependence.globalDataDependence);
+	
+	render(graph(boxes, edges, hint("layered"), gap(50)));
+}
+
 public void displaySystemDependenceGraph(loc project, str methodName, str fileName) {
 	M3 projectModel = createM3(project);
 	loc methodLocation = getMethodLocation(methodName, fileName, projectModel);

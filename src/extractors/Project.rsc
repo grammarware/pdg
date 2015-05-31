@@ -87,7 +87,7 @@ public set[loc] getM3Classes(M3 project) {
 	@return (set[loc]) -
 		The set of locations of all methods in the model.
 }
-public set[loc] getM3Methods(M3 project) {	
+public set[loc] getM3Methods(M3 project) {
 	return methods(project);
 }
 

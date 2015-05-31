@@ -21,7 +21,6 @@ data GeneratedData = EmptyGD()
 private str methodName = "";
 
 public GeneratedData createCFG(methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
-	println(methodNode@src);
 	methodName = "<name>:<methodNode@src.offset>";
 	
 	initializeJumpEnvironment();
@@ -46,7 +45,6 @@ public GeneratedData createCFG(methodNode: Declaration::\constructor(name, param
 }
 
 public GeneratedData createCFG(methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
-	println(methodNode@src);
 	methodName = "<name>:<methodNode@src.offset>";
 	
 	initializeJumpEnvironment();
