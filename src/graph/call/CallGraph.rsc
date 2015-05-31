@@ -10,48 +10,34 @@ import analysis::graphs::Graph;
 import extractors::Project;
 import graph::DataStructures;
 
+set[loc] projectMethods = {};
 
-public str getVertexName(loc location) {
+public bool inProject(loc location) {
+	return location in projectMethods;
+}
+
+private str getVertexName(loc location) {
 	return "<location.parent.file>:<location.file>";
 }
 
 public CallGraph createCG(M3 projectModel, loc projectLocation) {
 	Graph[str] callGraph = {};
+	projectMethods = getM3Methods(projectModel);
+	
 	map[str, set[str]] methodCalls = ();
 	map[str, loc] locations = ();
-	set[loc] projectMethods = getM3Methods(projectModel);
-	
-	println("Method count: <size(projectMethods)>");
 	
 	for(method <- projectMethods) {
-		try node methodAST = getMethodASTEclipse(method, model = projectModel);
-		catch: continue;
-		
-		str methodVertex = getVertexName(method);
-		
-		try locations[methodVertex] = methodAST@decl;
-		catch: println(methodAST);
-		
-		methodCalls[methodVertex] = {};
-		
-		visit(methodAST) {
-			case methodCall: \methodCall(isSuper, name, arguments): {
-				if(methodCall@decl in projectMethods) {
-					str calledVertex = getVertexName(methodCall@decl);
-					
-					callGraph += { <methodVertex, calledVertex> };
-					methodCalls[methodVertex] += { calledVertex };
-				}
-			}
-	    	case methodCall: \methodCall(isSuper, receiver, name, arguments): {
-	    		if(methodCall@decl in projectMethods) {
-					str calledVertex = getVertexName(methodCall@decl);
-					
-					callGraph += { <methodVertex, calledVertex> };
-					methodCalls[methodVertex] += { calledVertex };
-				}
-	    	}
-		}		
+		methodCalls[getVertexName(method)] = {};
+		locations[getVertexName(method)] = method;
+	}
+	
+	for(<caller, callee> <- projectModel@methodInvocation, inProject(caller), inProject(callee)) {
+		str methodVertex = getVertexName(caller);
+		str calledVertex = getVertexName(callee);
+			
+		callGraph += { <methodVertex, calledVertex> };
+		methodCalls[methodVertex] += { calledVertex };
 	}
 	
 	return CallGraph(callGraph, locations, methodCalls);

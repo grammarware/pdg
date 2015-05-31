@@ -60,7 +60,7 @@ public ControlFlow createResultNode(ControlFlow returnFlow, str methodName, Expr
 public ControlFlow addReturnNodes(ControlFlow controlFlow, str methodName, loc sourceLocation) {	
 	Statement returnOut = \expressionStatement(
 			\variable(
-				"$<methodName>_return_<sourceLocation.offset>", 
+				"$<methodName>_return", 
 				0, 
 				\simpleName("$<methodName>_result")
 			)
@@ -109,26 +109,6 @@ public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, n
 				"$method_<calledMethod>_return_<sourceLocation.offset>", 
 				0, 
 				\simpleName("$<calledMethod>_return")
-			)
-		);
-	returnValue@src = sourceLocation;
-	
-	int identifier = storeNode(returnValue, nodeType = Parameter());
-	transferNodes[identifier] = controlFlow.entryNode;
-	
-	return connectControlFlows([ controlFlow, ControlFlow({}, identifier, {identifier}) ]);
-}
-
-public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, node returnType, loc sourceLocation, loc declarationLocation) {
-	if("<returnType>" == "void()") {
-		return controlFlow;
-	}
-	
-	Statement returnValue = \expressionStatement(
-			\variable(
-				"$method_<calledMethod>_return_<sourceLocation.offset>", 
-				0, 
-				\simpleName("$<calledMethod>_return_<declarationLocation.offset>")
 			)
 		);
 	returnValue@src = sourceLocation;

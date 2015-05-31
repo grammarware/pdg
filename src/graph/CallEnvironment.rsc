@@ -4,6 +4,7 @@ import Prelude;
 import lang::java::m3::AST;
 import analysis::m3::Registry;
 
+import graph::call::CallGraph;
 import graph::DataStructures;
 import graph::NodeEnvironment;
 import graph::JumpEnvironment;
@@ -34,16 +35,14 @@ private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = Cal
 	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
 	
 	// See if the called method is part of the project.
-	try {
-		loc resolved = resolveM3(callNode@decl);
-	
+	if(inProject(callNode@decl)) {
 		callSites += {identifier};
 		calledMethods += callNode@decl;
-		callsite = addArgumentNodes(callsite, "<callNode.name>:<resolved.offset>", callNode.arguments);
-		callsite = addReturnOutNode(callsite, "<callNode.name>:<resolved.offset>", callNode@typ, callNode@src, resolved);
+		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);
+		callsite = addReturnOutNode(callsite, callNode@decl.file, callNode@typ, callNode@src);
 	}
 	// It is not part of the project. Handle it differently.
-	catch: {
+	else {
 		callsite = addArgumentNodes(callsite, callNode.name, callNode.arguments);
 		callsite = addReturnOutNode(callsite, callNode.name, callNode@typ, callNode@src);
 	}

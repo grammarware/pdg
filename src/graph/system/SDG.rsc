@@ -16,9 +16,7 @@ public str encodeVertex(MethodData method, int vertex) {
 }
 
 private str encodeVertex(Expression methodCall, int vertex) {
-	loc resolvedCall = resolveM3(methodCall@decl);
-	
-	return "<resolvedCall.file>:<methodCall.name>:<resolvedCall.offset>:<vertex>";
+	return "<methodCall@decl.parent.file>.java:<methodCall@decl.file>:<vertex>";
 }
 
 private map[str, set[str]] encodeDefinitionMap(map[str, set[str]] definitions, MethodData method, DataDependence dataDependence) {

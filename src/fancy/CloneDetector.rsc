@@ -14,12 +14,17 @@ import fancy::Matcher;
 import fancy::CloneVisualizer;
 import extractors::Project;
 
+private int processed = 1;
+
 public SystemDependence getSystemDependence(M3 projectModel, loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	return createSystemDependence(methodLocation, methodAST, projectModel, File());
 }
 
 public Candidate expandCandidate(Candidate candidate) {
+	print("<processed>, ");
+	processed += 1;
+	
 	systemDependence = getSystemDependence(candidate.systemDependence.model, candidate.systemDependence.location);
 	Flows flows = <createControlFs(systemDependence), createDataFs(systemDependence)>;
 	
@@ -35,13 +40,19 @@ public CandidatePairs expandDomain(CandidatePairs candidates) {
 }
 
 public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {
+	println("[Info] To be processed: <size(seeds)>.");
+	
 	unregisterProject(projects.first.location);
 	unregisterProject(projects.second.location);
 	
+	processed = 1;
+	print("[Project 1]: ");
 	registerProject(projects.first.location, projects.first.model);
 	CandidatePairs candidatePairs = expandDomain(seeds);
 	unregisterProject(projects.first.location);
 	
+	processed = 1;
+	print("\n[Project 2]: ");
 	registerProject(projects.second.location, projects.second.model);
 	candidatePairs = expandRange(candidatePairs);
 	unregisterProject(projects.second.location);
@@ -70,7 +81,8 @@ public void findClones(str firstProjectName, str secondProjectName) {
 	candidates = findMatches(candidates);
 	println("Found matches.");
 	
-	println("Time: <createDuration(before, now()).seconds> second(s)");
+	Duration after = createDuration(before, now());
+	println("Time: <after.hours> hour(s), <after.minutes> minute(s), <after.seconds> second(s)");
 	
 	visualizeCloneCandidates(candidates);
 }

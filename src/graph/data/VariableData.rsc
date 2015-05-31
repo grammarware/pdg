@@ -94,17 +94,23 @@ public void checkForUse(int identifier, Expression expression) {
 	
 	if(callNode: \methodCall(_, name, _) := expression) {
 		if(callNode@typ != \void()) {
-			loc resolved = resolveM3(callNode@decl);
-			
-			storeUse(identifier, "$method_<name>:<resolved.offset>_return_<callNode@src.offset>");
+			try {
+				storeUse(identifier, "$method_<callNode@decl.file>_return_<callNode@src.offset>");
+			}
+			catch: {
+				storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
+			}
 		}
 	}
 	
 	if(callNode: \methodCall(_, _, name, _):= expression) {
 		if(callNode@typ != \void()) {
-			loc resolved = resolveM3(callNode@decl);
-			
-			storeUse(identifier, "$method_<name>:<resolved.offset>_return_<callNode@src.offset>");
+			try {
+				storeUse(identifier, "$method_<callNode@decl.file>_return_<callNode@src.offset>");
+			}
+			catch: {
+				storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
+			}
 		}
 	}
 }
