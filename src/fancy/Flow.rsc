@@ -8,7 +8,6 @@ import analysis::graphs::Graph;
 import graph::DataStructures;
 import fancy::DataStructures;
 
-
 public set[Flow] flowForward(Graph[str] graph, Flow flow) {
 	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successors(graph, flow.target), successor notin flow.intermediates };
 }
@@ -20,7 +19,8 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 	
 	switch(environment[vertex]) {
 		case m: \methodCall(_, _, _): {
-			return m@src.file == "<m@decl.parent.file>.java";
+			try return m@src.file == "<m@decl.parent.file>.java";
+			catch: return false;
 		}
     	case m: \methodCall(_, _, _, _): {
     		try return m@src.file == "<m@decl.parent.file>.java";
@@ -48,22 +48,23 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 }
 
 public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] flows) {
-	set[Flow] expanded = {};
-	set[Flow] addedFlow = {};
+	if(isEmpty(flows)) {
+		return flows;
+	}
+	
+	set[Flow] expandedFlows = {};
+	set[Flow] unchangedFlows = {};
 	bool changed = false;
 	
 	for(flow <- flows) {
-		addedFlow = { flow };
-
 		if(isIntermediate(environment, flow.target)) {
-			addedFlow = flowForward(graph, flow);
-			changed = true;
+			expandedFlows += flowForward(graph, flow);
+		} else {
+			unchangedFlows += { flow };
 		}
-		
-		expanded += addedFlow;
 	}
 	
-	return changed ? expand(environment, graph, expanded) : expanded;
+	return unchangedFlows + expand(environment, graph, expandedFlows);
 }
 
 public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str] startNodes) {

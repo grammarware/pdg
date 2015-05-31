@@ -14,11 +14,12 @@ import graph::\data::DDG;
 import graph::program::PDG;
 import graph::system::SDG;
 
+private int MAXDEPTH = 3;
 data Scope = Intra() | File() | Project();
 
 private set[loc] generatedMethods = {};
 
-private map[MethodData, ControlFlow] getCalledMethods(loc origin, set[loc] calledMethods, M3 projectModel, Scope scope) {
+private map[MethodData, ControlFlow] getCalledMethods(loc origin, set[loc] calledMethods, M3 projectModel, Scope scope, int depth) {
 	map[MethodData, ControlFlow] methodCollection = ();
 	node methodAST;
 	GeneratedData generatedData;
@@ -43,7 +44,9 @@ private map[MethodData, ControlFlow] getCalledMethods(loc origin, set[loc] calle
 		
 		generatedMethods += calledMethod;
 		
-		methodCollection += getCalledMethods(origin, methodData.calledMethods, projectModel, scope);
+		if(depth < MAXDEPTH) {
+			methodCollection += getCalledMethods(origin, methodData.calledMethods, projectModel, scope, depth + 1);
+		}
 	}
 	
 	return methodCollection;
@@ -85,7 +88,7 @@ public ControlFlows createControlFlows(loc methodLocation, node abstractTree, M3
 	
 	generatedMethods = { methodLocation };
 	
-	controlFlows += getCalledMethods(methodLocation, methodData.calledMethods, projectModel, scope);
+	controlFlows += getCalledMethods(methodLocation, methodData.calledMethods, projectModel, scope, 0);
 	
 	return controlFlows;
 }

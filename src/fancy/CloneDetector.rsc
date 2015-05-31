@@ -76,7 +76,7 @@ public void findClones(str firstProjectName, str secondProjectName) {
 	println("Got the seeds.");
 
 	CandidatePairs candidates = expandSeeds(projects, seeds);
-	println("Expanded the seeds.");
+	println("\nExpanded the seeds.");
 	
 	candidates = findMatches(candidates);
 	println("Found matches.");

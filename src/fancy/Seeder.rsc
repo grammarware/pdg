@@ -70,9 +70,5 @@ private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCa
 		return false;
 	}
 	
-	if(size(firstCalls) > 7 || size(secondCalls) > 7) {
-		return false;
-	}
-	
 	return true;
 }
