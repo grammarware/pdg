@@ -9,6 +9,10 @@ import graph::DataStructures;
 private map[loc, rel[MethodData, int]] globalLinks = ();
 
 public void addGlobal(MethodData methodData, loc location, int vertex) {
+	if(location == |unresolved:///|) {
+		return;
+	}
+	
 	if(location in globalLinks) {
 		globalLinks[location] += { <methodData, vertex> };
 	} else {

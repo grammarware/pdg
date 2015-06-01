@@ -14,16 +14,18 @@ import graph::DataStructures;
 import graph::call::CallGraph;
 import graph::factory::GraphFactory;
 
+private set[str] coveredCalls = {};
 
 public Seeds generateSeeds(Projects projects) {
 	CallGraph firstCallGraph = createCG(projects.first.model, projects.first.location);
 	CallGraph secondCallGraph = createCG(projects.second.model, projects.second.location);
 	
+	coveredCalls = {};
 	Seeds seeds = {};
 	
 	int seedAmount = 1;
 	
-	for(method <- firstCallGraph.methodCalls) {
+	for(method <- firstCallGraph.methodCalls, method notin coveredCalls) {
 		if(method notin secondCallGraph.methodCalls) {
 			continue;
 		}
@@ -48,23 +50,37 @@ public Seeds generateSeeds(Projects projects) {
 	return seeds;
 }
 
-private bool sameFile(str file, str method) {
-	if(/^<name:.*>:.*/ := method) {
-		return file == name;
+private bool sameFile(CallGraph callGraph, str file, str method) {
+	return getMethodFile(callGraph, file) == getMethodFile(callGraph, method);
+}
+
+private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str] history) {
+	if(isEmpty(baseNodes)) {
+		return {};
 	}
 	
-	return false;
+	set[str] reachables = {};
+	
+	for(base <- baseNodes, call <- callGraph.methodCalls[base], call notin history, call != base) {
+		if(sameFile(callGraph, base, call)) {
+			reachables += { call };
+		}
+	}
+	
+	return baseNodes + reachables + getReachables(callGraph, reachables, history + baseNodes);
 }
 
 private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
-	str originName = "";
+	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin],  sameFile(firstCallGraph, origin, call) };
+	set[str] allowedNodes = getFileMethods(firstCallGraph, getMethodFile(firstCallGraph, origin));
+	set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});
+
+	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(secondCallGraph, origin, call) };
+	allowedNodes = getFileMethods(secondCallGraph, getMethodFile(secondCallGraph, origin));
+	set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
 	
-	if(/^<name:.*>:.*/ := origin) {
-		originName = name;
-	}
-	
-	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], sameFile(originName, call) };
-	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(originName, call) };
+	coveredCalls += firstReachables;
+	coveredCalls += secondReachables;
 		
 	if(firstCalls == secondCalls) {
 		return false;

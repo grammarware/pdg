@@ -14,7 +14,7 @@ import graph::\data::DDG;
 import graph::program::PDG;
 import graph::system::SDG;
 
-private int MAXDEPTH = 3;
+private int MAXDEPTH = 100;
 data Scope = Intra() | File() | Project();
 
 private set[loc] generatedMethods = {};

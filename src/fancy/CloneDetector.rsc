@@ -22,7 +22,7 @@ public SystemDependence getSystemDependence(M3 projectModel, loc methodLocation)
 }
 
 public Candidate expandCandidate(Candidate candidate) {
-	print("<processed>, ");
+	print(processed % 10 == 0 ? "<processed>.\n" : "<processed>, ");
 	processed += 1;
 	
 	systemDependence = getSystemDependence(candidate.systemDependence.model, candidate.systemDependence.location);

@@ -13,7 +13,8 @@ public set[Flow] flowForward(Graph[str] graph, Flow flow) {
 }
 
 public bool isIntermediate(map[str, node] environment, str vertex) {
-	if(vertex notin environment || environment[vertex]@nodeType != Normal() && environment[vertex]@nodeType != Global()) {
+	if(vertex notin environment 
+		|| (environment[vertex]@nodeType != Normal() && environment[vertex]@nodeType != Global())) {
 		return true;
 	}
 	
@@ -24,7 +25,7 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 		}
     	case m: \methodCall(_, _, _, _): {
     		try return m@src.file == "<m@decl.parent.file>.java";
-    		catch: return false;
+			catch: return false;
     	}
     	case \do(_, _):
     		return true;
@@ -54,7 +55,6 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 	
 	set[Flow] expandedFlows = {};
 	set[Flow] unchangedFlows = {};
-	bool changed = false;
 	
 	for(flow <- flows) {
 		if(isIntermediate(environment, flow.target)) {
@@ -69,7 +69,7 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 
 public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str] startNodes) {
 	rel[str, str] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successors(graph, startNode) } | startNode <- startNodes );
-	seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
+	//seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
 	
 	return expand(environment, graph, 
 				{ Flow(root, {}, nextNode) |

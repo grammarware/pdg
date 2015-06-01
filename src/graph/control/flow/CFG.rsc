@@ -29,8 +29,14 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constr
 	initializeTransferEnvironment();
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
+	ControlFlow controlFlow;
 	
-	ControlFlow controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);	
+	if(isEmpty(parameterFlows)) {
+		controlFlow = process(impl);
+	} else {
+		controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);
+	}
+	
 	controlFlow.exitNodes += getThrowNodes();
 	
 	MethodData methodData = emptyMethodData();
@@ -53,8 +59,13 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\method
 	initializeTransferEnvironment();
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
+	ControlFlow controlFlow;
 	
-	ControlFlow controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);
+	if(isEmpty(parameterFlows)) {
+		controlFlow = process(impl);
+	} else {
+		controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);
+	}
 	
 	if(\return != Type::\void()) {
 		controlFlow = addReturnNodes(controlFlow, methodName, methodNode@src);	
@@ -94,8 +105,10 @@ private ControlFlow process(ifNode: \if(condition, thenBranch)) {
 	
 	ControlFlow thenFlow = process(thenBranch);
 	
-	ifFlow.graph += thenFlow.graph + createConnectionEdges(ifFlow, thenFlow);
-	ifFlow.exitNodes += thenFlow.exitNodes;
+	if(thenFlow != EmptyCF()) {
+		ifFlow.graph += thenFlow.graph + createConnectionEdges(ifFlow, thenFlow);
+		ifFlow.exitNodes += thenFlow.exitNodes;
+	}
 	
 	return connectControlFlows(callSites + ifFlow);
 }
@@ -109,14 +122,24 @@ private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
 	// The condition is an exit node on false.
 	ifElseFlow.exitNodes += {identifier};
 	
-	ControlFlow thenFlow = process(thenBranch);	
-	ifElseFlow.graph += thenFlow.graph + createConnectionEdges(ifElseFlow, thenFlow);
+	ControlFlow thenFlow = process(thenBranch);
+	set[int] addedExitNodes = {};
+	
+	if(thenFlow != EmptyCF()) {
+		ifElseFlow.graph += thenFlow.graph + createConnectionEdges(ifElseFlow, thenFlow);
+		addedExitNodes += thenFlow.exitNodes;
+		ifElseFlow.exitNodes -= {identifier};
+	}
 	
 	ControlFlow elseFlow = process(elseBranch);	
-	ifElseFlow.graph += elseFlow.graph + createConnectionEdges(ifElseFlow, elseFlow);
 	
-	ifElseFlow.exitNodes += elseFlow.exitNodes + thenFlow.exitNodes;
-	ifElseFlow.exitNodes -= {identifier};
+	if(elseFlow != EmptyCF()) {
+		ifElseFlow.graph += elseFlow.graph + createConnectionEdges(ifElseFlow, elseFlow);
+		addedExitNodes += elseFlow.exitNodes;
+		ifElseFlow.exitNodes -= {identifier};
+	}
+	
+	ifElseFlow.exitNodes += addedExitNodes;
 	
 	return connectControlFlows(callSites + ifElseFlow);
 }
@@ -297,9 +320,11 @@ private ControlFlow createTryFlow(int identifier, Statement body, list[Statement
 	}
 
 	set[int] throwNodes = getThrowNodes();
-	set[int] potentialThrows = throwNodes 
-							 + { treeNode | treeNode <- carrier(tryFlow.graph), 
-							 	 			isPotentialThrow(resolveNode(treeNode)) };
+	set[int] potentialThrows = throwNodes +
+				{ treeNode 
+					| treeNode <- carrier(tryFlow.graph)
+					, isPotentialThrow(resolveNode(treeNode))
+				};
 
 	scopeUp();
 	
