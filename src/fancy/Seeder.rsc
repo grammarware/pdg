@@ -70,7 +70,20 @@ private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str]
 	return baseNodes + reachables + getReachables(callGraph, reachables, history + baseNodes);
 }
 
+private bool isExcludedFile(str fileName) {
+	switch(fileName) {
+		// Parser files are usually automatically generated.
+		case /Parser/: return true;
+	}
+	
+	return false;
+}
+
 private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
+	if(isExcludedFile(firstCallGraph.methodFileMapping[origin])) {
+		return false;
+	}
+	
 	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], sameFile(firstCallGraph, origin, call) };
 	set[str] allowedNodes = firstCallGraph.fileMethodsMapping[firstCallGraph.methodFileMapping[origin]];
 	set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});

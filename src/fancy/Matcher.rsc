@@ -63,21 +63,14 @@ private CandidatePair matchControlFlows(CandidatePair candidatePair) {
 private CandidatePair matchDataFlows(CandidatePair candidatePair) {
 	Candidate firstCandidate = candidatePair.first;
 	map[str, node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
-	Translations firstTranslations = translateFlows(
-			firstEnvironment
-			, firstCandidate.flows.\data
-		);
+	Translations firstTranslations = translateFlows(firstEnvironment, firstCandidate.flows.\data);
 	
 	Candidate secondCandidate = candidatePair.second;
 	map[str, node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
-	Translations secondTranslations = translateFlows(
-			secondEnvironment
-			, secondCandidate.flows.\data
-		);
+	Translations secondTranslations = translateFlows(secondEnvironment, secondCandidate.flows.\data);
 	
 	for(key <- domain(firstTranslations), key in domain(secondTranslations)) {
-		for(firstFlow <- firstTranslations[key]
-			, secondFlow <- secondTranslations[key]) {
+		for(firstFlow <- firstTranslations[key], secondFlow <- secondTranslations[key]) {
 			firstCandidate.highlights = addHighlights(firstCandidate.highlights, firstEnvironment, firstFlow);
 			secondCandidate.highlights = addHighlights(secondCandidate.highlights, secondEnvironment, secondFlow);
 		}

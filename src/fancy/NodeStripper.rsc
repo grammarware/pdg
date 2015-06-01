@@ -10,7 +10,11 @@ import lang::java::m3::TypeSymbol;
 
 
 public str stripNode(node \node) {
-	return process(\node);
+	try return process(\node);
+	catch: { 
+		println("Cant strip <\node>");
+		return "screwed node";
+	}
 }
 public map[str, str] stripEnvironment(map[str, node] environment) {
 	return ( key : process(environment[key]) | key <- environment);
@@ -90,7 +94,7 @@ private str process(Statement statement) {
 		case \if(condition, thenBranch):
 			return "if";
 		case \if(condition, thenBranch, elseBranch):
-			return "if";
+			return "if-else";
 		case \label(str name, Statement body):
 			return "label <name>";
 		case \return():
@@ -187,7 +191,8 @@ private str process(Expression expr) {
     	case \declarationExpression(Declaration decl):
     		return "declarationExpression <process(decl)>";
     	case \infix(Expression lhs, str operator, Expression rhs):
-    		return "infix <process(lhs@typ)> <operator> <process(rhs@typ)>";
+    		try return "infix <process(lhs@typ)> <operator> <process(rhs@typ)>";
+    		catch: return "infix <process(lhs)> <operator> <process(rhs)>";
     	case \postfix(Expression operand, str operator):
     		return "postfix <process(operand@typ)> <operator>";
     	case \prefix(str operator, Expression operand):

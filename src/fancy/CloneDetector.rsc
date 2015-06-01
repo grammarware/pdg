@@ -23,7 +23,7 @@ public SystemDependence getSystemDependence(M3 projectModel, loc methodLocation)
 }
 
 public Candidate expandCandidate(Candidate candidate) {
-	print(processed % 10 == 0 ? "<processed>.\n" : "<processed>, ");
+	println("  [<processed>]: <candidate.systemDependence.location>.");
 	processed += 1;
 	
 	systemDependence = getSystemDependence(candidate.systemDependence.model, candidate.systemDependence.location);
@@ -47,13 +47,13 @@ public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {
 	unregisterProject(projects.second.location);
 	
 	processed = 1;
-	print("[Project 1]: ");
+	println("[Project 1]: ");
 	registerProject(projects.first.location, projects.first.model);
 	CandidatePairs candidatePairs = expandDomain(seeds);
 	unregisterProject(projects.first.location);
 	
 	processed = 1;
-	print("\n[Project 2]: ");
+	println("[Project 2]: ");
 	registerProject(projects.second.location, projects.second.model);
 	candidatePairs = expandRange(candidatePairs);
 	unregisterProject(projects.second.location);
@@ -77,7 +77,7 @@ public void findClones(str firstProjectName, str secondProjectName) {
 	println("Got the seeds.");
 
 	CandidatePairs candidates = expandSeeds(projects, seeds);
-	println("\nExpanded the seeds.");
+	println("Expanded the seeds.");
 	
 	candidates = findMatches(candidates);
 	println("Found matches.");
