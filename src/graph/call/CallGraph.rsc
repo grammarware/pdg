@@ -11,9 +11,6 @@ import extractors::Project;
 import graph::DataStructures;
 
 
-private map[CallGraph, map[str, str]] methodToFile = ();
-private map[CallGraph, map[str, set[str]]] fileToMethods = ();
-
 private str getVertexName(loc location) {
 	return "<location.parent.file>:<location.file>";
 }
@@ -49,17 +46,5 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 		methodCalls[methodVertex] += { calledVertex };
 	}
 	
-	CallGraph result = CallGraph(callGraph, locations, methodCalls);
-	methodToFile[result] = methodFileMapping; 
-	fileToMethods[result] = fileMethodsMapping;
-	
-	return result;
-}
-
-public str getMethodFile(CallGraph callgraph, str method) {
-	return methodToFile[callgraph][method];
-}
-
-public set[str] getFileMethods(CallGraph callgraph, str file) {
-	return fileToMethods[callgraph][file];
+	return CallGraph(callGraph, locations, methodCalls, methodFileMapping, fileMethodsMapping);
 }

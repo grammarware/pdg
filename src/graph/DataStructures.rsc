@@ -14,7 +14,8 @@ public int EXITNODE = -1;
 data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, 
 					set[loc] calledMethods, set[int] callSites, map[int, int] parameterNodes); 
 
-data CallGraph = CallGraph(Graph[str] graph, map[str,loc] locations, map[str, set[str]] methodCalls);
+data CallGraph = CallGraph(Graph[str] graph, map[str,loc] locations, map[str, set[str]] methodCalls, 
+							map[str, str] methodFileMapping, map[str, set[str]] fileMethodsMapping);
 
 data ControlFlow = EmptyCF()
 					| ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);

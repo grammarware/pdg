@@ -5,6 +5,7 @@ import analysis::m3::Registry;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
+import graph::call::CallGraph;
 import graph::DataStructures;
 import graph::factory::GraphFactory;
 import fancy::DataStructures;

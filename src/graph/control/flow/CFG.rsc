@@ -128,7 +128,6 @@ private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
 	if(thenFlow != EmptyCF()) {
 		ifElseFlow.graph += thenFlow.graph + createConnectionEdges(ifElseFlow, thenFlow);
 		addedExitNodes += thenFlow.exitNodes;
-		ifElseFlow.exitNodes -= {identifier};
 	}
 	
 	ControlFlow elseFlow = process(elseBranch);	
@@ -136,10 +135,12 @@ private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
 	if(elseFlow != EmptyCF()) {
 		ifElseFlow.graph += elseFlow.graph + createConnectionEdges(ifElseFlow, elseFlow);
 		addedExitNodes += elseFlow.exitNodes;
-		ifElseFlow.exitNodes -= {identifier};
 	}
 	
-	ifElseFlow.exitNodes += addedExitNodes;
+	if(!isEmpty(addedExitNodes)) {
+		ifElseFlow.exitNodes += addedExitNodes;
+		ifElseFlow.exitNodes -= {identifier};
+	}
 	
 	return connectControlFlows(callSites + ifElseFlow);
 }

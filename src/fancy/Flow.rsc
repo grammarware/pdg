@@ -69,7 +69,7 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 
 public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str] startNodes) {
 	rel[str, str] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successors(graph, startNode) } | startNode <- startNodes );
-	//seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
+	seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
 	
 	return expand(environment, graph, 
 				{ Flow(root, {}, nextNode) |

@@ -51,7 +51,7 @@ public Seeds generateSeeds(Projects projects) {
 }
 
 private bool sameFile(CallGraph callGraph, str file, str method) {
-	return getMethodFile(callGraph, file) == getMethodFile(callGraph, method);
+	return callGraph.methodFileMapping[file] == callGraph.methodFileMapping[method];
 }
 
 private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str] history) {
@@ -71,12 +71,12 @@ private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str]
 }
 
 private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
-	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin],  sameFile(firstCallGraph, origin, call) };
-	set[str] allowedNodes = getFileMethods(firstCallGraph, getMethodFile(firstCallGraph, origin));
+	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], sameFile(firstCallGraph, origin, call) };
+	set[str] allowedNodes = firstCallGraph.fileMethodsMapping[firstCallGraph.methodFileMapping[origin]];
 	set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});
 
 	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(secondCallGraph, origin, call) };
-	allowedNodes = getFileMethods(secondCallGraph, getMethodFile(secondCallGraph, origin));
+	allowedNodes = secondCallGraph.fileMethodsMapping[secondCallGraph.methodFileMapping[origin]];
 	set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
 	
 	coveredCalls += firstReachables;
