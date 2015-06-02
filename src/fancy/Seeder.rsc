@@ -39,8 +39,8 @@ public Seeds generateSeeds(Projects projects) {
 		loc secondLoc = secondCallGraph.locations[method];
 		
 		if(isEligible(method, firstCallGraph, secondCallGraph)) {
-			Candidate firstCandidate = Candidate(EmptySD(projects.first.model, firstLoc), <{}, {}>, ());
-			Candidate secondCandidate = Candidate(EmptySD(projects.second.model, secondLoc), <{}, {}>, ());
+			Candidate firstCandidate = Candidate(EmptySD(projects.first.model, firstLoc), <{}, {}>, (), {});
+			Candidate secondCandidate = Candidate(EmptySD(projects.second.model, secondLoc), <{}, {}>, (), {});
 			
 			seeds += <firstCandidate, secondCandidate>;
 			seedAmount += 1;
@@ -91,6 +91,14 @@ private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCa
 	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(secondCallGraph, origin, call) };
 	allowedNodes = secondCallGraph.fileMethodsMapping[secondCallGraph.methodFileMapping[origin]];
 	set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
+	
+	if(size(firstReachables) == 1 && size(secondReachables) == 1) {
+		return false;
+	}
+	
+	if(size(firstReachables) == size(secondReachables)) {
+		return false;
+	}
 	
 	coveredCalls += firstReachables;
 	coveredCalls += secondReachables;

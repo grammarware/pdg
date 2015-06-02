@@ -29,7 +29,7 @@ public Candidate expandCandidate(Candidate candidate) {
 	systemDependence = getSystemDependence(candidate.systemDependence.model, candidate.systemDependence.location);
 	Flows flows = <createControlFs(systemDependence), createDataFs(systemDependence)>;
 	
-	return Candidate(systemDependence, flows, ());
+	return Candidate(systemDependence, flows, (), {});
 }
 
 public CandidatePairs expandRange(CandidatePairs candidates) {
