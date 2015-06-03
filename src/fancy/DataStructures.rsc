@@ -5,7 +5,7 @@ import lang::java::m3::Core;
 import graph::DataStructures;
 
 
-data Flow = Flow(str root, set[str] intermediates, str target);
+data Flow = Flow(Vertex root, set[Vertex] intermediates, Vertex target, set[int] lineNumbers, set[str] methodSpan);
 
 alias Seeds = rel[Candidate, Candidate];
 

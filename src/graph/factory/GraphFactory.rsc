@@ -79,6 +79,10 @@ public set[int] filterCallSites(loc origin, MethodData methodData, Project()) {
 public ControlFlows createControlFlows(loc methodLocation, node abstractTree, M3 projectModel, Scope scope) {
 	GeneratedData generatedData = createCFG(projectModel, cast(#Declaration, abstractTree));
 	
+	if(generatedData == EmptyGD()) {
+		return ();
+	}
+	
 	MethodData methodData = generatedData.methodData;
 	methodData.callSites = filterCallSites(methodLocation, methodData, scope);
 	

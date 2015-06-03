@@ -36,9 +36,11 @@ data ProgramDependence = ProgramDependence(Graph[int] controlDependence, Graph[i
 alias ProgramDependences = map[MethodData, ProgramDependence];
 
 data SystemDependence = EmptySD(M3 model, loc location)
-						| SystemDependence(map[str, node] nodeEnvironment,
-										Graph[str] controlDependence, Graph[str] iControlDependence,
-					  					Graph[str] dataDependence, Graph[str] globalDataDependence, Graph[str] iDataDependence);
+						| SystemDependence(map[Vertex, node] nodeEnvironment,
+										Graph[Vertex] controlDependence, Graph[Vertex] iControlDependence,
+					  					Graph[Vertex] dataDependence, Graph[Vertex] globalDataDependence, Graph[Vertex] iDataDependence);
+
+data Vertex = Vertex(str file, str method, int identifier);
 
 data NodeType = Normal() | Parameter() | CallSite() | Result() | Global();
 

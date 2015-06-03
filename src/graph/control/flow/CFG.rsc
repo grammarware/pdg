@@ -37,6 +37,10 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constr
 		controlFlow = connectControlFlows(parameterFlows + [ process(impl) ]);
 	}
 	
+	if(controlFlow == EmptyCF()) {
+		return EmptyGD();
+	}
+	
 	controlFlow.exitNodes += getThrowNodes();
 	
 	MethodData methodData = emptyMethodData();

@@ -8,13 +8,23 @@ import analysis::graphs::Graph;
 import graph::DataStructures;
 import fancy::DataStructures;
 
-private map[str, set[str]] successorMap = ();
+private map[Vertex, set[Vertex]] successorMap = ();
 
-public set[Flow] flowForward(Graph[str] graph, Flow flow) {
-	return { Flow(flow.root, flow.intermediates + { flow.target }, successor) | successor <- successorMap[flow.target], successor notin flow.intermediates };
+public set[Flow] flowForward(map[Vertex, node] environment, Graph[Vertex] graph, Flow flow) {
+	return { Flow(flow.root
+				, flow.intermediates + { flow.target }
+				, successor
+				, successor in environment 
+					? flow.lineNumbers + environment[successor]@src.begin.line 
+					: flow.lineNumbers
+				, flow.methodSpan + successor.method
+			) 
+			| successor <- successorMap[flow.target]
+			, successor notin flow.intermediates
+			};
 }
 
-public bool isIntermediate(map[str, node] environment, str vertex) {
+public bool isIntermediate(map[Vertex, node] environment, Vertex vertex) {
 	if(vertex notin environment 
 		|| (environment[vertex]@nodeType != Normal() && environment[vertex]@nodeType != Global())) {
 		return true;
@@ -50,7 +60,7 @@ public bool isIntermediate(map[str, node] environment, str vertex) {
 	return false;
 }
 
-public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] flows) {
+public set[Flow] expand(map[Vertex, node] environment, Graph[Vertex] graph, set[Flow] flows) {
 	if(isEmpty(flows)) {
 		return flows;
 	}
@@ -59,8 +69,11 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 	set[Flow] unchangedFlows = {};
 	
 	for(flow <- flows) {
+		if(flow.target in environment) {
+			flow.lineNumbers += { environment[flow.target]@src.begin.line };
+		}
 		if(isIntermediate(environment, flow.target)) {
-			expandedFlows += flowForward(graph, flow);
+			expandedFlows += flowForward(environment, graph, flow);
 		} else {
 			unchangedFlows += { flow };
 		}
@@ -69,7 +82,7 @@ public set[Flow] expand(map[str, node] environment, Graph[str] graph, set[Flow] 
 	return unchangedFlows + expand(environment, graph, expandedFlows);
 }
 
-private void calculateSuccessors(Graph[str] graph, set[str] environmentDomain) {
+private void calculateSuccessors(Graph[Vertex] graph, set[Vertex] environmentDomain) {
 	successorMap = ();
 	
 	for(vertex <- carrier(graph)) {
@@ -81,12 +94,12 @@ private void calculateSuccessors(Graph[str] graph, set[str] environmentDomain) {
 	}
 }
 
-public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str] startNodes) {
-	rel[str, str] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successorMap[startNode] } | startNode <- startNodes );
+public set[Flow] frontier(map[Vertex, node] environment, Graph[Vertex] graph, set[Vertex] startNodes) {
+	rel[Vertex, Vertex] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successorMap[startNode] } | startNode <- startNodes );
 	//seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
 	
 	return expand(environment, graph, 
-				{ Flow(root, {}, nextNode) |
+				{ Flow(root, {}, nextNode, { environment[root]@src.begin.line }, { root.method, nextNode.method } ) |
 					<root, nextNode> <- seeds
 					, root in environment
 					, environment[root]@nodeType == Normal()
@@ -95,7 +108,7 @@ public set[Flow] frontier(map[str, node] environment, Graph[str] graph, set[str]
 }
 
 public set[Flow] createDataFs(SystemDependence systemDependence) {
-	Graph[str] graph = systemDependence.dataDependence + systemDependence.globalDataDependence + systemDependence.iDataDependence;
+	Graph[Vertex] graph = systemDependence.dataDependence + systemDependence.globalDataDependence + systemDependence.iDataDependence;
 	
 	calculateSuccessors(graph, domain(systemDependence.nodeEnvironment));
 	
@@ -103,7 +116,7 @@ public set[Flow] createDataFs(SystemDependence systemDependence) {
 }
 
 public set[Flow] createControlFs(SystemDependence systemDependence) {
-	Graph[str] graph = systemDependence.controlDependence + systemDependence.iControlDependence;
+	Graph[Vertex] graph = systemDependence.controlDependence + systemDependence.iControlDependence;
 	
 	calculateSuccessors(graph, domain(systemDependence.nodeEnvironment));
 	

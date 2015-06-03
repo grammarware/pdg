@@ -54,8 +54,12 @@ private void displaySystemDependenceGraph(M3 projectModel, loc methodLocation) {
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
 
-public list[Edge] createEdges(Graph[str] graph, str style, str color) {
-	return [ edge(graphEdge.from, graphEdge.to, 
+public str vertexName(Vertex vertex) {
+	return "<vertex.file>:<vertex.method>:<vertex.identifier>";
+}
+
+public list[Edge] createEdges(Graph[Vertex] graph, str style, str color) {
+	return [ edge(vertexName(graphEdge.from), vertexName(graphEdge.to), 
 					lineStyle(style), lineColor(color), toArrow(box(size(10), 
 					fillColor(color)))) | graphEdge <- graph ];
 }
@@ -69,10 +73,10 @@ private str getBoxColor(NodeType nodeType) {
 	}
 }
 
-public Figures createGlobalBoxes(map[str, node] environment, Graph[str] graph) {
+public Figures createGlobalBoxes(map[Vertex, node] environment, Graph[Vertex] graph) {
 	return [ box(
-				text(vertex), 
-				id(vertex), 
+				text("<vertex.file>:<vertex.method>"), 
+				id(vertexName(vertex)), 
 				size(50), 
 				fillColor(getBoxColor(environment[vertex]@nodeType)), 
 				onMouseDown(
@@ -85,10 +89,18 @@ public Figures createGlobalBoxes(map[str, node] environment, Graph[str] graph) {
 			) | vertex <- domain(graph) ];
 }
 
+public str strip(str name) {
+	if(/^<name:.*>\(/ := name) {
+		return name;
+	}
+	
+	return "";
+}
+
 public Figures createSDGBoxes(MethodData methodData) {
 	return [ box(
-				text("<methodData.name>:<treeNode>"), 
-				id(encodeVertex(methodData, treeNode)), 
+				text("<strip(methodData.name)>:<treeNode>"), 
+				id(vertexName(encodeVertex(methodData, treeNode))), 
 				size(50), 
 				fillColor(getBoxColor(resolveIdentifier(methodData, treeNode)@nodeType)), 
 				onMouseDown(
@@ -99,5 +111,5 @@ public Figures createSDGBoxes(MethodData methodData) {
 					)
 				)
 			) | treeNode <- environmentDomain(methodData) ]
-			+ box(text("ENTRY <methodData.name>"), id(encodeVertex(methodData, ENTRYNODE)), size(50), fillColor("lightblue"));
+			+ box(text("ENTRY <strip(methodData.name)>"), id(vertexName(encodeVertex(methodData, ENTRYNODE))), size(50), fillColor("lightblue"));
 }

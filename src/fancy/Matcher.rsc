@@ -10,11 +10,11 @@ import graph::DataStructures;
 
 private alias Translations = rel[tuple[str root, str target], Flow];
 
-public Translations translateFlows(map[str, node] environment, set[Flow] flows) {
+public Translations translateFlows(map[Vertex, node] environment, set[Flow] flows) {
 	return { < <stripNode(environment[flow.root]), stripNode(environment[flow.target])>, flow > | flow <- flows };
 }
 
-public Highlights addHighlights(Highlights highlights, map[str, node] environment, Flow flow) {	
+public Highlights addHighlights(Highlights highlights, map[Vertex, node] environment, Flow flow) {	
 	loc file = environment[flow.root]@src;
 	file.offset = 0;
 	file.length = 0;
@@ -27,44 +27,26 @@ public Highlights addHighlights(Highlights highlights, map[str, node] environmen
 		highlights[file] = {};
 	}
 
-	highlights[file] += ({ environment[flow.root]@src.begin.line, environment[flow.target]@src.begin.line }
-							| it + environment[inter]@src.begin.line 
-							| inter <- flow.intermediates, inter in environment
-						);
+	highlights[file] += flow.lineNumbers;
 	
 	return highlights;
 }
 
-private str methodName(str vertex) {
-	if(/^.*\:<name:.*>\:/ := vertex) {
-		return name;
-	}
-	
-	return "";
-}
-
-private set[str] getMethodSpan(Flow flow) {
-	return ( { methodName(flow.root), methodName(flow.target) }
-			| it + methodName(inter)
-			| inter <- flow.intermediates
-			);
-}
-
 private CandidatePair matchControlFlows(CandidatePair candidatePair) {
 	Candidate firstCandidate = candidatePair.first;
-	map[str, node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
+	map[Vertex, node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
 	Translations firstTranslations = translateFlows(firstEnvironment, firstCandidate.flows.control);
 	
 	Candidate secondCandidate = candidatePair.second;
-	map[str, node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
+	map[Vertex, node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
 	Translations secondTranslations = translateFlows(secondEnvironment, secondCandidate.flows.control);
 	
 	for(key <- domain(firstTranslations), key in domain(secondTranslations)) {
 		for(firstFlow <- firstTranslations[key], secondFlow <- secondTranslations[key]) {
-			firstCandidate.methodSpan += getMethodSpan(firstFlow);
+			firstCandidate.methodSpan += firstFlow.methodSpan;
 			firstCandidate.highlights = addHighlights(firstCandidate.highlights, firstEnvironment, firstFlow);
 			
-			secondCandidate.methodSpan += getMethodSpan(secondFlow);
+			secondCandidate.methodSpan += secondFlow.methodSpan;
 			secondCandidate.highlights = addHighlights(secondCandidate.highlights, secondEnvironment, secondFlow);
 		}
 	}
@@ -74,19 +56,19 @@ private CandidatePair matchControlFlows(CandidatePair candidatePair) {
 
 private CandidatePair matchDataFlows(CandidatePair candidatePair) {
 	Candidate firstCandidate = candidatePair.first;
-	map[str, node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
+	map[Vertex , node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
 	Translations firstTranslations = translateFlows(firstEnvironment, firstCandidate.flows.\data);
 	
 	Candidate secondCandidate = candidatePair.second;
-	map[str, node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
+	map[Vertex , node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
 	Translations secondTranslations = translateFlows(secondEnvironment, secondCandidate.flows.\data);
 	
 	for(key <- domain(firstTranslations), key in domain(secondTranslations)) {
 		for(firstFlow <- firstTranslations[key], secondFlow <- secondTranslations[key]) {
-			firstCandidate.methodSpan += getMethodSpan(firstFlow);
+			firstCandidate.methodSpan += firstFlow.methodSpan;
 			firstCandidate.highlights = addHighlights(firstCandidate.highlights, firstEnvironment, firstFlow);
 			
-			secondCandidate.methodSpan += getMethodSpan(secondFlow);
+			secondCandidate.methodSpan += secondFlow.methodSpan;
 			secondCandidate.highlights = addHighlights(secondCandidate.highlights, secondEnvironment, secondFlow);
 		}
 	}

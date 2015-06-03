@@ -9,17 +9,17 @@ import graph::DataStructures;
 import graph::\data::GlobalData;
 
 
-map[str, node] encodedNodeEnvironment = ();
+map[Vertex, node] encodedNodeEnvironment = ();
 			
-public str encodeVertex(MethodData method, int vertex) {
-	return "<method.abstractTree@src.file>:<method.name>:<vertex>";
+public Vertex encodeVertex(MethodData method, int vertex) {
+	return Vertex(method.abstractTree@src.file, method.name, vertex);
 }
 
-private str encodeVertex(Expression methodCall, int vertex) {
-	return "<methodCall@decl.parent.file>.java:<methodCall@decl.file>:<vertex>";
+private Vertex encodeVertex(Expression methodCall, int vertex) {
+	return Vertex("<methodCall@decl.parent.file>.java", methodCall@decl.file, vertex);
 }
 
-private map[str, set[str]] encodeDefinitionMap(map[str, set[str]] definitions, MethodData method, DataDependence dataDependence) {
+private map[str, set[Vertex]] encodeDefinitionMap(map[str, set[Vertex]] definitions, MethodData method, DataDependence dataDependence) {
 	for(key <- dataDependence.defs) {
 		for(variableDef <- dataDependence.defs[key]) {
 			if(key in definitions) {
@@ -33,12 +33,12 @@ private map[str, set[str]] encodeDefinitionMap(map[str, set[str]] definitions, M
 	return definitions;
 }
 
-private Graph[str] encodeGraph(MethodData method, Graph[int] graph) {
-	Graph[str] encodedGraph = {};
+private Graph[Vertex] encodeGraph(MethodData method, Graph[int] graph) {
+	Graph[Vertex] encodedGraph = {};
 	
 	for(<from, to> <- graph) {
-		str encodedFrom = encodeVertex(method, from);
-		str encodedTo = encodeVertex(method, to);
+		Vertex encodedFrom = encodeVertex(method, from);
+		Vertex encodedTo = encodeVertex(method, to);
 		
 		if(from >= 0) {
 			encodedNodeEnvironment[encodedFrom] = resolveIdentifier(method, from);
@@ -58,23 +58,23 @@ private bool isParameterVariable(str variable) {
 	return /\$.*/ := variable;
 }
 
-private Graph[str] getGlobalEdges() {
+private Graph[Vertex] getGlobalEdges() {
 	map[loc, rel[MethodData, int]] globalLinks = getGlobalLinks();
-	Graph[str] globalEdges = {};
+	Graph[Vertex] globalEdges = {};
 	
 	for(location <- globalLinks) {
 		loc resolvedLocation;
-		str globalVertex;
+		Vertex globalVertex;
 		node globalNode;
 			
 		try {
 			resolvedLocation = resolveM3(location);
 			
-			globalVertex = "<resolvedLocation.file>:<resolvedLocation.offset>";
+			globalVertex = Vertex(resolvedLocation.file, "<resolvedLocation.offset>", -1);
 			globalNode = \simpleName(location.file);
 			globalNode@src = resolvedLocation;
 		} catch: {
-			globalVertex = "<location.file>:Global";
+			globalVertex = Vertex(location.file, "Global", -1);
 			globalNode = \simpleName(location.file);
 			
 			globalNode@src = location(0,0,<0,0>,<0,0>);
@@ -93,23 +93,23 @@ private Graph[str] getGlobalEdges() {
 
 public SystemDependence createSDG(ControlDependences controlDependences, DataDependences dataDependences) {
 	encodedNodeEnvironment = ();
-	map[str, set[str]] allDefinitions = ();
+	map[str, set[Vertex]] allDefinitions = ();
 	
 	for(method <- controlDependences) {
 		allDefinitions = encodeDefinitionMap(allDefinitions, method, dataDependences[method]);
 	}
 	
-	Graph[str] dataDependenceGraph = ({}
+	Graph[Vertex] dataDependenceGraph = ({}
 		| it + encodeGraph(method, dataDependences[method].graph)
 		| method <- controlDependences
 		);
-	Graph[str] controlDependenceGraph = ({}
+	Graph[Vertex] controlDependenceGraph = ({}
 		| it + encodeGraph(method, controlDependences[method].graph)
 		| method <- controlDependences
 		);
 	
-	Graph[str] iDataDependenceGraph = {};
-	Graph[str] iControlDependenceGraph = {};
+	Graph[Vertex] iDataDependenceGraph = {};
+	Graph[Vertex] iControlDependenceGraph = {};
 	
 	for(method <- controlDependences) {
 		for(key <- domain(method.parameterNodes)
