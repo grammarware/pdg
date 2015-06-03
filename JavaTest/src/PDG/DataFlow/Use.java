@@ -53,4 +53,17 @@ public class Use {
 		arr1[3] = arr1[2]; // 2
 		arr1[4] = 3 + arr1[5]; // 3
 	}
+	
+	int[] globalArray = new int[10];
+
+	public void testUse5() {
+		globalArray[4] = 5;
+		globalArray[5] = globalArray[3];
+	}
+	
+	public void testUse6() {
+		int i = Integer.MAX_VALUE;
+		
+		System.out.println(i + Integer.BYTES);
+	}
 }

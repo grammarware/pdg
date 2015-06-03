@@ -85,27 +85,20 @@ private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCa
 	}
 	
 	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], sameFile(firstCallGraph, origin, call) };
-	set[str] allowedNodes = firstCallGraph.fileMethodsMapping[firstCallGraph.methodFileMapping[origin]];
 	set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});
 
 	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(secondCallGraph, origin, call) };
-	allowedNodes = secondCallGraph.fileMethodsMapping[secondCallGraph.methodFileMapping[origin]];
 	set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
 	
-	if(size(firstReachables) == 1 && size(secondReachables) == 1) {
+	if((firstCalls == secondCalls)
+		|| (size(firstReachables) == 1 && size(secondReachables) == 1)
+		|| (size(firstReachables) == size(secondReachables))
+		) {
 		return false;
 	}
 	
-	if(size(firstReachables) == size(secondReachables)) {
-		return false;
-	}
-	
-	coveredCalls += firstReachables;
-	coveredCalls += secondReachables;
-		
-	if(firstCalls == secondCalls) {
-		return false;
-	}
+	//coveredCalls += firstReachables;
+	//coveredCalls += secondReachables;
 	
 	return true;
 }

@@ -306,7 +306,13 @@ private void processExpression(int identifier, node tree) {
 			checkForUse(identifier, expression);
 		}
 		case n: \fieldAccess(isSuper, name): {
-			throw "Not implemented: <n@src>";
+			str variableName = isSuper ? "super.<name>" : name;
+			node fieldNode = \simpleName(variableName);
+			
+			fieldNode@src = n@src;
+			fieldNode@decl = n@decl;
+			
+			checkForUse(identifier, fieldNode);
 		}
 		// TODO: Check if the right side can also be an expression.
 		case \instanceof(leftSide, rightSide): {

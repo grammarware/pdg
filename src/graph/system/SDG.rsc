@@ -63,11 +63,22 @@ private Graph[str] getGlobalEdges() {
 	Graph[str] globalEdges = {};
 	
 	for(location <- globalLinks) {
-		loc resolvedLocation = resolveM3(location);
-		
-		str globalVertex = "<resolvedLocation.file>:<resolvedLocation.offset>";
-		node globalNode = \simpleName(location.file);
-		globalNode@src = resolvedLocation;
+		loc resolvedLocation;
+		str globalVertex;
+		node globalNode;
+			
+		try {
+			resolvedLocation = resolveM3(location);
+			
+			globalVertex = "<resolvedLocation.file>:<resolvedLocation.offset>";
+			globalNode = \simpleName(location.file);
+			globalNode@src = resolvedLocation;
+		} catch: {
+			globalVertex = "<location.file>:Global";
+			globalNode = \simpleName(location.file);
+			
+			globalNode@src = location(0,0,<0,0>,<0,0>);
+		}
 		globalNode@nodeType = Global();
 		
 		encodedNodeEnvironment[globalVertex] = globalNode;
