@@ -207,4 +207,25 @@ public class Throw {
 			i = 11;
 		}
 	}
+	
+	public void testThrow11() throws Exception {
+	    int i = 0;
+		
+	    if(i > 1) {
+	        throw new NullPointerException();
+	    }
+		
+	    try {
+	        i = i * 2;
+	        throw new NullPointerException();
+	    } catch(NoClassDefFoundError exception) {
+	        i = 10;
+	    } catch(Exception exception) {
+	        i = 12;
+	        throw exception;
+	    } finally {
+	        i = 11;
+	        i = i * 3;
+	    }
+	}
 }
