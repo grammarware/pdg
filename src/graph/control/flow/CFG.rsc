@@ -362,17 +362,24 @@ private ControlFlow process(tryNode: \try(body, catchClauses, finalClause)) {
 	if(!isEmpty(catchExits)) {
 		// No need to make a new one if there is only one needed.
 		ControlFlow altFinalFlow = catchExits != bottomNodes ? process(finalClause) : finalFlow;
+		int processed = 0;
 		
 		// Execute the final block before returning, throwing, breaking, or continuing.
 		for(exit <- catchExits) {
+			processed += 1;
+			
 			for(predecessor <- predecessors(tryFlow.graph, exit)) {
 				tryFlow.graph -= { <predecessor, exit> };
+				
+				tryFlow.graph += altFinalFlow.graph;
 				tryFlow.graph += { <predecessor, altFinalFlow.entryNode> };
 				tryFlow.graph += { <finalExit, exit> | finalExit <- altFinalFlow.exitNodes };
 			}
+			
+			if(processed < size(catchExits)) {
+				altFinalFlow = process(finalClause);
+			}			
 		}
-		
-		tryFlow.graph += altFinalFlow.graph;
 	}
 	
 	if(catchExits != bottomNodes) {
