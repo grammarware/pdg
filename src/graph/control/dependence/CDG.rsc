@@ -46,8 +46,8 @@ public ControlDependence createCDG(MethodData methodData, ControlFlow controlFlo
 	}
 	
 	Graph[int] inspectionEdges = { <from, to> | <from, to> <- augmentedGraph, 
-												from notin reach(postDominator.tree, { to }) - { to } };
-
+												from notin postDominator.dominations[to] };
+												
 	for(<from, to> <- inspectionEdges) {
 		// Immediate dominator (idom)
 		int idom = getOneFrom(predecessors(postDominator.tree, from));
@@ -59,7 +59,7 @@ public ControlDependence createCDG(MethodData methodData, ControlFlow controlFlo
 		}
 	}
 	
-	for(treeNode <- sort(carrier(augmentedGraph)) - { STARTNODE, EXITNODE, ENTRYNODE }) {
+	for(treeNode <- carrier(augmentedGraph) - { STARTNODE, EXITNODE, ENTRYNODE }) {
 		if(treeNode > 0 && resolveIdentifier(methodData, treeNode)@nodeType == Parameter()) {
 			controlDependence.graph += { <methodData.parameterNodes[treeNode], treeNode> };
 			continue;
