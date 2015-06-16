@@ -63,11 +63,10 @@ public PostDominator createPDT(MethodData methodData, ControlFlow controlFlow) {
 	
 	for(treeNode <- carrier(reversedTree)) {
 		set[int] exclusiveReach = reachX(reversedTree, top(reversedTree), { treeNode });
-		set[int] domination = nodes - { treeNode } - exclusiveReach;
+		dominations[treeNode] = nodes - { treeNode } - exclusiveReach;
 		
-		for(dominatedNode <- domination) {
+		for(dominatedNode <- dominations[treeNode]) {
 			dominators[dominatedNode] += { treeNode };
-			dominations[treeNode] = domination;
 		}
 	}
 	

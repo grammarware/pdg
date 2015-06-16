@@ -126,23 +126,31 @@ private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
 	// The condition is an exit node on false.
 	ifElseFlow.exitNodes += {identifier};
 	
-	ControlFlow thenFlow = process(thenBranch);
 	set[int] addedExitNodes = {};
+	
+	ControlFlow thenFlow = process(thenBranch);
+	bool hasIfBranch = false;
 	
 	if(thenFlow != EmptyCF()) {
 		ifElseFlow.graph += thenFlow.graph + createConnectionEdges(ifElseFlow, thenFlow);
 		addedExitNodes += thenFlow.exitNodes;
+		
+		hasIfBranch = true;
 	}
 	
 	ControlFlow elseFlow = process(elseBranch);	
+	bool hasElseBranch = false;
 	
 	if(elseFlow != EmptyCF()) {
 		ifElseFlow.graph += elseFlow.graph + createConnectionEdges(ifElseFlow, elseFlow);
 		addedExitNodes += elseFlow.exitNodes;
+		
+		hasElseBranch = true;
 	}
 	
-	if(!isEmpty(addedExitNodes)) {
-		ifElseFlow.exitNodes += addedExitNodes;
+	ifElseFlow.exitNodes += addedExitNodes;
+	
+	if(hasIfBranch && hasElseBranch) {
 		ifElseFlow.exitNodes -= {identifier};
 	}
 	

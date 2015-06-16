@@ -137,4 +137,36 @@ public class If {
 		
 		i = 9; // 9
 	}
+	
+	public void testIf6(){
+		int i = 0; // 0
+		
+		if(i > 0) { // 1
+			i = 3; // 2
+		} else {
+		}
+		
+		i = 5; // 4
+	}
+	
+	public void testIf7(){
+		int i = 0; // 0
+		
+		if(i > 0) { // 1
+		} else {
+			i = 4; // 3
+		}
+		
+		i = 5; // 4
+	}
+	
+	public void testIf8(){
+		int i = 0; // 0
+		
+		if(i > 0) { // 1
+		} else {
+		}
+		
+		i = 5; // 4
+	}
 }

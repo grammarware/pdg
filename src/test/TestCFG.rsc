@@ -25,7 +25,7 @@ public loc getMethodLocation(str methodName, M3 projectModel) {
 public Graph[int] getMethodCFG(loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	GeneratedData generatedData = createCFG(cast(#Declaration, methodAST));
+	GeneratedData generatedData = createCFG(projectModel, cast(#Declaration, methodAST));
 	
 	return generatedData.controlFlow.graph;
 }
@@ -33,7 +33,7 @@ public Graph[int] getMethodCFG(loc methodLocation) {
 private ControlFlow getMethodCF(loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	return createCFG(cast(#Declaration, methodAST)).controlFlow;
+	return createCFG(projectModel, cast(#Declaration, methodAST)).controlFlow;
 }
 
 test bool testIf() {

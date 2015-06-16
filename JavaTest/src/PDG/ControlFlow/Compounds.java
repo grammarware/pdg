@@ -55,4 +55,26 @@ public class Compounds {
 			}
 		}
 	}
+	
+	public int testCompound3(){ // Expands to 18 for return.
+		int i = 3; // 0
+		int j = 4; // 1
+		
+		switch(i+1) { // 2
+			case 4: { // 3
+				if(j == 4) { // 4
+					return 4; // 5. Expands to 6 too.
+				}
+				else {
+				}
+			}
+			case 5: { // 11
+				return 5; // 12. Expands to 13 too.
+			}
+			default: { // 14 
+				i++; // 15
+				return 6; // 16. Expands to 17 too.
+			}
+		}
+	}
 }

@@ -26,7 +26,7 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 	loc methodLocation = getMethodLocation(methodName, projectModel);
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, true);
+	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, File());
 	
 	list[Edge] edges = [];
 	list[Figure] boxes = [];

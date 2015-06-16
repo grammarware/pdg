@@ -27,7 +27,7 @@ private loc getMethodLocation(str methodName, M3 projectModel) {
 private Graph[int] getMethodCDG(loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 	
-	GeneratedData generatedData = createCFG(cast(#Declaration, methodAST));
+	GeneratedData generatedData = createCFG(projectModel, cast(#Declaration, methodAST));
 	PostDominator postDominator = createPDT(generatedData.methodData, generatedData.controlFlow);
 	ControlDependence controlDependence = createCDG(generatedData.methodData, generatedData.controlFlow, postDominator);
 	

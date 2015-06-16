@@ -60,4 +60,19 @@ public class Return {
 		
 		return; // 5
 	}
+	
+	public int testReturn3(){
+		int i = 2; // 0
+		
+		if(i == 2) { // 1
+			return i; // 2
+		}
+		else {
+			i += 5; // 3
+		}
+		
+		i = 4; // 4
+		
+		return i; // 5
+	}
 }

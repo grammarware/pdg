@@ -228,4 +228,20 @@ public class Throw {
 	        i = i * 3;
 	    }
 	}
+	
+	public void testThrow12() throws Exception {
+		int i = 10;
+		
+		if(i == 5) {
+			if(i == 2) {
+				throw new NullPointerException();
+			}
+			
+			try {
+				i = 2;
+			} catch(Exception ex) {
+				i = 5;
+			}
+		}
+	}
 }

@@ -48,4 +48,19 @@ public class For {
 		
 		m = 4; // 3
 	}
+	
+	public void testFor3(){
+		int m = 2; // 0
+		
+		for(int i = 0; i <= m; i++) { // 1
+			if(m == 2) {
+				continue;
+			}
+			
+			m = 3; // 2
+			m = 4; // 3
+		}
+		
+		m = 4; // 4
+	}
 }
