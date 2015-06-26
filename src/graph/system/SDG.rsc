@@ -70,7 +70,7 @@ private Graph[Vertex] getGlobalEdges() {
 		try {
 			resolvedLocation = resolveM3(location);
 			
-			globalVertex = Vertex(resolvedLocation.file, "<resolvedLocation.offset>", -1);
+			globalVertex = Vertex(resolvedLocation.file, "Global", -1);
 			globalNode = \simpleName(location.file);
 			globalNode@src = resolvedLocation;
 		} catch: {

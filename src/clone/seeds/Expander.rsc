@@ -1,19 +1,16 @@
-module fancy::CloneDetector
+module clone::seeds::Expander
 
 import Prelude;
-import analysis::m3::Registry;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
+import analysis::m3::AST;
+import analysis::m3::Registry;
 
-import graph::call::CallGraph;
+import clone::flow::Creator;
+import clone::DataStructures;
 import graph::DataStructures;
 import graph::factory::GraphFactory;
-import fancy::DataStructures;
-import fancy::Seeder;
-import fancy::Flow;
-import fancy::Matcher;
-import fancy::CloneVisualizer;
-import extractors::Project;
+
 
 private int processed = 1;
 
@@ -40,9 +37,7 @@ public CandidatePairs expandDomain(CandidatePairs candidates) {
 	return { <expandCandidate(first), second> | <first, second> <- candidates };
 }
 
-public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {
-	println("[Info] To be processed: <size(seeds)>.");
-	
+public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {	
 	unregisterProject(projects.first.location);
 	unregisterProject(projects.second.location);
 	
@@ -59,31 +54,4 @@ public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {
 	unregisterProject(projects.second.location);
 	
 	return candidatePairs;
-}
-
-public void findClones(str firstProjectName, str secondProjectName) {
-	loc projectLocation = createProjectLoc(firstProjectName);
-	ProjectData firstProject = ProjectData(projectLocation, createM3(projectLocation));
-	
-	projectLocation = createProjectLoc(secondProjectName);
-	ProjectData secondProject = ProjectData(projectLocation, createM3(projectLocation));
-	
-	Projects projects = <firstProject, secondProject>;
-	println("Got M3 models.");
-	
-	datetime before = now();
-	
-	Seeds seeds = generateSeeds(projects);
-	println("Got the seeds.");
-
-	CandidatePairs candidates = expandSeeds(projects, seeds);
-	println("Expanded the seeds.");
-	
-	candidates = findMatches(candidates);
-	println("Found matches.");
-	
-	Duration after = createDuration(before, now());
-	println("Time: <after.hours> hour(s), <after.minutes> minute(s), <after.seconds> second(s)");
-	
-	visualizeCloneCandidates(candidates);
 }

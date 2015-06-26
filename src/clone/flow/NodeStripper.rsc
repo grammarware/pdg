@@ -1,4 +1,4 @@
-module fancy::NodeStripper
+module clone::flow::NodeStripper
 
 import Prelude;
 import analysis::m3::AST;
@@ -10,11 +10,7 @@ import lang::java::m3::TypeSymbol;
 
 
 public str stripNode(node \node) {
-	try return process(\node);
-	catch: { 
-		println("Cant strip <\node>");
-		return "screwed node";
-	}
+	return process(\node);
 }
 public map[str, str] stripEnvironment(map[str, node] environment) {
 	return ( key : process(environment[key]) | key <- environment);
@@ -102,7 +98,7 @@ private str process(Statement statement) {
 		case \return(expression):
 			return "return <process(expression)>";
 		case \switch(expression, statements): 
-			return "switch <process(expression@typ)>";
+			return "switch <process(expression)>";
 		case \synchronizedStatement(Expression lock, Statement body):
 			return "synchronizedStatement <process(lock)>";
 		case \throw(expression):

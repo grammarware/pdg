@@ -1,0 +1,36 @@
+rascal>findClones("junit-r4.9", "junit-r4.10");
+Got M3 models.
+Got the seeds.
+[Info] To be processed: 13.
+[Project 1]: 
+  [1]: |java+method:///org/junit/rules/ErrorCollector/checkThat(T,org.hamcrest.Matcher)|.
+  [2]: |java+method:///org/junit/tests/experimental/categories/CategoriesAndParameterizedTest/shouldSucceedWithAParameterizedClassSomewhere()|.
+  [3]: |java+method:///org/junit/runners/ParentRunner/getDescription()|.
+  [4]: |java+method:///org/junit/runners/BlockJUnit4ClassRunner/validateZeroArgConstructor(java.util.List)|.
+  [5]: |java+constructor:///junit/framework/AssertionFailedError/AssertionFailedError(java.lang.String)|.
+  [6]: |java+method:///org/junit/internal/runners/statements/FailOnTimeout/evaluate()|.
+  [7]: |java+method:///org/junit/rules/TemporaryFolder/create()|.
+  [8]: |java+method:///org/junit/experimental/theories/internal/AllMembersSupplier/addSinglePointMethods(org.junit.experimental.theories.ParameterSignature,java.util.List)|.
+  [9]: |java+method:///org/junit/rules/TemporaryFolder/newFile(java.lang.String)|.
+  [10]: |java+method:///org/junit/tests/experimental/rules/VerifierRuleTest/verifierRunsAfterTest()|.
+  [11]: |java+method:///org/junit/tests/experimental/rules/VerifierRuleTest/UsesErrorCollectorCheckThat/example()|.
+  [12]: |java+method:///org/junit/runners/BlockJUnit4ClassRunner/collectInitializationErrors(java.util.List)|.
+  [13]: |java+method:///org/junit/tests/experimental/rules/TempFolderRuleTest/CreatesSubFolder/testUsingTempFolder()|.
+[Project 2]: 
+  [1]: |java+constructor:///junit/framework/AssertionFailedError/AssertionFailedError(java.lang.String)|.
+  [2]: |java+method:///org/junit/runners/BlockJUnit4ClassRunner/validateZeroArgConstructor(java.util.List)|.
+  [3]: |java+method:///org/junit/rules/TemporaryFolder/newFile(java.lang.String)|.
+  [4]: |java+method:///org/junit/experimental/theories/internal/AllMembersSupplier/addSinglePointMethods(org.junit.experimental.theories.ParameterSignature,java.util.List)|.
+  [5]: |java+method:///org/junit/tests/experimental/categories/CategoriesAndParameterizedTest/shouldSucceedWithAParameterizedClassSomewhere()|.
+  [6]: |java+method:///org/junit/runners/ParentRunner/getDescription()|.
+  [7]: |java+method:///org/junit/internal/runners/statements/FailOnTimeout/evaluate()|.
+  [8]: |java+method:///org/junit/tests/experimental/rules/VerifierRuleTest/UsesErrorCollectorCheckThat/example()|.
+  [9]: |java+method:///org/junit/runners/BlockJUnit4ClassRunner/collectInitializationErrors(java.util.List)|.
+  [10]: |java+method:///org/junit/rules/ErrorCollector/checkThat(T,org.hamcrest.Matcher)|.
+  [11]: |java+method:///org/junit/tests/experimental/rules/VerifierRuleTest/verifierRunsAfterTest()|.
+  [12]: |java+method:///org/junit/rules/TemporaryFolder/create()|.
+  [13]: |java+method:///org/junit/tests/experimental/rules/TempFolderRuleTest/CreatesSubFolder/testUsingTempFolder()|.
+Expanded the seeds.
+Found matches.
+Time: 0 hour(s), 0 minute(s), 4 second(s)
+ok

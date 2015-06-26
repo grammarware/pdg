@@ -1,31 +1,23 @@
-module fancy::Seeder
+module clone::seeds::Seeder
 
 import Prelude;
-import lang::java::m3::AST;
-import lang::java::m3::Core;
-import lang::java::jdt::m3::Core;
-import analysis::m3::Registry;
 import analysis::graphs::Graph;
 
-import fancy::Matcher;
-import fancy::DataStructures;
-import extractors::Project;
+import clone::seeds::Config;
+import clone::DataStructures;
+
 import graph::DataStructures;
 import graph::call::CallGraph;
 import graph::factory::GraphFactory;
 
-private set[str] coveredCalls = {};
 
 public Seeds generateSeeds(Projects projects) {
 	CallGraph firstCallGraph = createCG(projects.first.model, projects.first.location);
 	CallGraph secondCallGraph = createCG(projects.second.model, projects.second.location);
 	
-	coveredCalls = {};
 	Seeds seeds = {};
 	
-	int seedAmount = 1;
-	
-	for(method <- firstCallGraph.methodCalls, method notin coveredCalls) {
+	for(method <- firstCallGraph.methodCalls) {
 		if(method notin secondCallGraph.methodCalls) {
 			continue;
 		}
@@ -43,15 +35,18 @@ public Seeds generateSeeds(Projects projects) {
 			Candidate secondCandidate = Candidate(EmptySD(projects.second.model, secondLoc), <{}, {}>, (), {});
 			
 			seeds += <firstCandidate, secondCandidate>;
-			seedAmount += 1;
 		}
 	}
 	
 	return seeds;
 }
 
-private bool sameFile(CallGraph callGraph, str file, str method) {
-	return callGraph.methodFileMapping[file] == callGraph.methodFileMapping[method];
+private bool inScope(CallGraph callGraph, str file, str method) {
+	if(SCOPE_FILTER) {
+		return callGraph.methodFileMapping[file] == callGraph.methodFileMapping[method];
+	}
+	
+	return true;
 }
 
 private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str] history) {
@@ -62,7 +57,7 @@ private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str]
 	set[str] reachables = {};
 	
 	for(base <- baseNodes, call <- callGraph.methodCalls[base], call notin history, call != base) {
-		if(sameFile(callGraph, base, call)) {
+		if(inScope(callGraph, base, call)) {
 			reachables += { call };
 		}
 	}
@@ -70,35 +65,23 @@ private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str]
 	return baseNodes + reachables + getReachables(callGraph, reachables, history + baseNodes);
 }
 
-private bool isExcludedFile(str fileName) {
-	switch(fileName) {
-		// Parser files are usually automatically generated.
-		case /Parser/: return true;
-	}
-	
-	return false;
-}
-
 private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
-	if(isExcludedFile(firstCallGraph.methodFileMapping[origin])) {
+	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], inScope(firstCallGraph, origin, call) };
+	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], inScope(secondCallGraph, origin, call) };
+	
+	if(firstCalls == secondCalls) {
 		return false;
 	}
 	
-	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], sameFile(firstCallGraph, origin, call) };
-	set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});
-
-	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], sameFile(secondCallGraph, origin, call) };
-	set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
-	
-	if((firstCalls == secondCalls)
-		|| (size(firstReachables) == 1 && size(secondReachables) == 1)
-		|| (size(firstReachables) == size(secondReachables))
-		) {
-		return false;
+	if(REACH_FILTER) {
+		set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});
+		set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
+		
+		if(size(firstReachables) == 1 && size(secondReachables) == 1
+			|| size(firstReachables) == size(secondReachables)) {
+			return false;
+		}
 	}
-	
-	//coveredCalls += firstReachables;
-	//coveredCalls += secondReachables;
 	
 	return true;
 }

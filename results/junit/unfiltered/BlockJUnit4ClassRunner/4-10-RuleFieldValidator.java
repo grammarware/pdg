@@ -1,0 +1,1 @@
++ RULE_VALIDATOR(Rule.class, false);

@@ -1,10 +1,10 @@
-module fancy::Matcher
+module clone::flow::Matcher
 
 import Prelude;
 import analysis::graphs::Graph;
 
-import fancy::NodeStripper;
-import fancy::DataStructures;
+import clone::flow::NodeStripper;
+import clone::DataStructures;
 import graph::DataStructures;
 
 
@@ -76,33 +76,6 @@ private CandidatePair matchDataFlows(CandidatePair candidatePair) {
 	return <firstCandidate, secondCandidate>;
 }
 
-private CandidatePair matchFlows(CandidatePair candidatePair) {
-	return matchControlFlows(matchDataFlows(candidatePair));
-}
-
-private int lineSpan(Candidate candidate) {
-	int span = 0;
-	
-	for(lineNumbers <- range(candidate.highlights)) {
-		span += size(lineNumbers);
-	}
-	
-	return span;
-}
-
-private bool isFiltered(CandidatePair pair) {	
-	if((lineSpan(pair.first) < 4 && lineSpan(pair.second) < 4)
-		|| (size(pair.first.methodSpan) == 1 && size(pair.second.methodSpan) == 1)
-		|| (size(pair.first.methodSpan) == size(pair.second.methodSpan))) {
-		return true;
-	}
-	
-	return false;
-}
-
 public CandidatePairs findMatches(CandidatePairs candidates) {
-	return { pair 
-			| pair <- { matchFlows(pair) | pair <- candidates }
-			, !isFiltered(pair)
-			};
+	return { matchControlFlows(matchDataFlows(pair)) | pair <- candidates };
 }

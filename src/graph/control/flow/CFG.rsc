@@ -430,7 +430,7 @@ private ControlFlow process(breakNode: \break()) {
 }
 
 private ControlFlow process(breakNode: \break(expression)) {
-	list[ControlFlow] callSites = expression == "" ? [] : registerMethodCalls(expression);
+	list[ControlFlow] callSites = registerMethodCalls(breakNode);
 	int identifier = storeNode(breakNode);
 	
 	addBreakNode(identifier);
@@ -446,7 +446,7 @@ private ControlFlow process(continueNode: \continue()) {
 }
 
 private ControlFlow process(continueNode: \continue(expression)) {
-	list[ControlFlow] callSites = registerMethodCalls(expression);
+	list[ControlFlow] callSites = registerMethodCalls(continueNode);
 	int identifier = storeNode(continueNode);
 	
 	addContinueNode(identifier);
@@ -462,7 +462,7 @@ private ControlFlow process(returnNode: \return()) {
 }
 
 private ControlFlow process(returnNode: \return(expression)) {
-	list[ControlFlow] callSites = registerMethodCalls(expression);
+	list[ControlFlow] callSites = registerMethodCalls(returnNode);
 	int identifier = storeNode(returnNode);
 	
 	ControlFlow returnFlow = ControlFlow({}, identifier, {identifier});

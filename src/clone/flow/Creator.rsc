@@ -1,12 +1,11 @@
-module fancy::Flow
+module clone::flow::Creator
 
 import Prelude;
 import lang::java::m3::AST;
-import analysis::m3::Registry;
 import analysis::graphs::Graph;
 
 import graph::DataStructures;
-import fancy::DataStructures;
+import clone::DataStructures;
 
 private map[Vertex, set[Vertex]] successorMap = ();
 
@@ -17,47 +16,11 @@ public set[Flow] flowForward(map[Vertex, node] environment, Graph[Vertex] graph,
 				, successor in environment 
 					? flow.lineNumbers + environment[successor]@src.begin.line 
 					: flow.lineNumbers
-				, flow.methodSpan + successor.method
+				, flow.methodSpan + "<successor.file>:<successor.method>"
 			) 
 			| successor <- successorMap[flow.target]
 			, successor notin flow.intermediates
 			};
-}
-
-public bool isIntermediate(map[Vertex, node] environment, Vertex vertex) {
-	if(vertex notin environment 
-		|| (environment[vertex]@nodeType != Normal() && environment[vertex]@nodeType != Global())) {
-		return true;
-	}
-	
-	switch(environment[vertex]) {
-		case m: \methodCall(_, _, _): {
-			try return m@src.file == "<m@decl.parent.file>.java";
-			catch: return false;
-		}
-    	case m: \methodCall(_, _, _, _): {
-    		try return m@src.file == "<m@decl.parent.file>.java";
-			catch: return false;
-    	}
-    	case \do(_, _):
-    		return true;
-    	case \foreach(_, _, _):
-    		return true;
-    	case \for(_, _, _, _):
-    		return true;
-    	case \for(_, _, _):
-    		return true;
-    	case \if(_, _):
-    		return true;
-    	case \if(_, _, _):
-    		return true;
-		case \switch(_, _):
-			return true;
-		case \while(_, _):
-			return true;
-	}
-	
-	return false;
 }
 
 public set[Flow] expand(map[Vertex, node] environment, Graph[Vertex] graph, set[Flow] flows) {
@@ -94,17 +57,20 @@ private void calculateSuccessors(Graph[Vertex] graph, set[Vertex] environmentDom
 	}
 }
 
-public set[Flow] frontier(map[Vertex, node] environment, Graph[Vertex] graph, set[Vertex] startNodes) {
-	rel[Vertex, Vertex] seeds = ({} | it + { <startNode, nextNode> | nextNode <- successorMap[startNode] } | startNode <- startNodes );
-	//seeds = ( seeds | it + { <startNode, startNode> } | startNode <- startNodes, startNode notin seeds );
+private set[Flow] frontier(map[Vertex, node] environment, Graph[Vertex] graph, set[Vertex] startNodes) {
+	rel[Vertex, Vertex] seeds = ({} 
+			| it + { <startNode, nextNode> 
+			| nextNode <- successorMap[startNode] } | startNode <- startNodes 
+		);
 	
 	return expand(environment, graph, 
-				{ Flow(root, {}, nextNode, { environment[root]@src.begin.line }, { root.method, nextNode.method } ) |
-					<root, nextNode> <- seeds
+				{ Flow(root, {}, nextNode, { environment[root]@src.begin.line } 
+						, { "<root.file>:<root.method>", "<nextNode.file>:<nextNode.method>" } ) 
+					| <root, nextNode> <- seeds
 					, root in environment
-					, environment[root]@nodeType == Normal()
-					|| environment[root]@nodeType == Global()
-				});
+					, environment[root]@nodeType == Normal() || environment[root]@nodeType == Global()
+				}
+			);
 }
 
 public set[Flow] createDataFs(SystemDependence systemDependence) {

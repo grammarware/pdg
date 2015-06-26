@@ -1,4 +1,4 @@
-module fancy::CloneVisualizer
+module clone::processing::Visualizer
 
 import Prelude;
 import vis::Figure;
@@ -6,7 +6,7 @@ import vis::Render;
 import vis::KeySym;
 import util::Editors;
 
-import fancy::DataStructures;
+import clone::DataStructures;
 
 
 public list[LineDecoration] getLineDecorations(set[int] lineNumbers) {
@@ -44,6 +44,9 @@ public list[Figure] increaseIdentifier() {
 public void visualizeCloneCandidates(CandidatePairs candidates) {
 	identifier = 0;
 	
-	list[Figure] boxes = ([] | it + createBoxes(first.highlights) + createBoxes(second.highlights) + increaseIdentifier() | <first, second> <- candidates );
+	list[Figure] boxes = ([] 
+			| it + createBoxes(first.highlights) + createBoxes(second.highlights) + increaseIdentifier() 
+			| <first, second> <- candidates 
+		);
 	render(graph(boxes, [], hint("layered"), gap(50)));
 }

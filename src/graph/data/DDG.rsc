@@ -229,12 +229,10 @@ private void processExpression(int identifier, node tree) {
 			checkForUse(identifier, index);
 			
 			if(\simpleName(name) := array) {
-				if(\simpleName(_) := index) {
-					storeUse(identifier, "<name>[variable]");
-				}
-				
 				if(\number(numberValue) := index) {
 					storeUse(identifier, "<name>[<numberValue>]");
+				} else {
+					storeUse(identifier, "<name>[variable]");
 				}
 			}
 		}
@@ -261,15 +259,13 @@ private void processExpression(int identifier, node tree) {
 				checkForUse(identifier, lhs);
 			}
 			
-			if(\arrayAccess(\simpleName(name), index) := lhs) {
-				if(\simpleName(_) := index) {
-					storeDefinition("<name>[variable]", identifier);
-					storeGenerator(identifier, "<name>[variable]");
-				}
-				
+			if(\arrayAccess(\simpleName(name), index) := lhs) {				
 				if(\number(numberValue) := index) {
 					storeDefinition("<name>[<numberValue>]", identifier);
 					storeGenerator(identifier, "<name>[<numberValue>]");
+				} else {
+					storeDefinition("<name>[variable]", identifier);
+					storeGenerator(identifier, "<name>[variable]");
 				}
 			}
 		}
