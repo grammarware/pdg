@@ -31,8 +31,8 @@ public Seeds generateSeeds(Projects projects) {
 		loc secondLoc = secondCallGraph.locations[method];
 		
 		if(isEligible(method, firstCallGraph, secondCallGraph)) {
-			Candidate firstCandidate = Candidate(EmptySD(projects.first.model, firstLoc), <{}, {}>, (), {});
-			Candidate secondCandidate = Candidate(EmptySD(projects.second.model, secondLoc), <{}, {}>, (), {});
+			Candidate firstCandidate = Candidate(|file://placeholder|, EmptySD(projects.first.model, firstLoc), <{}, {}>, (), {});
+			Candidate secondCandidate = Candidate(|file://placeholder|, EmptySD(projects.second.model, secondLoc), <{}, {}>, (), {});
 			
 			seeds += <firstCandidate, secondCandidate>;
 		}

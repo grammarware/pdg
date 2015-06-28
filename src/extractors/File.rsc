@@ -59,7 +59,5 @@ public list[str] getMethodLines(loc methodLocation) {
 }
 
 public list[str] getLines(loc lineLoc) {
-	//loc reconstruct = toLocation(lineLoc.uri)(lineLoc.offset, lineLoc.length,
-	//								<lineLoc.begin.line, 0>, <lineLoc.end.line, lineLoc.end.column>);
 	return readFileLines(lineLoc);
 }

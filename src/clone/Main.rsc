@@ -16,35 +16,10 @@ import clone::flow::Matcher;
 import clone::detection::Categorizer;
 import clone::utility::ConsoleLogger;
 import clone::processing::Visualizer;
+import clone::processing::LogWriter;
 
 
-public void findClones(str firstProjectName, str secondProjectName) {
-	loc projectLocation = createProjectLoc(firstProjectName);
-	ProjectData firstProject = ProjectData(projectLocation, createM3(projectLocation));
-	
-	projectLocation = createProjectLoc(secondProjectName);
-	ProjectData secondProject = ProjectData(projectLocation, createM3(projectLocation));
-	
-	Projects projects = <firstProject, secondProject>;
-	logInfo("Got M3 models.");
-	
-	datetime before = now();
-	
-	Seeds seeds = generateSeeds(projects);
-	logInfo("Got the seeds.");
-	logInfo("To be processed: <size(seeds)>.");
-
-	CandidatePairs candidates = expandSeeds(projects, seeds);
-	logInfo("Expanded the seeds.");
-	
-	candidates = findMatches(candidates);
-	logInfo("Found matches.");
-	
-	Duration after = createDuration(before, now());
-	logInfo("Time: <after.hours> hour(s), <after.minutes> minute(s), <after.seconds> second(s)");
-	
-	CloneData clones = categorizeClones(candidates);
-	
+private void clonesToConsole(CloneData clones) {
 	logInfo("Refactored clones:");
 	for(c <- clones.refactored) {
 		println("\t[First]: <c.first.methodSpan>");
@@ -74,6 +49,39 @@ public void findClones(str firstProjectName, str secondProjectName) {
 		println("\t[First]: <c.first.methodSpan>");
 		println("\t[Second]: <c.second.methodSpan>");
 	}
+}
+
+public void findClones(str baseName, str firstProjectName, str secondProjectName) {
+	loc projectLocation = createProjectLoc(firstProjectName);
+	ProjectData firstProject = ProjectData(projectLocation, createM3(projectLocation));
+	
+	projectLocation = createProjectLoc(secondProjectName);
+	ProjectData secondProject = ProjectData(projectLocation, createM3(projectLocation));
+	
+	Projects projects = <firstProject, secondProject>;
+	logInfo("Got M3 models.");
+	
+	datetime before = now();
+	
+	Seeds seeds = generateSeeds(projects);
+	logInfo("Got the seeds.");
+	logInfo("To be processed: <size(seeds)>.");
+
+	CandidatePairs candidates = expandSeeds(projects, seeds);
+	logInfo("Expanded the seeds.");
+	
+	candidates = findMatches(candidates);
+	logInfo("Found matches.");
+	
+	Duration after = createDuration(before, now());
+	logInfo("Time: <after.hours> hour(s), <after.minutes> minute(s), <after.seconds> second(s)");
+	
+	CloneData clones = categorizeClones(candidates);
+	clonesToConsole(clones);
+	
+	loc logLocation = |project://pdg-master/results| + "[<printDateTime(now(), "yyyy-MM-dd_HH.mm.ss")>] <baseName>";
+	mkDirectory(logLocation);
+	logClones(logLocation, projects, clones);
 	
 	visualizeCloneCandidates(clones.refactored);
 }

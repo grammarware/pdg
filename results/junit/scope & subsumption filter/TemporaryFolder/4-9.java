@@ -1,7 +1,0 @@
-+ private File folder;
-
-public File newFile(String fileName) throws IOException {
-+	File file= new File(folder, fileName);
-+	file.createNewFile();
-	return file;
-}

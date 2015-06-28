@@ -15,9 +15,13 @@ alias Projects = tuple[ProjectData first, ProjectData second];
 alias Highlights = map[loc file, set[int] lineNumbers];
 alias Flows = tuple[set[Flow] control, set[Flow] \data];
 
-data Candidate = Candidate(SystemDependence systemDependence, Flows flows, Highlights highlights, set[str] methodSpan);
+data Candidate = Candidate(loc seed, SystemDependence systemDependence, Flows flows, Highlights highlights, set[str] methodSpan);
 alias CandidatePair = tuple[Candidate first, Candidate second];
 alias CandidatePairs = set[CandidatePair];
+
+data CloneData = CloneData(CandidatePairs refactored, CandidatePairs interprocedural,
+							CandidatePairs nonInterprocedural, CandidatePairs small,
+							CandidatePairs not);
 
 public bool isIntermediate(map[Vertex, node] environment, Vertex vertex) {
 	if(vertex notin environment 

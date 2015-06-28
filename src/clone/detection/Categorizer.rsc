@@ -6,10 +6,6 @@ import clone::DataStructures;
 
 
 private int SIZE_THRESHOLD = 4;
-
-data CloneData = CloneData(CandidatePairs refactored, CandidatePairs interprocedural,
-							CandidatePairs nonInterprocedural, CandidatePairs small,
-							CandidatePairs not);
 							
 private bool containsClones(CandidatePair pair) {
 	return !isEmpty(pair.first.highlights) || !isEmpty(pair.second.highlights);

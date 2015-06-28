@@ -63,22 +63,10 @@ private Graph[Vertex] getGlobalEdges() {
 	Graph[Vertex] globalEdges = {};
 	
 	for(location <- globalLinks) {
-		loc resolvedLocation;
-		Vertex globalVertex;
-		node globalNode;
+		Vertex globalVertex = Vertex(location.file, "Global", -1);
+		node globalNode = \simpleName(location.file);
 			
-		try {
-			resolvedLocation = resolveM3(location);
-			
-			globalVertex = Vertex(resolvedLocation.file, "Global", -1);
-			globalNode = \simpleName(location.file);
-			globalNode@src = resolvedLocation;
-		} catch: {
-			globalVertex = Vertex(location.file, "Global", -1);
-			globalNode = \simpleName(location.file);
-			
-			globalNode@src = location(0,0,<0,0>,<0,0>);
-		}
+		globalNode@src = location(0,0,<0,0>,<0,0>);
 		globalNode@nodeType = Global();
 		
 		encodedNodeEnvironment[globalVertex] = globalNode;

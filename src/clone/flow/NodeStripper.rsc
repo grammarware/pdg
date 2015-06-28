@@ -12,197 +12,285 @@ import lang::java::m3::TypeSymbol;
 public str stripNode(node \node) {
 	return process(\node);
 }
+
 public map[str, str] stripEnvironment(map[str, node] environment) {
 	return ( key : process(environment[key]) | key <- environment);
 }
 
 private str process(Declaration declaration) {
 	switch(declaration) {
-		case \compilationUnit(list[Declaration] imports, list[Declaration] types):
+		case \compilationUnit(list[Declaration] imports, list[Declaration] types): {
 			return "compilationUnit";
-    	case \compilationUnit(Declaration package, list[Declaration] imports, list[Declaration] types):
+		}
+    	case \compilationUnit(Declaration package, list[Declaration] imports, list[Declaration] types): {
     		return "compilationUnit <process(package)>";
-    	case \enum(str name, list[Type] implements, list[Declaration] constants, list[Declaration] body):
+    	}
+    	case \enum(str name, list[Type] implements, list[Declaration] constants, list[Declaration] body): {
     		return "enum <name>";
-    	case \enumConstant(str name, list[Expression] arguments, Declaration class):
+    	}
+    	case \enumConstant(str name, list[Expression] arguments, Declaration class): {
     		return "enumConstant-class <name>";
-    	case \enumConstant(str name, list[Expression] arguments):
+    	}
+    	case \enumConstant(str name, list[Expression] arguments): {
     		return "enumConstant <name>";
-    	case \class(str name, list[Type] extends, list[Type] implements, list[Declaration] body):
+    	}
+    	case \class(str name, list[Type] extends, list[Type] implements, list[Declaration] body): {
     		return "class-extends-implements";
-    	case \class(list[Declaration] body):
+    	}
+    	case \class(list[Declaration] body): {
     		return "class";
-    	case \interface(str name, list[Type] extends, list[Type] implements, list[Declaration] body):
+    	}
+    	case \interface(str name, list[Type] extends, list[Type] implements, list[Declaration] body): {
     		return "interface";
-    	case \field(Type \type, list[Expression] fragments):
+    	}
+    	case \field(Type \type, list[Expression] fragments): {
     		return "field <process(\type)>";
-    	case \initializer(Statement initializerBody):
+    	}
+    	case \initializer(Statement initializerBody): {
     		return "initializer";
-    	case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):
+    	}
+    	case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): {
     		return "method-impl <process(\return)>";
-    	case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions):
+    	}
+    	case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions): {
     		return "method <process(\return)>";
-    	case \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):
+    	}
+    	case \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): {
     		return "constructor";
-    	case \import(str name):
+    	}
+    	case \import(str name): {
     		return "import";
-    	case \package(str name):
+    	}
+    	case \package(str name): {
     		return "package";
-    	case \package(Declaration parentPackage, str name):
+    	}
+    	case \package(Declaration parentPackage, str name): {
     		return "package-parent";
-    	case \variables(Type \type, list[Expression] \fragments):
+    	}
+    	case \variables(Type \type, list[Expression] \fragments): {
     		return "variables <process(\type)>";
-    	case \typeParameter(str name, list[Type] extendsList):
+    	}
+    	case \typeParameter(str name, list[Type] extendsList): {
     		return "typeParameter <name>";
-    	case \annotationType(str name, list[Declaration] body):
+    	}
+    	case \annotationType(str name, list[Declaration] body): {
     		return "annotationType <name>";
-    	case \annotationTypeMember(Type \type, str name):
+    	}
+    	case \annotationTypeMember(Type \type, str name): {
     		return "annotationTypeMember <process(\type)>";
-    	case \annotationTypeMember(Type \type, str name, Expression defaultBlock):
+    	}
+    	case \annotationTypeMember(Type \type, str name, Expression defaultBlock): {
     		return "annotationTypeMember-default <process(\type)>";
-    	case \parameter(Type \type, str name, int extraDimensions):
+    	}
+    	case \parameter(Type \type, str name, int extraDimensions): {
     		return "parameter <process(\type)>";
-    	case \vararg(Type \type, str name):
+    	}
+    	case \vararg(Type \type, str name): {
     		return "vararg <process(\type)>";
+    	}
 	}
 }
 
 private str process(Statement statement) {
 	switch(statement) {
-		case \assert(expression): 
+		case \assert(expression): {
 			return "assert";
-		case \assert(expression, message):
+		}
+		case \assert(expression, message): {
 			return "assert-message";
-		case \break():
+		}
+		case \break(): {
 			return "break";
-		case \break(Expression expression):
+		}
+		case \break(expression): {
 			return "break " + process(expression);
-		case \continue():
+		}
+		case \continue(): {
 			return "continue";
-		case \continue(expression):
+		}
+		case \continue(expression): {
 			return "continue " + process(expression);
-		case \do(body, condition):
+		}
+		case \do(body, condition): {
 			return "do";
-		case \for(initializers, updaters, body):
+		}
+		case \for(initializers, updaters, body): {
 			return "for";
-		case \for(initializers, condition, updaters, body):
+		}
+		case \for(initializers, condition, updaters, body): {
 			return "for-condition";
-		case \if(condition, thenBranch):
+		}
+		case \if(condition, thenBranch): {
 			return "if";
-		case \if(condition, thenBranch, elseBranch):
+		}
+		case \if(condition, thenBranch, elseBranch): {
 			return "if-else";
-		case \label(str name, Statement body):
+		}
+		case \label(str name, Statement body): {
 			return "label <name>";
-		case \return():
+		}
+		case \return(): {
 			return "return";
-		case \return(expression):
+		}
+		case \return(expression): {
 			return "return <process(expression)>";
-		case \switch(expression, statements): 
+		}
+		case \switch(expression, statements): {
 			return "switch <process(expression)>";
-		case \synchronizedStatement(Expression lock, Statement body):
+		}
+		case \synchronizedStatement(Expression lock, Statement body): {
 			return "synchronizedStatement <process(lock)>";
-		case \throw(expression):
-			return "throw <process(expression@typ)>";
-		case \try(body, catchClauses):
+		}
+		case \throw(expression): {
+			return "throw <process(expression)>";
+		}
+		case \try(body, catchClauses): {
 			return "try-catch";
-		case \try(body, catchClauses, finalClause):
+		}
+		case \try(body, catchClauses, finalClause): {
 			return "try-catch-final";
-		case \catch(exception, body):
+		}
+		case \catch(exception, body): {
 			return "catch";
-		case \declarationStatement(Declaration declaration):
+		}
+		case \declarationStatement(Declaration declaration): {
 			return "declarationStatement <process(declaration)>";
-		case \while(Expression condition, Statement body):
+		}
+		case \while(Expression condition, Statement body): {
 			return "while";
-		case \expressionStatement(stat):
+		}
+		case \expressionStatement(stat): {
 			return "expressionStatement <process(stat)>";
-		case \constructorCall(bool isSuper, Expression expr, list[Expression] arguments):
-			return "constructorCall <expr@typ>";
-    	case \constructorCall(bool isSuper, list[Expression] arguments):
+		}
+		case \constructorCall(bool isSuper, Expression expression, list[Expression] arguments): {
+			return "constructorCall <process(expression)>";
+		}
+    	case \constructorCall(bool isSuper, list[Expression] arguments): {
     		return "constructorCall";
-		default:
+    	}
+		default: {
 			return "statement";
+		}
 	}
 }
 
 private str process(Expression expr) {
 	switch(expr) {
-		case \arrayAccess(Expression array, Expression index):
+		case \arrayAccess(Expression array, Expression index): {
 			return "access <process(array)>";
-    	case \newArray(Type \type, list[Expression] dimensions, Expression init):
+		}
+    	case \newArray(Type \type, list[Expression] dimensions, Expression init): {
     		return "newArray-init <process(\type)>";
-    	case \newArray(Type \type, list[Expression] dimensions):
+    	}
+    	case \newArray(Type \type, list[Expression] dimensions): {
     		return "newArray <process(\type)>";
-    	case \arrayInitializer(list[Expression] elements):
+    	}
+    	case \arrayInitializer(list[Expression] elements): {
     		return "arrayInitializer";
-    	case \assignment(Expression lhs, str operator, Expression rhs):
-    		return "assignment <process(lhs@typ)> <operator> <process(rhs@typ)>";
-    	case \cast(Type \type, Expression expression):
+    	}
+    	case \assignment(Expression lhs, str operator, Expression rhs): {
+    		return "assignment <process(lhs)> <operator> <process(rhs@typ)>";
+    	}
+    	case \cast(Type \type, Expression expression): {
     		return "cast <process(\type)>";
-    	case \characterLiteral(str charValue):
+    	}
+    	case \characterLiteral(str charValue): {
     		return "characterLiteral";
-    	case \newObject(Expression expr, Type \type, list[Expression] args, Declaration class):
+    	}
+    	case \newObject(Expression expr, Type \type, list[Expression] args, Declaration class): {
     		return "newObject <process(\type)>";
-    	case \newObject(Expression expr, Type \type, list[Expression] args):
+    	}
+    	case \newObject(Expression expr, Type \type, list[Expression] args): {
     		return "newObject <process(\type)>";
-    	case \newObject(Type \type, list[Expression] args, Declaration class):
+    	}
+    	case \newObject(Type \type, list[Expression] args, Declaration class): {
     		return "newObject <process(\type)>";
-    	case \newObject(Type \type, list[Expression] args):
+    	}
+    	case \newObject(Type \type, list[Expression] args): {
     		return "newObject <process(\type)>";
-    	case \qualifiedName(Expression qualifier, Expression expression):
+    	}
+    	case \qualifiedName(Expression qualifier, Expression expression): {
     		return "qualifiedName";
-    	case \conditional(Expression expression, Expression thenBranch, Expression elseBranch):
+    	}
+    	case \conditional(Expression expression, Expression thenBranch, Expression elseBranch): {
     		return "conditional <process(expression@typ)>";
-    	case \fieldAccess(bool isSuper, Expression expression, str name):
+    	}
+    	case \fieldAccess(bool isSuper, Expression expression, str name): {
     		return "fieldAccess <process(expression@typ)>";
-    	case \fieldAccess(bool isSuper, str name):
+    	}
+    	case \fieldAccess(bool isSuper, str name): {
     		return "fieldAccess";
-    	case \instanceof(Expression leftSide, Type rightSide):
+    	}
+    	case \instanceof(Expression leftSide, Type rightSide): {
     		return "instanceof <process(rightSide)>";
-    	case \methodCall(bool isSuper, str name, list[Expression] arguments):
-    		return "methodCall";
-    	case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments):
-    		return "methodCall <process(receiver)>";
-    	case \null():
+    	}
+    	case \methodCall(bool isSuper, str name, list[Expression] arguments): {
+    		return "methodCall" + ("" | it + " " + process(argument@typ) | argument <- arguments);
+    	}
+    	case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments): {
+    		return "<process(receiver)> methodCall" + ("" | it + " " + process(argument@typ) | argument <- arguments);
+    	}
+    	case \null(): {
     		return "null";
-    	case \number(str numberValue):
+    	}
+    	case \number(str numberValue): {
     		return "number";
-    	case \booleanLiteral(bool boolValue):
+    	}
+    	case \booleanLiteral(bool boolValue): {
     		return "boolean";
-    	case \stringLiteral(str stringValue):
+    	}
+    	case \stringLiteral(str stringValue): {
     		return "string";
-    	case \type(Type \type):
+    	}
+    	case \type(Type \type): {
     		return "type <process(\type)>";
-    	case \variable(str name, int extraDimensions):
+    	}
+    	case \variable(str name, int extraDimensions): {
     		return "variable";
-    	case \variable(str name, int extraDimensions, Expression \initializer):
+    	}
+    	case \variable(str name, int extraDimensions, Expression \initializer): {
     		return "variable-init";
-    	case \bracket(Expression expression):
+    	}
+    	case \bracket(Expression expression): {
     		return "bracket <process(expression@typ)>";
-    	case \this():
+    	}
+    	case \this(): {
     		return "this";
-    	case \this(Expression thisExpression):
+    	}
+    	case \this(Expression thisExpression): {
     		return "this <process(thisExpression@typ)>";
-    	case \super():
+    	}
+    	case \super(): {
     		return "super";
-    	case \declarationExpression(Declaration decl):
+    	}
+    	case \declarationExpression(Declaration decl): {
     		return "declarationExpression <process(decl)>";
-    	case \infix(Expression lhs, str operator, Expression rhs):
+    	}
+    	case \infix(Expression lhs, str operator, Expression rhs): {
     		try return "infix <process(lhs@typ)> <operator> <process(rhs@typ)>";
     		catch: return "infix <process(lhs)> <operator> <process(rhs)>";
-    	case \postfix(Expression operand, str operator):
+    	}
+    	case \postfix(Expression operand, str operator): {
     		return "postfix <process(operand@typ)> <operator>";
-    	case \prefix(str operator, Expression operand):
+    	}
+    	case \prefix(str operator, Expression operand): {
     		return "prefix <operator> <process(operand@typ)>";
-   		case \simpleName(str name):
+    	}
+   		case \simpleName(str name): {
    			return "simpleName";
-    	case \markerAnnotation(str typeName):
+   		}
+    	case \markerAnnotation(str typeName): {
     		return "markerAnnotation <typeName>";
-    	case \normalAnnotation(str typeName, list[Expression] memberValuePairs):
+    	}
+    	case \normalAnnotation(str typeName, list[Expression] memberValuePairs): {
     		return "normalAnnotation <typeName>";
-    	case \memberValuePair(str name, Expression \value):
-    		return "memberValuePair <process(\value@typ)>";       
-    	case \singleMemberAnnotation(str typeName, Expression \value):
+    	}
+    	case \memberValuePair(str name, Expression \value): {
+    		return "memberValuePair <process(\value@typ)>";  
+    	}     
+    	case \singleMemberAnnotation(str typeName, Expression \value): {
     		return "singleMemberAnnotation <typeName>";
+    	}
 		default: {
 			return "expression";
 		}
@@ -220,7 +308,7 @@ private str process(Type typ) {
     	case simpleType(Expression name):
     		return "simpleType";
     	case unionType(list[Type] types):
-    		return "unionType <("" | "<it> <process(t)>" | t <- types)>";
+    		return "unionType" + ("" | it + " " + process(t) | t <- types);
     	case wildcard():
     		return "wildcard";
     	case upperbound(Type \type):

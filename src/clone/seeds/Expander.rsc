@@ -23,10 +23,11 @@ public Candidate expandCandidate(Candidate candidate) {
 	println("  [<processed>]: <candidate.systemDependence.location>.");
 	processed += 1;
 	
-	systemDependence = getSystemDependence(candidate.systemDependence.model, candidate.systemDependence.location);
+	loc seedLocation = candidate.systemDependence.location;
+	systemDependence = getSystemDependence(candidate.systemDependence.model, seedLocation);
 	Flows flows = <createControlFs(systemDependence), createDataFs(systemDependence)>;
 	
-	return Candidate(systemDependence, flows, (), {});
+	return Candidate(seedLocation, systemDependence, flows, (), {});
 }
 
 public CandidatePairs expandRange(CandidatePairs candidates) {
@@ -38,20 +39,13 @@ public CandidatePairs expandDomain(CandidatePairs candidates) {
 }
 
 public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {	
-	unregisterProject(projects.first.location);
-	unregisterProject(projects.second.location);
-	
 	processed = 1;
 	println("[Project 1]: ");
-	registerProject(projects.first.location, projects.first.model);
 	CandidatePairs candidatePairs = expandDomain(seeds);
-	unregisterProject(projects.first.location);
 	
 	processed = 1;
 	println("[Project 2]: ");
-	registerProject(projects.second.location, projects.second.model);
 	candidatePairs = expandRange(candidatePairs);
-	unregisterProject(projects.second.location);
 	
 	return candidatePairs;
 }

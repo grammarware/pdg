@@ -1,6 +1,6 @@
 module extractors::Project
 
-import IO;
+import Prelude;
 
 import analysis::m3::Registry;
 import lang::java::m3::Core;
@@ -101,6 +101,16 @@ public set[loc] getM3Methods(M3 project) {
 }
 public set[loc] getM3Files(M3 project) {
 	return files(project);
+}
+
+public loc resolveLocation(loc unresolved, M3 project) {
+	set[loc] declarations = project@declarations[unresolved];
+	
+	if(size(declarations) > 1) {
+		throw "Too many declarations for <unresolved>";
+	}
+	
+	return getOneFrom(declarations);
 }
 
  
