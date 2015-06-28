@@ -2,9 +2,10 @@ module graph::system::SDG
 
 import Prelude;
 import lang::java::m3::AST;
-import analysis::m3::Registry;
 import analysis::graphs::Graph;
+import lang::java::jdt::m3::Core;
 
+import extractors::Project;
 import graph::DataStructures;
 import graph::\data::GlobalData;
 
@@ -58,7 +59,7 @@ private bool isParameterVariable(str variable) {
 	return /\$.*/ := variable;
 }
 
-private Graph[Vertex] getGlobalEdges() {
+private Graph[Vertex] getGlobalEdges(M3 projectModel) {
 	map[loc, rel[MethodData, int]] globalLinks = getGlobalLinks();
 	Graph[Vertex] globalEdges = {};
 	
@@ -66,7 +67,7 @@ private Graph[Vertex] getGlobalEdges() {
 		Vertex globalVertex = Vertex(location.file, "Global", -1);
 		node globalNode = \simpleName(location.file);
 			
-		globalNode@src = location(0,0,<0,0>,<0,0>);
+		globalNode@src = resolveLocation(location, projectModel);
 		globalNode@nodeType = Global();
 		
 		encodedNodeEnvironment[globalVertex] = globalNode;
@@ -79,7 +80,7 @@ private Graph[Vertex] getGlobalEdges() {
 	return globalEdges;
 }
 
-public SystemDependence createSDG(ControlDependences controlDependences, DataDependences dataDependences) {
+public SystemDependence createSDG(M3 projectModel, ControlDependences controlDependences, DataDependences dataDependences) {
 	encodedNodeEnvironment = ();
 	map[str, set[Vertex]] allDefinitions = ();
 	
@@ -122,7 +123,7 @@ public SystemDependence createSDG(ControlDependences controlDependences, DataDep
 	systemDependence.controlDependence = controlDependenceGraph;
 	systemDependence.iControlDependence = iControlDependenceGraph;
 	systemDependence.dataDependence = dataDependenceGraph;
-	systemDependence.globalDataDependence = getGlobalEdges();
+	systemDependence.globalDataDependence = getGlobalEdges(projectModel);
 	systemDependence.iDataDependence = iDataDependenceGraph;
 	systemDependence.nodeEnvironment = encodedNodeEnvironment;
 	

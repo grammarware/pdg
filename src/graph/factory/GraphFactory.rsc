@@ -129,5 +129,5 @@ public SystemDependence createSystemDependence(loc methodLocation, node abstract
 	ControlDependences controlDependences = createControlDependences(methodLocation, abstractTree, projectModel, scope);
 	DataDependences dataDependences = createDataDependences(methodLocation, abstractTree, projectModel, scope);
 	
-	return createSDG(controlDependences, dataDependences);
+	return createSDG(projectModel, controlDependences, dataDependences);
 }

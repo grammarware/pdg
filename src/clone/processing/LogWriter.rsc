@@ -21,15 +21,31 @@ private loc getMethodLocation(str methodName, str fileName, M3 projectModel) {
 	throw "Method \"<methodName>\" does not exist.";
 }
 
-private void writeString(loc location, ProjectData project, set[str] methodSpan) {
+private list[str] addHighlights(int startLine, list[str] code, set[int] highlights) {
+	highlights = { highlight - startLine | highlight <- highlights };
+	
+	list[str] alteredCode = [];
+	int identifier = 0;
+	
+	for(codeLine <- code) {
+		alteredCode += identifier in highlights ? "+" + codeLine : codeLine;
+		identifier += 1;
+	}
+	
+	return alteredCode;
+}
+
+private void writeString(loc location, ProjectData project, Candidate candidate) {
 	map[str, list[str]] writeString = ();
 	
-	for(method <- methodSpan, /<fileName:.*>.java:<methodName:.*>/ := method) {
+	for(method <- candidate.methodSpan, /<fileName:.*>.java:<methodName:.*>/ := method) {
 		try {
 			loc methodLocation = getMethodLocation(methodName, fileName, project.model);
 			methodLocation = resolveLocation(methodLocation, project.model);
 			
-			writeString[fileName] += getLines(methodLocation);
+			list[str] methodCode = getLines(methodLocation);
+			set[int] methodHighlights = candidate.highlights[methodLocation(0,0,<0,0>,<0,0>)];
+			writeString[fileName] += addHighlights(methodLocation.begin.line, methodCode, methodHighlights);
 		} catch error: {
 			println(error);
 		}
@@ -48,8 +64,8 @@ private void writeClones(loc baseLocation, str directory, Projects projects, Can
 		loc storageLocation = directoryLocation + first.seed.file;
 		mkDirectory(storageLocation);
 		
-		writeString(storageLocation, projects.first, first.methodSpan);
-		writeString(storageLocation, projects.second, second.methodSpan);
+		writeString(storageLocation, projects.first, first);
+		writeString(storageLocation, projects.second, second);
 	}
 }
 

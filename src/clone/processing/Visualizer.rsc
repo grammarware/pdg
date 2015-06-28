@@ -48,5 +48,6 @@ public void visualizeCloneCandidates(CandidatePairs candidates) {
 			| it + createBoxes(first.highlights) + createBoxes(second.highlights) + increaseIdentifier() 
 			| <first, second> <- candidates 
 		);
+		
 	render(graph(boxes, [], hint("layered"), gap(50)));
 }

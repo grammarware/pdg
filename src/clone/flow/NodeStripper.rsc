@@ -102,14 +102,14 @@ private str process(Statement statement) {
 		case \break(): {
 			return "break";
 		}
-		case \break(expression): {
-			return "break " + process(expression);
+		case \break(str label): {
+			return "break <label>";
 		}
 		case \continue(): {
 			return "continue";
 		}
-		case \continue(expression): {
-			return "continue " + process(expression);
+		case \continue(str label): {
+			return "continue <label>";
 		}
 		case \do(body, condition): {
 			return "do";
@@ -225,10 +225,10 @@ private str process(Expression expr) {
     		return "instanceof <process(rightSide)>";
     	}
     	case \methodCall(bool isSuper, str name, list[Expression] arguments): {
-    		return "methodCall" + ("" | it + " " + process(argument@typ) | argument <- arguments);
+    		return "methodCall";
     	}
     	case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments): {
-    		return "<process(receiver)> methodCall" + ("" | it + " " + process(argument@typ) | argument <- arguments);
+    		return "<process(receiver)> methodCall";
     	}
     	case \null(): {
     		return "null";
