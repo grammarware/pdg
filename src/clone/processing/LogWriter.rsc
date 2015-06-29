@@ -10,15 +10,18 @@ import extractors::File;
 import clone::DataStructures;
 
 
-private loc getMethodLocation(str methodName, str fileName, M3 projectModel) {
+private loc getResolvedMethodLocation(str methodName, str fileName, M3 projectModel) {
 	for(method <- getM3Methods(projectModel)) {
-		if(method.file == methodName
-			&& method.parent.file == fileName) {
-			return method;
+		if(method.file == methodName) {
+			loc resolvedMethod = resolveLocation(method, projectModel);
+			
+			if(resolvedMethod.file == fileName) {
+				return resolvedMethod;
+			}
 		}
 	}
 	
-	throw "Method \"<methodName>\" does not exist.";
+	throw "Method \"<methodName>\" in file \"<fileName>\" does not exist.";
 }
 
 private list[str] addHighlights(int startLine, list[str] code, set[int] highlights) {
@@ -38,10 +41,9 @@ private list[str] addHighlights(int startLine, list[str] code, set[int] highligh
 private void writeString(loc location, ProjectData project, Candidate candidate) {
 	map[str, list[str]] writeString = ();
 	
-	for(method <- candidate.methodSpan, /<fileName:.*>.java:<methodName:.*>/ := method) {
+	for(method <- candidate.methodSpan, /<fileName:.*java>:<methodName:.*>/ := method) {
 		try {
-			loc methodLocation = getMethodLocation(methodName, fileName, project.model);
-			methodLocation = resolveLocation(methodLocation, project.model);
+			loc methodLocation = getResolvedMethodLocation(methodName, fileName, project.model);
 			
 			list[str] methodCode = getLines(methodLocation);
 			set[int] methodHighlights = candidate.highlights[methodLocation(0,0,<0,0>,<0,0>)];
