@@ -110,6 +110,10 @@ public loc resolveLocation(loc unresolved, M3 project) {
 		throw "Too many declarations for <unresolved>";
 	}
 	
+	if(isEmpty(declarations)) {
+		throw "No declarations for <unresolved>";
+	}
+	
 	return getOneFrom(declarations);
 }
 

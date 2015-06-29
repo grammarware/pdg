@@ -11,36 +11,43 @@ import extractors::Project;
 import graph::DataStructures;
 
 
-private str getVertexName(loc location) {
-	return "<location.parent.file>:<location.file>";
+private CallVertex getVertex(loc location) {
+	return CallVertex(location, location.parent.file, location.file, "<location.parent.file>:<location.file>");
 }
 
 public CallGraph createCG(M3 projectModel, loc projectLocation) {
-	Graph[str] callGraph = {};
+	Graph[CallVertex] callGraph = {};
 	set[loc] projectMethods = getM3Methods(projectModel);
 	
-	map[str, str] methodFileMapping = ();
-	map[str, set[str]] fileMethodsMapping = ();
+	map[MethodName, FileName] methodFileMapping = ();
+	map[FileName, set[MethodName]] fileMethodsMapping = ();
 	
-	map[str, set[str]] methodCalls = ();
-	map[str, loc] locations = ();
+	map[CallVertex, set[CallVertex]] methodCalls = ();
+	map[MethodName, set[CallVertex]] locations = ();
 	
-	for(method <- projectMethods) {
-		methodCalls[getVertexName(method)] = {};
-		locations[getVertexName(method)] = method;
+	for(methodLocation <- projectMethods) {
+		CallVertex callVertex = getVertex(methodLocation);
 		
-		if(method.parent.file in fileMethodsMapping) {
-			fileMethodsMapping[method.parent.file] += { getVertexName(method) };
+		methodCalls[callVertex] = {};
+		
+		if(callVertex.identifier in locations) {
+			locations[callVertex.identifier ] += { callVertex };
 		} else {
-			fileMethodsMapping[method.parent.file] += {};
+			locations[callVertex.identifier] = { callVertex };
 		}
 		
-		methodFileMapping[getVertexName(method)] = method.parent.file;
+		if(callVertex.file in fileMethodsMapping) {
+			fileMethodsMapping[callVertex.file] += { callVertex.method };
+		} else {
+			fileMethodsMapping[callVertex.file] = { callVertex.method };
+		}
+		
+		methodFileMapping[callVertex.identifier] = callVertex.file;
 	}
 	
 	for(<caller, callee> <- projectModel@methodInvocation, caller in projectMethods, callee in projectMethods) {
-		str methodVertex = getVertexName(caller);
-		str calledVertex = getVertexName(callee);
+		CallVertex methodVertex = getVertex(caller);
+		CallVertex calledVertex = getVertex(callee);
 			
 		callGraph += { <methodVertex, calledVertex> };
 		methodCalls[methodVertex] += { calledVertex };

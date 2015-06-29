@@ -66,8 +66,13 @@ private Graph[Vertex] getGlobalEdges(M3 projectModel) {
 	for(location <- globalLinks) {
 		Vertex globalVertex = Vertex(location.file, "Global", -1);
 		node globalNode = \simpleName(location.file);
-			
-		globalNode@src = resolveLocation(location, projectModel);
+		
+		try {
+			globalNode@src = resolveLocation(location, projectModel);
+		} catch: {
+			globalNode@src = location(0, 0, <0, 0>, <0, 0>);
+		}
+		
 		globalNode@nodeType = Global();
 		
 		encodedNodeEnvironment[globalVertex] = globalNode;

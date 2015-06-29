@@ -327,9 +327,10 @@ private void processExpression(int identifier, node tree) {
 		case \bracket(expression): {
 			checkForUse(identifier, expression);
 		}
-		case \this(thisExpression): {
-			throw "Not implemented this(<thisExpression>)";
-		}
+		// TODO: Implement this. Gets triggered on expression such as GUI.this.frame
+		// case \this(thisExpression): {
+		//	throw "Not implemented this(<thisExpression>)";
+		// }
 		case \infix(lhs, _, rhs): {
 			checkForUse(identifier, lhs);
 			checkForUse(identifier, rhs);

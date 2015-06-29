@@ -14,8 +14,14 @@ public int EXITNODE = -1;
 data MethodData = MethodData(str name, node abstractTree, map[int, node] nodeEnvironment, 
 					set[loc] calledMethods, set[int] callSites, map[int, int] parameterNodes); 
 
-data CallGraph = CallGraph(Graph[str] graph, map[str,loc] locations, map[str, set[str]] methodCalls, 
-							map[str, str] methodFileMapping, map[str, set[str]] fileMethodsMapping);
+alias MethodName = str;
+alias FileName = str;
+data CallVertex = CallVertex(loc location, str file, str method, str identifier);
+data CallGraph = CallGraph(Graph[CallVertex] graph
+							, map[MethodName, set[CallVertex]] locations
+							, map[CallVertex, set[CallVertex]] methodCalls
+							, map[MethodName, FileName] methodFileMapping
+							, map[FileName, set[MethodName]] fileMethodsMapping);
 
 data ControlFlow = EmptyCF()
 					| ControlFlow(Graph[int] graph, int entryNode, set[int] exitNodes);

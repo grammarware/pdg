@@ -16,45 +16,44 @@ public Seeds generateSeeds(Projects projects) {
 	CallGraph secondCallGraph = createCG(projects.second.model, projects.second.location);
 	
 	Seeds seeds = {};
+	set[CallVertex] coveredCalls = {};
 	
-	for(method <- firstCallGraph.methodCalls) {
-		if(method notin secondCallGraph.methodCalls) {
+	for(methodCall <- firstCallGraph.methodCalls) {
+		if(methodCall notin secondCallGraph.methodCalls) {
 			continue;
 		}
 		
-		loc firstLoc = firstCallGraph.locations[method];
+		set[CallVertex] firstMethods = firstCallGraph.locations[methodCall.identifier];
 		
-		if(/^\$/ := firstLoc.parent.file) {
-			continue;
-		}
-		
-		loc secondLoc = secondCallGraph.locations[method];
-		
-		if(isEligible(method, firstCallGraph, secondCallGraph)) {
-			Candidate firstCandidate = Candidate(|file://placeholder|, EmptySD(projects.first.model, firstLoc), <{}, {}>, (), {});
-			Candidate secondCandidate = Candidate(|file://placeholder|, EmptySD(projects.second.model, secondLoc), <{}, {}>, (), {});
-			
-			seeds += <firstCandidate, secondCandidate>;
+		for(callVertex <- firstMethods) {
+			if(isEligible(callVertex, firstCallGraph, secondCallGraph)) {
+				Candidate firstCandidate = Candidate(|unknown:///|
+						, EmptySD(projects.first.model, callVertex.location), <{}, {}>, (), {});
+				Candidate secondCandidate = Candidate(|unknown:///|
+						, EmptySD(projects.second.model, callVertex.location), <{}, {}>, (), {});
+				
+				seeds += <firstCandidate, secondCandidate>;
+			}
 		}
 	}
 	
 	return seeds;
 }
 
-private bool inScope(CallGraph callGraph, str file, str method) {
+private bool inScope(CallGraph callGraph, CallVertex origin, CallVertex called) {
 	if(SCOPE_FILTER) {
-		return callGraph.methodFileMapping[file] == callGraph.methodFileMapping[method];
+		return callGraph.methodFileMapping[origin.identifier] == callGraph.methodFileMapping[called.identifier];
 	}
 	
 	return true;
 }
 
-private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str] history) {
+private set[CallVertex] getReachables(CallGraph callGraph, set[CallVertex] baseNodes, set[CallVertex] history) {
 	if(isEmpty(baseNodes)) {
 		return {};
 	}
 	
-	set[str] reachables = {};
+	set[CallVertex] reachables = {};
 	
 	for(base <- baseNodes, call <- callGraph.methodCalls[base], call notin history, call != base) {
 		if(inScope(callGraph, base, call)) {
@@ -65,17 +64,21 @@ private set[str] getReachables(CallGraph callGraph, set[str] baseNodes, set[str]
 	return baseNodes + reachables + getReachables(callGraph, reachables, history + baseNodes);
 }
 
-private bool isEligible(str origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
-	set[str] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], inScope(firstCallGraph, origin, call) };
-	set[str] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], inScope(secondCallGraph, origin, call) };
+private bool isEligible(CallVertex origin, CallGraph firstCallGraph, CallGraph secondCallGraph) {
+	if(origin notin secondCallGraph.methodCalls) {
+		return false;
+	}
+	
+	set[CallVertex] firstCalls = { call | call <- firstCallGraph.methodCalls[origin], inScope(firstCallGraph, origin, call) };
+	set[CallVertex] secondCalls = { call | call <- secondCallGraph.methodCalls[origin], inScope(secondCallGraph, origin, call) };
 	
 	if(firstCalls == secondCalls) {
 		return false;
 	}
 	
 	if(REACH_FILTER) {
-		set[str] firstReachables = getReachables(firstCallGraph, { origin }, {});
-		set[str] secondReachables = getReachables(secondCallGraph, { origin }, {});
+		set[CallVertex] firstReachables = getReachables(firstCallGraph, { origin }, {});
+		set[CallVertex] secondReachables = getReachables(secondCallGraph, { origin }, {});
 		
 		if(size(firstReachables) == 1 && size(secondReachables) == 1
 			|| size(firstReachables) == size(secondReachables)) {
