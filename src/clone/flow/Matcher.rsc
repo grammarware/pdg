@@ -27,13 +27,13 @@ public Highlights addHighlights(Highlights highlights, map[Vertex, node] environ
 	return highlights;
 }
 
-private Graph mergeDataGraphs(SystemDependence systemDependence) {
+private Graph[Vertex] mergeDataGraphs(SystemDependence systemDependence) {
 	return systemDependence.dataDependence 
 			+ systemDependence.globalDataDependence 
 			+ systemDependence.iDataDependence;
 }
 
-private Graph mergeControlGraphs(SystemDependence systemDependence) {
+private Graph[Vertex] mergeControlGraphs(SystemDependence systemDependence) {
 	return systemDependence.controlDependence 
 			+ systemDependence.iControlDependence;
 }
@@ -46,10 +46,23 @@ private rel[Flow, Flow] getMatch(Flow first, Flow second) {
 		return {};
 	}
 	
-	firstEncountered += { first.root, first.target };
-	secondEncountered += { second.root, second.target };
+	firstEncountered += { first.target };
+	secondEncountered += { second.target };
 	
 	return { <first, second> };
+}
+
+private rel[Flow, Flow] calculateMatchingReach(SystemDependence firstSDG, SystemDependence secondSDG,
+										set[Flow](&A, &B) frontierCalculator, Vertex firstTarget, Vertex secondTarget) {
+	set[Flow] firstFrontier = frontierCalculator(firstSDG, { firstTarget });
+	set[Flow] secondFrontier = frontierCalculator(secondSDG, { secondTarget });
+	
+	return {
+		*getMatch(firstFlow, secondFlow)
+		| firstFlow <- firstFrontier
+		, secondFlow <- secondFrontier
+		, stripNode(firstSDG.nodeEnvironment[firstFlow.target]) == stripNode(secondSDG.nodeEnvironment[secondFlow.target])
+	};
 }
 
 private rel[Flow, Flow] calculateMaximumMatch(SystemDependence firstSDG, SystemDependence secondSDG
@@ -59,43 +72,37 @@ private rel[Flow, Flow] calculateMaximumMatch(SystemDependence firstSDG, SystemD
 		return {};
 	}
 	
-	set[Flow] firstFrontier = frontierCalculator(firstSDG, {flow.target | flow <- domain(matchedFlows)});
-	set[Flow] secondFrontier = frontierCalculator(secondSDG, {flow.target | flow <- range(matchedFlows)});
-	
 	rel[Flow, Flow] newMatches = {
-			*getMatch(firstFlow, secondFlow)
-			| firstFlow <- firstFrontier
-			, secondFlow <- secondFrontier
-			, stripNode(firstSDG.nodeEnvironment[firstFlow.target]) == stripNode(secondSDG.nodeEnvironment[secondFlow.target])
-		};
+		*calculateMatchingReach(firstSDG, secondSDG, frontierCalculator, first.target, second.target)
+		| <first, second> <- matchedFlows
+	};
 		
 	return newMatches + calculateMaximumMatch(firstSDG, secondSDG, frontierCalculator, newMatches);
 }
 
-private CandidatePair matchFlows(CandidatePair candidatePair, Graph(SystemDependence) graphMerger, set[Flow](&A, &B) frontierCalculator) {
+private CandidatePair matchFlows(CandidatePair candidatePair, Graph[Vertex](SystemDependence) graphMerger, set[Flow](&A, &B) frontierCalculator) {
 	firstEncountered = secondEncountered = {};
 	
 	Candidate firstCandidate = candidatePair.first;
 	map[Vertex, node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
-	set[Flow] firstFrontier = frontierCalculator(firstCandidate.systemDependence
-										, top(graphMerger(firstCandidate.systemDependence)));
 	
 	Candidate secondCandidate = candidatePair.second;
 	map[Vertex, node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
-	set[Flow] secondFrontier = frontierCalculator(secondCandidate.systemDependence
-										, top(graphMerger(secondCandidate.systemDependence)));
+	
+	rel[Vertex, Vertex] startVertices = {
+		<first, second>
+		| first <- top(graphMerger(firstCandidate.systemDependence))
+		, second <- top(graphMerger(secondCandidate.systemDependence))
+		, stripNode(firstEnvironment[first]) == stripNode(secondEnvironment[second])
+	};
 	
 	rel[Flow, Flow] initialMatch = {
-			*getMatch(firstFlow, secondFlow)
-			| firstFlow <- firstFrontier
-			, secondFlow <- secondFrontier
-			, stripNode(firstEnvironment[firstFlow.target]) == stripNode(secondEnvironment[secondFlow.target])
-		};
+		*calculateMatchingReach(firstCandidate.systemDependence, secondCandidate.systemDependence, frontierCalculator, first, second)
+		| <first, second> <- startVertices
+	};
 	
 	rel[Flow, Flow] maximumMatch = initialMatch 
-								+ calculateMaximumMatch(firstCandidate.systemDependence
-										, secondCandidate.systemDependence
-										, frontierCalculator, initialMatch);
+								 + calculateMaximumMatch(firstCandidate.systemDependence, secondCandidate.systemDependence, frontierCalculator, initialMatch);
 	
 	for(<firstFlow, secondFlow> <- maximumMatch) {
 		firstCandidate.methodSpan += firstFlow.methodSpan;

@@ -8,6 +8,7 @@ import analysis::m3::Registry;
 
 import clone::flow::Creator;
 import clone::DataStructures;
+import clone::utility::ConsoleLogger;
 import graph::DataStructures;
 import graph::factory::GraphFactory;
 
@@ -20,7 +21,7 @@ public SystemDependence getSystemDependence(M3 projectModel, loc methodLocation)
 }
 
 public Candidate expandCandidate(Candidate candidate) {
-	println("  [<processed>]: <candidate.systemDependence.location>.");
+	logMessage("<processed>", "<candidate.systemDependence.location>", prefix = "    ");
 	
 	loc seedLocation = candidate.systemDependence.location;
 	systemDependence = getSystemDependence(candidate.systemDependence.model, seedLocation);
@@ -39,7 +40,7 @@ public CandidatePair expandCandidatePair(CandidatePair pair) {
 
 public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {	
 	processed = 1;
-	println("[Expanding]: ");
+	logInfo("Expanding the seeds.");
 	
 	return { expandCandidatePair(seed) | seed <- seeds };
 }

@@ -133,16 +133,16 @@ private str process(Statement statement) {
 			return "return";
 		}
 		case \return(expression): {
-			return "return <process(expression)>";
+			return "return <process(expression@typ)>";
 		}
 		case \switch(expression, statements): {
-			return "switch <process(expression)>";
+			return "switch <process(expression@typ)>";
 		}
 		case \synchronizedStatement(Expression lock, Statement body): {
 			return "synchronizedStatement <process(lock)>";
 		}
 		case \throw(expression): {
-			return "throw <process(expression)>";
+			return "throw <process(expression@typ)>";
 		}
 		case \try(body, catchClauses): {
 			return "try-catch";
@@ -154,13 +154,13 @@ private str process(Statement statement) {
 			return "catch";
 		}
 		case \declarationStatement(Declaration declaration): {
-			return "declarationStatement <process(declaration)>";
+			return process(declaration);
 		}
 		case \while(Expression condition, Statement body): {
 			return "while";
 		}
 		case \expressionStatement(stat): {
-			return "expressionStatement <process(stat)>";
+			return process(stat);
 		}
 		case \constructorCall(bool isSuper, Expression expression, list[Expression] arguments): {
 			return "constructorCall <process(expression)>";
@@ -198,37 +198,37 @@ private str process(Expression expr) {
     		return "characterLiteral";
     	}
     	case \newObject(Expression expr, Type \type, list[Expression] args, Declaration class): {
-    		return "newObject <process(\type)>";
+    		return "new <process(\type)>";
     	}
     	case \newObject(Expression expr, Type \type, list[Expression] args): {
-    		return "newObject <process(\type)>";
+    		return "new <process(\type)>";
     	}
     	case \newObject(Type \type, list[Expression] args, Declaration class): {
-    		return "newObject <process(\type)>";
+    		return "new <process(\type)>";
     	}
     	case \newObject(Type \type, list[Expression] args): {
-    		return "newObject <process(\type)>";
+    		return "new <process(\type)>";
     	}
     	case \qualifiedName(Expression qualifier, Expression expression): {
     		return "qualifiedName <process(qualifier)>";
     	}
     	case \conditional(Expression expression, Expression thenBranch, Expression elseBranch): {
-    		return "conditional <process(expression@typ)>";
+    		return "conditional <process(thenBranch)> <process(elseBranch)>";
     	}
     	case \fieldAccess(bool isSuper, Expression expression, str name): {
-    		return "fieldAccess <process(expression@typ)>";
+    		return "fieldAccess <process(expression@typ)> <name>";
     	}
     	case \fieldAccess(bool isSuper, str name): {
-    		return "fieldAccess";
+    		return "fieldAccess <name>";
     	}
     	case \instanceof(Expression leftSide, Type rightSide): {
     		return "instanceof <process(rightSide)>";
     	}
     	case \methodCall(bool isSuper, str name, list[Expression] arguments): {
-    		return "methodCall";
+    		return "methodCall <name>";
     	}
     	case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments): {
-    		return "<process(receiver)> methodCall";
+    		return "methodCall <process(receiver@typ)> <name>";
     	}
     	case \null(): {
     		return "null";
@@ -243,7 +243,7 @@ private str process(Expression expr) {
     		return "string";
     	}
     	case \type(Type \type): {
-    		return "type <process(\type)>";
+    		return process(\type);
     	}
     	case \variable(str name, int extraDimensions): {
     		return "variable";
@@ -258,13 +258,13 @@ private str process(Expression expr) {
     		return "this";
     	}
     	case \this(Expression thisExpression): {
-    		return "this <process(thisExpression@typ)>";
+    		return "this <process(thisExpression)>";
     	}
     	case \super(): {
     		return "super";
     	}
     	case \declarationExpression(Declaration decl): {
-    		return "declarationExpression <process(decl)>";
+    		return process(decl);
     	}
     	case \infix(Expression lhs, str operator, Expression rhs): {
     		try return "infix <process(lhs@typ)> <operator> <process(rhs@typ)>";
@@ -306,7 +306,7 @@ private str process(Type typ) {
     	case qualifiedType(Type qualifier, Expression simpleName):
     		return "qualifiedType <process(qualifier)>";
     	case simpleType(Expression name):
-    		return "simpleType";
+    		return "simpleType <process(name)>";
     	case unionType(list[Type] types):
     		return "unionType" + ("" | it + " " + process(t) | t <- types);
     	case wildcard():

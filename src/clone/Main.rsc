@@ -22,36 +22,38 @@ import clone::processing::LogWriter;
 private void clonesToConsole(CloneData clones) {
 	logInfo("Refactored clones:");
 	for(c <- clones.refactored) {
-		println("\t[First]: <c.first.methodSpan>");
-		println("\t[Second]: <c.second.methodSpan>");
+		logMessage("First", "<c.first.methodSpan>", prefix = "    ");
+		logMessage("Second", "<c.second.methodSpan>", prefix = "    ");
 	}
 	
 	logInfo("Interprocedural clones:");
 	for(c <- clones.interprocedural) {
-		println("\t[First]: <c.first.methodSpan>");
-		println("\t[Second]: <c.second.methodSpan>");
+		logMessage("First", "<c.first.methodSpan>", prefix = "    ");
+		logMessage("Second", "<c.second.methodSpan>", prefix = "    ");
 	}
 	
 	logInfo("Non-Interprocedural clones:");
 	for(c <- clones.nonInterprocedural) {
-		println("\t[First]: <c.first.methodSpan>");
-		println("\t[Second]: <c.second.methodSpan>");
+		logMessage("First", "<c.first.methodSpan>", prefix = "    ");
+		logMessage("Second", "<c.second.methodSpan>", prefix = "    ");
 	}
 	
 	logInfo("Small clones:");
 	for(c <- clones.small) {
-		println("\t[First]: <c.first.methodSpan>");
-		println("\t[Second]: <c.second.methodSpan>");
+		logMessage("First", "<c.first.methodSpan>", prefix = "    ");
+		logMessage("Second", "<c.second.methodSpan>", prefix = "    ");
 	}
 	
 	logInfo("Not clones:");
 	for(c <- clones.not) {
-		println("\t[First]: <c.first.methodSpan>");
-		println("\t[Second]: <c.second.methodSpan>");
+		logMessage("First", "<c.first.methodSpan>", prefix = "    ");
+		logMessage("Second", "<c.second.methodSpan>", prefix = "    ");
 	}
 }
 
 public void findClones(str baseName, str firstProjectName, str secondProjectName) {
+	initializeConsoleLogger();
+	
 	loc projectLocation = createProjectLoc(firstProjectName);
 	ProjectData firstProject = ProjectData(projectLocation, createM3(projectLocation));
 	
@@ -82,6 +84,7 @@ public void findClones(str baseName, str firstProjectName, str secondProjectName
 	loc logLocation = |project://pdg-master/results| + "[<printDateTime(now(), "yyyy-MM-dd_HH.mm.ss")>] - <baseName>";
 	mkDirectory(logLocation);
 	logClones(logLocation, projects, clones);
+	writeConsoleLogToFile(logLocation);
 	
 	visualizeCloneCandidates(clones.refactored);
 }

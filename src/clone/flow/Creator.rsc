@@ -8,8 +8,12 @@ import graph::DataStructures;
 import clone::DataStructures;
 
 
-private str spanIdentifier(Vertex graphNode) {
-	return "<graphNode.file>:<graphNode.method>";
+private set[str] spanIdentifier(Vertex graphNode) {
+	if(graphNode.method == "Global") {
+		return {};
+	}
+	
+	return { "<graphNode.file>:<graphNode.method>" };
 }
 
 private set[Flow] flowForward(map[Vertex, node] environment, Graph[Vertex] graph, Flow flow) {
@@ -54,7 +58,7 @@ private Flow initializeFlow(map[Vertex, node] environment, Vertex root, Vertex n
 				, {}
 				, nextNode
 				, { environment[root]@src.begin.line } 
-				, { spanIdentifier(root), spanIdentifier(nextNode) } 
+				, spanIdentifier(root) + spanIdentifier(nextNode) 
 			);
 }
 
