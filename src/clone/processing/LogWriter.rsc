@@ -54,7 +54,7 @@ private void writeString(loc location, ProjectData project, Candidate candidate)
 	}
 	
 	for(file <- writeString) {
-		writeFile(location + "/<project.location.authority>-<file>.java", intercalate("\n", writeString[file]));
+		writeFile(location + "/<project.location.authority>-<file>", intercalate("\n", writeString[file]));
 	}
 }
 

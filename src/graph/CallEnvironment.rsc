@@ -52,6 +52,24 @@ private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = Cal
 	return callsite;
 }
 
+private ControlFlow createCallSiteFlow(Statement callNode, NodeType nType = CallSite()) {
+	int identifier = storeNode(callNode, nodeType = nType);
+	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
+	
+	// See if the called method is part of the project.
+	if(callNode@decl in projectMethods) {
+		callSites += {identifier};
+		calledMethods += callNode@decl;
+		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);
+	}
+	// It is not part of the project. Handle it differently.
+	else {
+		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);
+	}
+	
+	return callsite;
+}
+
 public list[ControlFlow] registerMethodCalls(node expression) {
 	list[ControlFlow] callsites = [];
 	
@@ -67,6 +85,18 @@ public list[ControlFlow] registerMethodCalls(node expression) {
 				: createCallSiteFlow(callNode);
 		}
     	case callNode: \methodCall(isSuper, receiver, name, arguments): {
+    		callsites += 
+				callNode == expression
+				? createCallSiteFlow(callNode, nType = Normal()) 
+				: createCallSiteFlow(callNode);
+    	}
+    	case callNode: \constructorCall(isSuper, arguments): {
+    		callsites += 
+				callNode == expression
+				? createCallSiteFlow(callNode, nType = Normal()) 
+				: createCallSiteFlow(callNode);
+    	}
+    	case callNode: \constructorCall(isSuper, expr, arguments): {
     		callsites += 
 				callNode == expression
 				? createCallSiteFlow(callNode, nType = Normal()) 

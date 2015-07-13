@@ -20,6 +20,10 @@ private Vertex encodeVertex(Expression methodCall, int vertex) {
 	return Vertex("<methodCall@decl.parent.file>.java", methodCall@decl.file, vertex);
 }
 
+private Vertex encodeVertex(Statement constructorCall, int vertex) {
+	return Vertex("<constructorCall@decl.parent.file>.java", constructorCall@decl.file, vertex);
+}
+
 private map[str, set[Vertex]] encodeDefinitionMap(map[str, set[Vertex]] definitions, MethodData method, DataDependence dataDependence) {
 	for(key <- dataDependence.defs) {
 		for(variableDef <- dataDependence.defs[key]) {
@@ -41,13 +45,8 @@ private Graph[Vertex] encodeGraph(MethodData method, Graph[int] graph) {
 		Vertex encodedFrom = encodeVertex(method, from);
 		Vertex encodedTo = encodeVertex(method, to);
 		
-		if(from >= 0) {
-			encodedNodeEnvironment[encodedFrom] = resolveIdentifier(method, from);
-		}
-		
-		if(to >= 0) {
-			encodedNodeEnvironment[encodedTo] = resolveIdentifier(method, to);
-		}
+		encodedNodeEnvironment[encodedFrom] = resolveIdentifier(method, from);
+		encodedNodeEnvironment[encodedTo] = resolveIdentifier(method, to);
 		
 		encodedGraph += { <encodedFrom, encodedTo> };
 	}
@@ -118,8 +117,9 @@ public SystemDependence createSDG(M3 projectModel, ControlDependences controlDep
 		
 		for(key <- method.callSites
 			, key >= 0
-			, Expression expression := resolveIdentifier(method,key)) {
-			iControlDependenceGraph += { <encodeVertex(method,key), encodeVertex(expression, ENTRYNODE)> };
+			, Expression call := resolveIdentifier(method, key)
+			|| Statement call := resolveIdentifier(method, key)) {
+			iControlDependenceGraph += { <encodeVertex(method, key), encodeVertex(call, ENTRYNODE)> };
 		}
 	}
 	

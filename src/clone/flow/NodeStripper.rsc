@@ -189,7 +189,7 @@ private str process(Expression expr) {
     		return "arrayInitializer";
     	}
     	case \assignment(Expression lhs, str operator, Expression rhs): {
-    		return "assignment <process(lhs)> <operator> <process(rhs@typ)>";
+    		return "assignment <process(lhs@typ)> <operator> <process(rhs@typ)>";
     	}
     	case \cast(Type \type, Expression expression): {
     		return "cast <process(\type)>";
@@ -210,7 +210,7 @@ private str process(Expression expr) {
     		return "newObject <process(\type)>";
     	}
     	case \qualifiedName(Expression qualifier, Expression expression): {
-    		return "qualifiedName";
+    		return "qualifiedName <process(qualifier)>";
     	}
     	case \conditional(Expression expression, Expression thenBranch, Expression elseBranch): {
     		return "conditional <process(expression@typ)>";
@@ -277,7 +277,7 @@ private str process(Expression expr) {
     		return "prefix <operator> <process(operand@typ)>";
     	}
    		case \simpleName(str name): {
-   			return "simpleName";
+   			return "simpleName <name>";
    		}
     	case \markerAnnotation(str typeName): {
     		return "markerAnnotation <typeName>";

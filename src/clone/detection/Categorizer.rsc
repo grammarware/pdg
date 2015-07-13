@@ -23,7 +23,7 @@ private bool isInterprocedural(CandidatePair pair) {
 }
 
 private bool isRefactored(CandidatePair pair) {
-	return size(pair.first.methodSpan) != size(pair.second.methodSpan);
+	return pair.first.methodSpan != pair.second.methodSpan;
 }
 
 public CloneData categorizeClones(CandidatePairs candidates) {

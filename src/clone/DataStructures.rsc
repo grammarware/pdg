@@ -38,6 +38,10 @@ public bool isIntermediate(map[Vertex, node] environment, Vertex vertex) {
     		try return m@src.file == "<m@decl.parent.file>.java";
 			catch: return false;
     	}
+    	case \constructorCall(isSuper, _, _):
+    		return !isSuper;
+    	case \constructorCall(isSuper, _):
+    		return !isSuper;
     	case \do(_, _):
     		return true;
     	case \foreach(_, _, _):

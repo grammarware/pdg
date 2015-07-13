@@ -20,13 +20,36 @@ data GeneratedData = EmptyGD()
 
 private str methodName = "";
 
-public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
-	methodName = methodNode@decl.file;
-	
+private void initializeEnvironments(M3 projectModel) {
 	initializeJumpEnvironment();
 	initializeNodeEnvironment();
 	initializeCallEnvironment(projectModel);
 	initializeTransferEnvironment();
+}
+
+private MethodData createMethodData(node abstractTree) {
+	MethodData methodData = emptyMethodData();
+	
+	methodData.nodeEnvironment = getNodeEnvironment();
+	
+	Statement entryNode = Statement::empty();
+	entryNode@nodeType = Entry();
+	entryNode@src = abstractTree@src(0,0,<0,0>,<0,0>);
+	methodData.nodeEnvironment[ENTRYNODE] = entryNode;
+	
+	methodData.parameterNodes = getTransferNodes();
+	methodData.calledMethods = getCalledMethods();
+	methodData.callSites = getCallSites();
+	methodData.name = methodName;
+	methodData.abstractTree = abstractTree;
+	
+	return methodData;
+}
+
+public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
+	methodName = methodNode@decl.file;
+	
+	initializeEnvironments(projectModel);
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
 	ControlFlow controlFlow;
@@ -43,13 +66,7 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constr
 	
 	controlFlow.exitNodes += getThrowNodes();
 	
-	MethodData methodData = emptyMethodData();
-	methodData.nodeEnvironment = getNodeEnvironment();
-	methodData.parameterNodes = getTransferNodes();
-	methodData.calledMethods = getCalledMethods();
-	methodData.callSites = getCallSites();
-	methodData.name = methodName;
-	methodData.abstractTree = methodNode;
+	MethodData methodData = createMethodData(methodNode);
 	
 	return GeneratedData(methodData, controlFlow);
 }
@@ -57,10 +74,7 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constr
 public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
 	methodName = methodNode@decl.file;
 	
-	initializeJumpEnvironment();
-	initializeNodeEnvironment();
-	initializeCallEnvironment(projectModel);
-	initializeTransferEnvironment();
+	initializeEnvironments(projectModel);
 	
 	list[ControlFlow] parameterFlows = createParameterNodes(parameters, methodName);
 	ControlFlow controlFlow;
@@ -79,13 +93,7 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\method
 	
 	controlFlow.exitNodes += getThrowNodes();
 	
-	MethodData methodData = emptyMethodData();
-	methodData.nodeEnvironment = getNodeEnvironment();
-	methodData.parameterNodes = getTransferNodes();
-	methodData.calledMethods = getCalledMethods();
-	methodData.callSites = getCallSites();
-	methodData.name = methodName;
-	methodData.abstractTree = methodNode;
+	MethodData methodData = createMethodData(methodNode);
 	
 	return GeneratedData(methodData, controlFlow);
 }

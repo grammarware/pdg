@@ -41,7 +41,7 @@ public void displayControlFlowGraph(loc project, str methodName) {
 		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}
 	
-	render(graph(dup(boxes), edges, hint("layered"), gap(50)));
+	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
 
 public void displayControlFlowGraph(loc project, str methodName, str fileName) {

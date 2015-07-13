@@ -21,31 +21,25 @@ public SystemDependence getSystemDependence(M3 projectModel, loc methodLocation)
 
 public Candidate expandCandidate(Candidate candidate) {
 	println("  [<processed>]: <candidate.systemDependence.location>.");
-	processed += 1;
 	
 	loc seedLocation = candidate.systemDependence.location;
 	systemDependence = getSystemDependence(candidate.systemDependence.model, seedLocation);
-	Flows flows = <createControlFs(systemDependence), createDataFs(systemDependence)>;
 	
-	return Candidate(seedLocation, systemDependence, flows, (), {});
+	return Candidate(seedLocation, systemDependence, <{}, {}>, (), {});
 }
 
-public CandidatePairs expandRange(CandidatePairs candidates) {
-	return { <first, expandCandidate(second)> | <first, second> <- candidates };
-}
-
-public CandidatePairs expandDomain(CandidatePairs candidates) {
-	return { <expandCandidate(first), second> | <first, second> <- candidates };
+public CandidatePair expandCandidatePair(CandidatePair pair) {
+	Candidate firstCandidate = expandCandidate(pair.first);
+	Candidate secondCandidate = expandCandidate(pair.second);
+	
+	processed += 1;
+	
+	return <firstCandidate, secondCandidate>;	
 }
 
 public CandidatePairs expandSeeds(Projects projects, Seeds seeds) {	
 	processed = 1;
-	println("[Project 1]: ");
-	CandidatePairs candidatePairs = expandDomain(seeds);
+	println("[Expanding]: ");
 	
-	processed = 1;
-	println("[Project 2]: ");
-	candidatePairs = expandRange(candidatePairs);
-	
-	return candidatePairs;
+	return { expandCandidatePair(seed) | seed <- seeds };
 }

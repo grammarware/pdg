@@ -38,9 +38,7 @@ public void displaySystemDependenceGraph(loc project, str methodName, str fileNa
 private void displaySystemDependenceGraph(M3 projectModel, loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
 		
-	ControlDependences controlDependences = createControlDependences(methodLocation, methodAST, projectModel, File());
-	DataDependences dataDependences = createDataDependences(methodLocation, methodAST, projectModel, File());
-	SystemDependence systemDependence = createSDG(controlDependences, dataDependences);
+	SystemDependence systemDependence = createSystemDependence(methodLocation, methodAST, projectModel, File());
 	
 	list[Edge] edges = createEdges(systemDependence.controlDependence, "solid", "blue")
 		+ createEdges(systemDependence.dataDependence, "dash", "green")
@@ -48,35 +46,35 @@ private void displaySystemDependenceGraph(M3 projectModel, loc methodLocation) {
 		+ createEdges(systemDependence.iDataDependence, "dash", "lime")
 		+ createEdges(systemDependence.globalDataDependence, "dash", "lime");
 	
-	list[Figure] boxes = ([] | it + createSDGBoxes(method) | method <- controlDependences);
-	boxes += createGlobalBoxes(systemDependence.nodeEnvironment, systemDependence.globalDataDependence);
+	set[Vertex] vertices = getVertices(systemDependence);
+	
+	list[Figure] boxes = createSDGBoxes(systemDependence.nodeEnvironment, vertices);
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
 }
 
-public str vertexName(Vertex vertex) {
+private set[Vertex] getVertices(SystemDependence systemDependence) {
+	return carrier(systemDependence.controlDependence)
+		+ carrier(systemDependence.dataDependence)
+		+ carrier(systemDependence.iControlDependence)
+		+ carrier(systemDependence.iDataDependence)
+		+ carrier(systemDependence.globalDataDependence);
+}
+
+public str vertexIdentifier(Vertex vertex) {
 	return "<vertex.file>:<vertex.method>:<vertex.identifier>";
 }
 
 public list[Edge] createEdges(Graph[Vertex] graph, str style, str color) {
-	return [ edge(vertexName(graphEdge.from), vertexName(graphEdge.to), 
+	return [ edge(vertexIdentifier(graphEdge.from), vertexIdentifier(graphEdge.to), 
 					lineStyle(style), lineColor(color), toArrow(box(size(10), 
 					fillColor(color)))) | graphEdge <- graph ];
 }
 
-private str getBoxColor(NodeType nodeType) {
-	switch(nodeType) {
-		case Normal(): return "lightgreen";
-		case CallSite(): return "lightpink";
-		case Parameter(): return "beige";
-		case Global(): return "darkorange";
-	}
-}
-
-public Figures createGlobalBoxes(map[Vertex, node] environment, Graph[Vertex] graph) {
+public Figures createSDGBoxes(map[Vertex, node] environment, set[Vertex] vertices) {
 	return [ box(
-				text("<vertex.file>:<vertex.method>"), 
-				id(vertexName(vertex)), 
+				text("<vertex.method>:<vertex.identifier>"), 
+				id(vertexIdentifier(vertex)), 
 				size(50), 
 				fillColor(getBoxColor(environment[vertex]@nodeType)), 
 				onMouseDown(
@@ -86,30 +84,5 @@ public Figures createGlobalBoxes(map[Vertex, node] environment, Graph[Vertex] gr
 						)
 					)
 				)
-			) | vertex <- domain(graph) ];
-}
-
-public str strip(str name) {
-	if(/^<name:.*>\(/ := name) {
-		return name;
-	}
-	
-	return "";
-}
-
-public Figures createSDGBoxes(MethodData methodData) {
-	return [ box(
-				text("<strip(methodData.name)>:<treeNode>"), 
-				id(vertexName(encodeVertex(methodData, treeNode))), 
-				size(50), 
-				fillColor(getBoxColor(resolveIdentifier(methodData, treeNode)@nodeType)), 
-				onMouseDown(
-					goToSource(
-						getLocation(
-							resolveIdentifier(methodData, treeNode)
-						)
-					)
-				)
-			) | treeNode <- environmentDomain(methodData) ]
-			+ box(text("ENTRY <strip(methodData.name)>"), id(vertexName(encodeVertex(methodData, ENTRYNODE))), size(50), fillColor("lightblue"));
+			) | vertex <- vertices ];
 }

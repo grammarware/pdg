@@ -3,16 +3,11 @@ module clone::flow::Matcher
 import Prelude;
 import analysis::graphs::Graph;
 
+import clone::flow::Creator;
 import clone::flow::NodeStripper;
 import clone::DataStructures;
 import graph::DataStructures;
 
-
-private alias Translations = rel[tuple[str root, str target], Flow];
-
-public Translations translateFlows(map[Vertex, node] environment, set[Flow] flows) {
-	return { < <stripNode(environment[flow.root]), stripNode(environment[flow.target])>, flow > | flow <- flows };
-}
 
 public Highlights addHighlights(Highlights highlights, map[Vertex, node] environment, Flow flow) {	
 	loc file = environment[flow.root]@src;
@@ -32,50 +27,87 @@ public Highlights addHighlights(Highlights highlights, map[Vertex, node] environ
 	return highlights;
 }
 
-private CandidatePair matchControlFlows(CandidatePair candidatePair) {
+private Graph mergeDataGraphs(SystemDependence systemDependence) {
+	return systemDependence.dataDependence 
+			+ systemDependence.globalDataDependence 
+			+ systemDependence.iDataDependence;
+}
+
+private Graph mergeControlGraphs(SystemDependence systemDependence) {
+	return systemDependence.controlDependence 
+			+ systemDependence.iControlDependence;
+}
+
+private set[Vertex] firstEncountered = {};
+private set[Vertex] secondEncountered = {};
+
+private rel[Flow, Flow] getMatch(Flow first, Flow second) {
+	if(first.target in firstEncountered && second.target in secondEncountered) {
+		return {};
+	}
+	
+	firstEncountered += { first.root, first.target };
+	secondEncountered += { second.root, second.target };
+	
+	return { <first, second> };
+}
+
+private rel[Flow, Flow] calculateMaximumMatch(SystemDependence firstSDG, SystemDependence secondSDG
+												, set[Flow](&A, &B) frontierCalculator
+												, rel[Flow, Flow] matchedFlows) {
+	if(isEmpty(matchedFlows)) {
+		return {};
+	}
+	
+	set[Flow] firstFrontier = frontierCalculator(firstSDG, {flow.target | flow <- domain(matchedFlows)});
+	set[Flow] secondFrontier = frontierCalculator(secondSDG, {flow.target | flow <- range(matchedFlows)});
+	
+	rel[Flow, Flow] newMatches = {
+			*getMatch(firstFlow, secondFlow)
+			| firstFlow <- firstFrontier
+			, secondFlow <- secondFrontier
+			, stripNode(firstSDG.nodeEnvironment[firstFlow.target]) == stripNode(secondSDG.nodeEnvironment[secondFlow.target])
+		};
+		
+	return newMatches + calculateMaximumMatch(firstSDG, secondSDG, frontierCalculator, newMatches);
+}
+
+private CandidatePair matchFlows(CandidatePair candidatePair, Graph(SystemDependence) graphMerger, set[Flow](&A, &B) frontierCalculator) {
+	firstEncountered = secondEncountered = {};
+	
 	Candidate firstCandidate = candidatePair.first;
 	map[Vertex, node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
-	Translations firstTranslations = translateFlows(firstEnvironment, firstCandidate.flows.control);
+	set[Flow] firstFrontier = frontierCalculator(firstCandidate.systemDependence
+										, top(graphMerger(firstCandidate.systemDependence)));
 	
 	Candidate secondCandidate = candidatePair.second;
 	map[Vertex, node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
-	Translations secondTranslations = translateFlows(secondEnvironment, secondCandidate.flows.control);
+	set[Flow] secondFrontier = frontierCalculator(secondCandidate.systemDependence
+										, top(graphMerger(secondCandidate.systemDependence)));
 	
-	for(key <- domain(firstTranslations), key in domain(secondTranslations)) {
-		for(firstFlow <- firstTranslations[key], secondFlow <- secondTranslations[key]) {
-			firstCandidate.methodSpan += firstFlow.methodSpan;
-			firstCandidate.highlights = addHighlights(firstCandidate.highlights, firstEnvironment, firstFlow);
+	rel[Flow, Flow] initialMatch = {
+			*getMatch(firstFlow, secondFlow)
+			| firstFlow <- firstFrontier
+			, secondFlow <- secondFrontier
+			, stripNode(firstEnvironment[firstFlow.target]) == stripNode(secondEnvironment[secondFlow.target])
+		};
+	
+	rel[Flow, Flow] maximumMatch = initialMatch 
+								+ calculateMaximumMatch(firstCandidate.systemDependence
+										, secondCandidate.systemDependence
+										, frontierCalculator, initialMatch);
+	
+	for(<firstFlow, secondFlow> <- maximumMatch) {
+		firstCandidate.methodSpan += firstFlow.methodSpan;
+		firstCandidate.highlights = addHighlights(firstCandidate.highlights, firstEnvironment, firstFlow);
 			
-			secondCandidate.methodSpan += secondFlow.methodSpan;
-			secondCandidate.highlights = addHighlights(secondCandidate.highlights, secondEnvironment, secondFlow);
-		}
-	}
-	
-	return <firstCandidate, secondCandidate>;
-}
-
-private CandidatePair matchDataFlows(CandidatePair candidatePair) {
-	Candidate firstCandidate = candidatePair.first;
-	map[Vertex , node] firstEnvironment = firstCandidate.systemDependence.nodeEnvironment;
-	Translations firstTranslations = translateFlows(firstEnvironment, firstCandidate.flows.\data);
-	
-	Candidate secondCandidate = candidatePair.second;
-	map[Vertex , node] secondEnvironment = secondCandidate.systemDependence.nodeEnvironment;
-	Translations secondTranslations = translateFlows(secondEnvironment, secondCandidate.flows.\data);
-	
-	for(key <- domain(firstTranslations), key in domain(secondTranslations)) {
-		for(firstFlow <- firstTranslations[key], secondFlow <- secondTranslations[key]) {
-			firstCandidate.methodSpan += firstFlow.methodSpan;
-			firstCandidate.highlights = addHighlights(firstCandidate.highlights, firstEnvironment, firstFlow);
-			
-			secondCandidate.methodSpan += secondFlow.methodSpan;
-			secondCandidate.highlights = addHighlights(secondCandidate.highlights, secondEnvironment, secondFlow);
-		}
+		secondCandidate.methodSpan += secondFlow.methodSpan;
+		secondCandidate.highlights = addHighlights(secondCandidate.highlights, secondEnvironment, secondFlow);
 	}
 	
 	return <firstCandidate, secondCandidate>;
 }
 
 public CandidatePairs findMatches(CandidatePairs candidates) {
-	return { matchControlFlows(matchDataFlows(pair)) | pair <- candidates };
+	return { matchFlows(matchFlows(pair, mergeDataGraphs, getDataFrontier), mergeControlGraphs, getControlFrontier) | pair <- candidates };
 }

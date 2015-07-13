@@ -48,7 +48,7 @@ data SystemDependence = EmptySD(M3 model, loc location)
 
 data Vertex = Vertex(str file, str method, int identifier);
 
-data NodeType = Normal() | Parameter() | CallSite() | Result() | Global();
+data NodeType = Normal() | Parameter() | CallSite() | Entry() | Global();
 
 anno loc node@decl;
 anno loc node@src;

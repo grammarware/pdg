@@ -41,11 +41,12 @@ public list[Edge] createEdges(str methodName, Graph[int] tree, str style, str co
 					fillColor(color)))) | graphEdge <- tree ];
 }
 
-private str getBoxColor(NodeType nodeType) {
+public str getBoxColor(NodeType nodeType) {
 	switch(nodeType) {
 		case Normal(): return "lightgreen";
 		case CallSite(): return "lightpink";
 		case Parameter(): return "beige";
+		case Entry(): return "lightblue";
 		case Global(): return "darkorange";
 	}
 }
