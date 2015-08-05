@@ -1,4 +1,4 @@
-#Detecting Refactored Clones in Rascal
+#Detecting Refactored Clone with RASCAL
 #### [UvA](http://www.uva.nl/en/home) [Software Engineering Master](http://www.software-engineering-amsterdam.nl/) [Project](http://grammarware.net/edits/#Zhang2014)
 
 ### Contributors:
