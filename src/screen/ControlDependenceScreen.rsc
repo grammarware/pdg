@@ -34,7 +34,6 @@ public void displayControlDependenceGraph(loc project, str methodName) {
 	for(method <- controlDependences) {
 		edges += createEdges(method.name, controlDependences[method].graph, "solid", "blue");
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 	}
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));

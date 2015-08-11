@@ -81,7 +81,7 @@ public void findClones(str baseName, str firstProjectName, str secondProjectName
 	CloneData clones = categorizeClones(candidates);
 	clonesToConsole(clones);
 	
-	loc logLocation = |project://pdg-master/results| + "[<printDateTime(now(), "yyyy-MM-dd_HH.mm.ss")>] - <baseName>";
+	loc logLocation = |project://pdg/results| + "[<printDateTime(now(), "yyyy-MM-dd_HH.mm.ss")>] - <baseName>";
 	mkDirectory(logLocation);
 	logClones(logLocation, projects, clones);
 	writeConsoleLogToFile(logLocation);

@@ -37,7 +37,6 @@ public void displayProgramDependenceGraph(loc project, str methodName) {
 		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
 		
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 	}
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));
@@ -59,7 +58,6 @@ public void displayProgramDependenceGraph(loc project, str methodName, str fileN
 		edges += createEdges(method.name, dataDependences[method].graph, "dash", "green");
 		
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 	}
 	
 	render(graph(boxes, edges, hint("layered"), gap(50)));

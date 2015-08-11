@@ -34,7 +34,6 @@ public void displayPostDominatorTree(loc project, str methodName) {
 	for(method <- postDominators) {
 		edges += createEdges(method.name, postDominators[method].tree, "solid", "blue");
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("START <method.name>"), id("<method.name>:<STARTNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}
@@ -55,7 +54,6 @@ public void displayPostDominatorTree(loc project, str methodName, str fileName) 
 	for(method <- postDominators) {
 		edges += createEdges(method.name, postDominators[method].tree, "solid", "blue");
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("START <method.name>"), id("<method.name>:<STARTNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}

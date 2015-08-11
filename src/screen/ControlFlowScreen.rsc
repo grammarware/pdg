@@ -30,14 +30,13 @@ public void displayControlFlowGraph(loc project, str methodName) {
 		edges += createEdges(method.name, controlFlows[method].graph, "solid", "blue");
 		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<controlFlows[method].entryNode>", 
 						lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
-		
-		for(exitNode <- controlFlows[method].exitNodes) {
-			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
-							lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
-		}
+		edges = (edges 
+				| it + edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
+							lineColor("blue"), toArrow(box(size(10), fillColor("blue")))) 
+				| exitNode <- controlFlows[method].exitNodes
+				);
 		
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}
 	
@@ -59,13 +58,13 @@ public void displayControlFlowGraph(loc project, str methodName, str fileName) {
 		edges += edge("<method.name>:<ENTRYNODE>", "<method.name>:<controlFlows[method].entryNode>", 
 						lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
 		
-		for(exitNode <- controlFlows[method].exitNodes) {
-			edges += edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
-							lineColor("blue"), toArrow(box(size(10), fillColor("blue"))));
-		}
+		edges = (edges 
+				| it + edge("<method.name>:<exitNode>", "<method.name>:<EXITNODE>", 
+							lineColor("blue"), toArrow(box(size(10), fillColor("blue")))) 
+				| exitNode <- controlFlows[method].exitNodes
+				);
 		
 		boxes += createBoxes(method);
-		boxes += box(text("ENTRY <method.name>"), id("<method.name>:<ENTRYNODE>"), size(50), fillColor("lightblue"));
 		boxes += box(text("EXIT <method.name>"), id("<method.name>:<EXITNODE>"), size(50), fillColor("lightblue"));
 	}
 	
