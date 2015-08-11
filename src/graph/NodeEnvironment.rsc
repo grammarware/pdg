@@ -92,6 +92,10 @@ public bool isExitNode(node treeNode) {
 }
 
 public bool isPotentialThrow(node treeNode) {
+	if(treeNode@nodeType == Parameter()) {
+		return false;
+	}
+	
 	switch(treeNode) {	
 		case \block(_): {
 			return false;

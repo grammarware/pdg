@@ -107,7 +107,7 @@ private ControlFlow process(blockNode: \block(body)) {
 }
 
 private ControlFlow process(ifNode: \if(condition, thenBranch)) {
-	list[ControlFlow] callSites = registerMethodCalls(condition);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(condition));
 	int identifier = storeNode(ifNode);
 
 	ControlFlow ifFlow = ControlFlow({}, 0, {});
@@ -126,7 +126,7 @@ private ControlFlow process(ifNode: \if(condition, thenBranch)) {
 }
 
 private ControlFlow process(ifNode: \if(condition, thenBranch, elseBranch)) {
-	list[ControlFlow] callSites = registerMethodCalls(condition);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(condition));
 	int identifier = storeNode(ifNode);
 	
 	ControlFlow ifElseFlow = ControlFlow({}, 0, {});
@@ -188,7 +188,7 @@ private ControlFlow createForFlow(int identifier, Statement body) {
 }
 
 private ControlFlow process(forEachNode: \foreach(parameter, collection, body)) {
-	list[ControlFlow] callSites = registerMethodCalls(collection);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(collection));
 	int identifier = storeNode(forEachNode);
 	
 	return connectControlFlows(callSites + createForFlow(identifier, body));
@@ -201,14 +201,14 @@ private ControlFlow process(forNode: \for(initializers, updaters, body)) {
 }
 
 private ControlFlow process(forNode: \for(initializers, condition, updaters, body)) {
-	list[ControlFlow] callSites = registerMethodCalls(condition);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(condition));
 	int identifier = storeNode(forNode);
 	
 	return connectControlFlows(callSites + createForFlow(identifier, body));
 }
 
 private ControlFlow process(whileNode: \while(condition, body)) {
-	list[ControlFlow] callSites = registerMethodCalls(condition);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(condition));
 	int identifier = storeNode(whileNode);
 	
 	ControlFlow whileFlow = ControlFlow({}, 0, {});
@@ -232,7 +232,7 @@ private ControlFlow process(whileNode: \while(condition, body)) {
 }
 
 private ControlFlow process(doNode: \do(body, condition)) {
-	list[ControlFlow] callSites = registerMethodCalls(condition);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(condition));
 	int identifier = storeNode(doNode);
 	
 	ControlFlow doWhileFlow = ControlFlow({}, 0, {});
@@ -290,7 +290,7 @@ private list[ControlFlow] processCases(list[Statement] statements) {
 }
 
 private ControlFlow process(switchNode: \switch(expression, statements)) {
-	list[ControlFlow] callSites = registerMethodCalls(expression);
+	list[ControlFlow] callSites = registerMethodCalls(\expressionStatement(expression));
 	int identifier = storeNode(switchNode);
 	
 	ControlFlow switchFlow = ControlFlow({}, 0, {});

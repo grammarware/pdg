@@ -1,3 +1,8 @@
+/*
+* This module counts the amount of try-catch and try-catch-finally 
+* blocks in a project. I used it to substantiate a claim in my 
+* thesis that such exception handling code is common.
+*/
 module TryCounter
 
 import Prelude;
