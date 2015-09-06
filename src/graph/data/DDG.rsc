@@ -18,50 +18,44 @@ private alias ReachingDefs = tuple[
 			map[int, set[VariableData]] \out
 		];
 
-private bool isParameterVariable(str variableName) {
-	return /^\$/ := variableName;
-}
+private bool isParameterVariable(str variableName)
+	= /^\$/ := variableName;
 
-private bool isArrayVariable(str variableName) {
-	return /^.*\[/ := variableName;
-}
+private bool isArrayVariable(str variableName)
+	= /^.*\[/ := variableName;
 
-private str getArrayName(str variableName) {
-	if(/^<name:.*>\[/ := variableName) {
-		return name;
-	}
-	
-	return "";
-}
+private str getArrayName(str variableName)
+	= (/^<name:.*>\[/ := variableName)
+	? name
+	: ""
+	;
 
-private bool isGlobalVariable(map[str, set[VariableData]] definitions, MethodData methodData, int identifier, str variableName) {
-	if(variableName notin definitions) {
-		if(!isParameterVariable(variableName) && !isArrayVariable(variableName)) {
+private bool isGlobalVariable(map[str, set[VariableData]] definitions, MethodData methodData, int identifier, str variableName)
+{
+	if(variableName notin definitions)
+	{
+		if(!isParameterVariable(variableName) && !isArrayVariable(variableName))
 			addGlobal(methodData, getDeclarationLoc(variableName), identifier);
-		}
-		
 		return true;
 	}
-	
 	return false;
 }
 
-public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) {
+public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow)
+{
 	initializeVariableData(methodData);
 	
-	for(identifier <- environmentDomain(methodData)) {
+	for(identifier <- environmentDomain(methodData))
 		process(identifier, resolveIdentifier(methodData, identifier));
-	}
 	
 	map[int, set[VariableData]] generators = getGenerators();
 	map[str, set[VariableData]] definitions = getDefinitions();
 	set[VariableData] killedSet;
 	
-	for(identifier <- generators) {
-		for(generated <- generators[identifier]) {
-			killedSet = definitions[generated.name] - generated;
-			storeKill(identifier, killedSet);
-		} 
+	for(identifier <- generators, generated <- generators[identifier])
+	{
+		killedSet = definitions[generated.name] - generated;
+		storeKill(identifier, killedSet); 
 	}
 	
 	ReachingDefs reachingDefs = calculateReachingDefs(methodData, controlFlow, generators);
@@ -70,22 +64,17 @@ public DataDependence createDDG(MethodData methodData, ControlFlow controlFlow) 
 	map[int, set[str]] uses = getUses();
 	set[VariableData] variableDefs;
 	
-	for(identifier <- uses
-		, usedVariable <- uses[identifier]) {
-		if(isGlobalVariable(definitions, methodData, identifier, usedVariable)) {
+	for(identifier <- uses, usedVariable <- uses[identifier])
+	{
+		if(isGlobalVariable(definitions, methodData, identifier, usedVariable))
 			if(isArrayVariable(usedVariable) 
-				&& !isGlobalVariable(definitions, methodData, identifier, getArrayName(usedVariable))) {
+			&& !isGlobalVariable(definitions, methodData, identifier, getArrayName(usedVariable)))
 				variableDefs = definitions[getArrayName(usedVariable)];
-			} else {
-				continue;
-			}
-		} else {
+			else continue;
+		else
 			variableDefs = definitions[usedVariable];
-		}
 		
-		for(dependency <- reachingDefs.\in[identifier] & variableDefs) {
-			dataDependence.graph += { <dependency.origin, identifier> };
-		}
+		dataDependence.graph += {<dependency.origin, identifier> | dependency <- reachingDefs.\in[identifier] & variableDefs};
 	}
 
 	dataDependence.defs = definitions;
@@ -183,21 +172,15 @@ private void process(int identifier, \switch(expression, _)) {
 	processExpression(identifier, expression);
 }
 
-private void process(int identifier, \try(_, _)) {
-	return;
-}
+private void process(int identifier, \try(_, _)) {}
 
-private void process(int identifier, \try(_, _, _)) {
-	return;
-}
+private void process(int identifier, \try(_, _, _)) {}
 
 private void process(int identifier, \catch(\parameter(_, name, _), _)) {
 	checkForDefinition(identifier, \simpleName(name));
 }
 
-private void process(int identifier, \return(_)) {
-	return;
-}
+private void process(int identifier, \return(_)) {}
 
 private void process(int identifier, \throw(expression)) {
 	checkForUse(identifier, expression);
@@ -216,9 +199,7 @@ private void process(int identifier, Statement stmt) {
 	processExpression(identifier, stmt);
 }
 
-default void process(int identifier, node treeNode) {
-	return;
-}
+default void process(int identifier, node treeNode) {}
 
 private void processExpression(int identifier, node tree) {
 	top-down visit(tree) {

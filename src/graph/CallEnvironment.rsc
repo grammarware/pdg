@@ -16,8 +16,8 @@ import graph::control::flow::CFConnector;
 private set[loc] projectMethods;
 // The set of all the methods that are called by the currently
 // analysed method.
-private set[loc] calledMethods = {};
-private set[int] callSites = {};
+private set[loc] calledMethods;
+private set[int] callSites;
 
 public void initializeCallEnvironment(M3 projectModel) {
 	projectMethods = methods(projectModel);
@@ -25,13 +25,11 @@ public void initializeCallEnvironment(M3 projectModel) {
 	callSites = {};
 }
 
-public set[loc] getCalledMethods() {
-	return calledMethods;
-}
+public set[loc] getCalledMethods()
+	= calledMethods;
 
-public set[int] getCallSites() {
-	return callSites;
-}
+public set[int] getCallSites()
+	= callSites;
 
 private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = CallSite()) {
 	int identifier = storeNode(callNode, nodeType = nType);

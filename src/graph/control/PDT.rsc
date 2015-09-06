@@ -6,6 +6,7 @@
 	Dependence Graph.
 }
 @contributor{René Bulsing - UvA MSc 2015}
+@contributor{Vadim Zaytsev - UvA - http://grammarware.net}
 module graph::control::PDT
 
 import Prelude;
@@ -25,29 +26,14 @@ private map[int, set[int]] dominators = ();
 }
 private map[int, set[int]] dominations = ();
 
-private Graph[int] reverseEdges(Graph[int] edges) {
-	Graph[int] reversedTree = {};
-	
-	for(<int from, int to> <- edges) {
-		reversedTree += <to, from>;
-	}
-	
-	return reversedTree;
-}
+private Graph[int] reverseEdges(Graph[int] edges)
+	= {<to,from> | <int from, int to> <- edges};
 
-private Graph[int] augmentFlowGraph(ControlFlow controlFlow) {
-	Graph[int] augmentedGraph = controlFlow.graph;
-	
-	augmentedGraph += { <STARTNODE, controlFlow.entryNode> };
-	
-	for(exitNode <- controlFlow.exitNodes) {
-		augmentedGraph += { <exitNode, EXITNODE> };
-	}
-	
-	augmentedGraph += { <ENTRYNODE, STARTNODE>, <ENTRYNODE, EXITNODE> };
-	
-	return augmentedGraph;
-}
+private Graph[int] augmentFlowGraph(ControlFlow controlFlow)
+	= controlFlow.graph
+	+ { <STARTNODE, controlFlow.entryNode> }
+	+ { <exitNode, EXITNODE> | exitNode <- controlFlow.exitNodes}
+	+ { <ENTRYNODE, STARTNODE>, <ENTRYNODE, EXITNODE> };
 
 public PostDominator createPDT(MethodData methodData, ControlFlow controlFlow) {
 	PostDominator postDominator = PostDominator({}, (), ());

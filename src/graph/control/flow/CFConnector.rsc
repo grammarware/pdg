@@ -7,11 +7,10 @@ import analysis::graphs::Graph;
 import graph::DataStructures;
 
 
-public ControlFlow connectControlFlows(list[ControlFlow] controlFlows) {
-	if(isEmpty(controlFlows)) {
-		return EmptyCF();
-	}
-	
+public ControlFlow connectControlFlows([]) = EmptyCF();
+
+public default ControlFlow connectControlFlows(list[ControlFlow] controlFlows)
+{
 	tuple[ControlFlow popped, list[ControlFlow] rest] popTuple = pop(controlFlows);
 	
 	ControlFlow first = popTuple.popped;
@@ -30,7 +29,7 @@ public ControlFlow connectControlFlows(list[ControlFlow] controlFlows) {
 							+ successorGraph.graph 
 							+ createConnectionEdges(second, successorGraph);
 		connectedControlFlow.exitNodes = successorGraph.exitNodes;
-	} else if(size(popTuple.rest) >= 1) {
+	} elseif(size(popTuple.rest) >= 1) {
 		popTuple = pop(popTuple.rest);
 		connectedControlFlow.graph = connectedControlFlow.graph
 							+ popTuple.popped.graph
@@ -41,13 +40,13 @@ public ControlFlow connectControlFlows(list[ControlFlow] controlFlows) {
 	return connectedControlFlow;
 }
 
-public Graph[int] createConnectionEdges(ControlFlow first, ControlFlow second) {
-	return first.exitNodes * {second.entryNode};
-}
+public Graph[int] createConnectionEdges(ControlFlow first, ControlFlow second)
+	= first.exitNodes * {second.entryNode};
 
 /*********
  * Tests *
  *********/
+@todo{Move to test/*}
 test bool testConnector() {
 	Graph[int] firstFlow = { <0, 1> };
 	Graph[int] secondFlow = { <2, 3> };

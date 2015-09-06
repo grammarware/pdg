@@ -13,29 +13,22 @@ import graph::\data::GlobalData;
 
 map[Vertex, node] encodedNodeEnvironment = ();
 			
-public Vertex encodeVertex(MethodData method, int vertex) {
-	return Vertex(method.abstractTree@src.file, method.name, vertex);
-}
+public Vertex encodeVertex(MethodData method, int vertex)
+	= Vertex(method.abstractTree@src.file, method.name, vertex);
 
-private Vertex encodeVertex(Expression methodCall, int vertex) {
-	return Vertex("<methodCall@decl.parent.file>.java", methodCall@decl.file, vertex);
-}
+private Vertex encodeVertex(Expression methodCall, int vertex)
+	= Vertex("<methodCall@decl.parent.file>.java", methodCall@decl.file, vertex);
 
-private Vertex encodeVertex(Statement constructorCall, int vertex) {
-	return Vertex("<constructorCall@decl.parent.file>.java", constructorCall@decl.file, vertex);
-}
+private Vertex encodeVertex(Statement constructorCall, int vertex)
+	= Vertex("<constructorCall@decl.parent.file>.java", constructorCall@decl.file, vertex);
 
-private map[str, set[Vertex]] encodeDefinitionMap(map[str, set[Vertex]] definitions, MethodData method, DataDependence dataDependence) {
-	for(key <- dataDependence.defs) {
-		for(variableDef <- dataDependence.defs[key]) {
-			if(key in definitions) {
-				definitions[key] += { encodeVertex(method, variableDef.origin) };
-			} else {
-				definitions[key] = { encodeVertex(method, variableDef.origin) };
-			}
-		}
-	}
-	
+private map[str, set[Vertex]] encodeDefinitionMap(map[str, set[Vertex]] definitions, MethodData method, DataDependence dataDependence)
+{
+	for(key <- dataDependence.defs, variableDef <- dataDependence.defs[key])
+		if(key in definitions)
+			definitions[key] += { encodeVertex(method, variableDef.origin) };
+		else
+			definitions[key] = { encodeVertex(method, variableDef.origin) };
 	return definitions;
 }
 
@@ -55,9 +48,8 @@ private Graph[Vertex] encodeGraph(MethodData method, Graph[int] graph) {
 	return encodedGraph;
 }
 
-private bool isParameterVariable(str variable) {
-	return /\$.*/ := variable;
-}
+private bool isParameterVariable(str variable)
+	= /\$.*/ := variable;
 
 private Graph[Vertex] getGlobalEdges(M3 projectModel) {
 	map[loc, rel[MethodData, int]] globalLinks = getGlobalLinks();

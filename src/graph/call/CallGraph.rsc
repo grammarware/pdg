@@ -12,9 +12,8 @@ import extractors::Project;
 import graph::DataStructures;
 
 
-private CallVertex getVertex(loc location) {
-	return CallVertex(location, location.parent.file, location.file, "<location.parent.file>:<location.file>");
-}
+private CallVertex getVertex(loc location)
+	= CallVertex(location, location.parent.file, location.file, "<location.parent.file>:<location.file>");
 
 public CallGraph createCG(M3 projectModel, loc projectLocation) {
 	Graph[CallVertex] callGraph = {};
@@ -46,7 +45,8 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 		methodFileMapping[callVertex.identifier] = callVertex.file;
 	}
 	
-	for(<caller, callee> <- projectModel@methodInvocation, caller in projectMethods, callee in projectMethods) {
+	for(<caller, callee> <- projectModel@methodInvocation, caller in projectMethods, callee in projectMethods)
+	{
 		CallVertex methodVertex = getVertex(caller);
 		CallVertex calledVertex = getVertex(callee);
 			

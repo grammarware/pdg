@@ -15,9 +15,9 @@ import graph::CallEnvironment;
 import graph::TransferEnvironment;
 import graph::control::flow::CFConnector;
 
-
-data GeneratedData = EmptyGD() 
-					| GeneratedData(MethodData methodData, ControlFlow controlFlow);
+data GeneratedData
+	= EmptyGD() 
+	| GeneratedData(MethodData methodData, ControlFlow controlFlow);
 
 private str methodName = "";
 
