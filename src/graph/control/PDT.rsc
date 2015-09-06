@@ -5,6 +5,7 @@
 	Flow Graph to create the Control 
 	Dependence Graph.
 }
+@contributor{René Bulsing - UvA MSc 2015}
 module graph::control::PDT
 
 import Prelude;

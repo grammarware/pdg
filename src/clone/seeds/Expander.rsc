@@ -1,3 +1,4 @@
+@contributor{René Bulsing - UvA MSc 2015}
 module clone::seeds::Expander
 
 import Prelude;

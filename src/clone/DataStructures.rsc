@@ -1,3 +1,4 @@
+@contributor{René Bulsing - UvA MSc 2015}
 module clone::DataStructures
 
 import lang::java::m3::Core;

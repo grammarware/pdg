@@ -1,3 +1,5 @@
+@contributor{Lulu Zhang - UvA MSc 2014}
+@contributor{René Bulsing - UvA MSc 2015}
 module screen::PostDominatorScreen
 
 import Prelude;

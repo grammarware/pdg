@@ -1,3 +1,4 @@
+@contributor{René Bulsing - UvA MSc 2015}
 module graph::DataStructures
 
 import Prelude;
@@ -55,23 +56,20 @@ anno loc node@src;
 anno loc Expression@decl;
 anno NodeType node@nodeType;
 
-public bool isParameterVariable(str variable) =
-	/^\$/ := variable;
+public bool isParameterVariable(str variable)
+	= /^\$/ := variable;
 
-public MethodData emptyMethodData() {
-	return MethodData("", ""(), (), {}, {}, ());
-}
+public MethodData emptyMethodData()
+	= MethodData("", ""(), (), {}, {}, ());
 
-public set[int] environmentDomain(MethodData methodData) {
-	return domain(methodData.nodeEnvironment);
-}
+public set[int] environmentDomain(MethodData methodData)
+	= domain(methodData.nodeEnvironment);
 
-public node resolveIdentifier(MethodData methodData, int identifier) {
-	return methodData.nodeEnvironment[identifier];
-}
+public node resolveIdentifier(MethodData methodData, int identifier) 
+	= methodData.nodeEnvironment[identifier];
 
-public str nodeName(MethodData methodData, int identifier) =
-	/^<name:\w*>/ := "<methodData.nodeEnvironment[identifier]>"
+public str nodeName(MethodData methodData, int identifier)
+	= /^<name:\w*>/ := "<methodData.nodeEnvironment[identifier]>"
 	? name
 	: "";
 

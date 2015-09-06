@@ -1,3 +1,6 @@
+@contributor{Lulu Zhang - UvA MSc 2014}
+@contributor{René Bulsing - UvA MSc 2015}
+@contributor{Vadim Zaytsev - UvA - http://grammarware.net}
 module \test::TestCDG
 
 import Prelude;

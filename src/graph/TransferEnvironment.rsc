@@ -1,3 +1,4 @@
+@contributor{René Bulsing - UvA MSc 2015}
 module graph::TransferEnvironment
 
 import Prelude;
@@ -7,7 +8,6 @@ import graph::DataStructures;
 import graph::JumpEnvironment;
 import graph::NodeEnvironment;
 import graph::control::flow::CFConnector;
-
 
 // Maps a parameter node to its call-site node.
 private map[int, int] transferNodes = ();
