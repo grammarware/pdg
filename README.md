@@ -2,7 +2,7 @@
 #### [UvA](http://www.uva.nl/en/home) [Software Engineering Master](http://www.software-engineering-amsterdam.nl/) [Project](http://grammarware.net/edits/#Zhang2014)
 
 ### Contributors:
-* [René Bulsing] (https://github.com/RB-Develop)
+* [René Bulsing](https://github.com/RB-Develop)
 * [Lulu Zhang](http://github.com/lulu516)
 * [Vadim Zaytsev](http://github.com/grammarware)
 
