@@ -1,4 +1,4 @@
-#Detecting Refactored Clone with RASCAL
+# Detecting Refactored Clone with RASCAL
 #### [UvA](http://www.uva.nl/en/home) [Software Engineering Master](http://www.software-engineering-amsterdam.nl/) [Project](http://grammarware.net/edits/#Zhang2014)
 
 ### Contributors:
@@ -8,7 +8,7 @@
 
 ----------
 
-##Project contains:
+## Project contains:
 * Control Flow Graph module. (Unit-tests)
 * Post Dominator Tree module. (Unit-tests)
 * Control Dependence Graph module. (Unit-tests)
