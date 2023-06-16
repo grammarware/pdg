@@ -341,11 +341,11 @@ private ControlFlow createTryFlow(int identifier, Statement body, list[Statement
 	}
 
 	set[int] throwNodes = getThrowNodes();
-	set[int] potentialThrows = throwNodes +
-				{ treeNode 
-					| treeNode <- carrier(tryFlow.graph)
-					, isPotentialThrow(resolveNode(treeNode))
-				};
+	set[int] potentialThrowNodes = 
+		{ treeNode | 
+			treeNode <- carrier(tryFlow.graph), 
+			isPotentialThrow(resolveNode(treeNode)) };
+	set[int] potentialThrows = throwNodes + potentialThrowNodes;
 
 	scopeUp();
 	
