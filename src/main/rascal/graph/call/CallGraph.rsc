@@ -44,7 +44,7 @@ public CallGraph createCG(M3 projectModel, loc projectLocation) {
 		methodFileMapping[callVertex.identifier] = callVertex.file;
 	}
 	
-	for(<caller, callee> <- projectModel@methodInvocation, caller in projectMethods, callee in projectMethods)
+	for(<caller, callee> <- projectModel.methodInvocation, caller in projectMethods, callee in projectMethods)
 	{
 		CallVertex methodVertex = getVertex(caller);
 		CallVertex calledVertex = getVertex(callee);

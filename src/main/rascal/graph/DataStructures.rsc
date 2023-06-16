@@ -51,11 +51,6 @@ data Vertex = Vertex(str file, str method, int identifier);
 
 data NodeType = Normal() | Parameter() | CallSite() | Entry() | Global();
 
-anno loc node@decl;
-anno loc node@src;
-anno loc Expression@decl;
-anno NodeType node@nodeType;
-
 public bool isParameterVariable(str variable)
 	= /^\$/ := variable;
 
@@ -80,3 +75,21 @@ public &T cast(type[&T] tp, value v) throws str {
         throw "cast failed";
     }
 }
+
+// Replacement for deprecated annotations. The recommended replacement is with
+// keyword fields on ADTs, but the whole library operates on nodes, which we
+// can't extend. Instead we define some functions as helpers for the
+// get/setKeywordParameters functions provided by the Node library.
+
+// anno loc node@decl;
+public node setDecl(node n, loc decl) = setKeywordParameters(n, ("decl": decl));
+public loc getDecl(node n) = cast(#loc, getKeywordParameters(n)["decl"]);
+// anno loc node@src;
+public node setSrc(node n, loc src) = setKeywordParameters(n, ("src": src));
+public loc getSrc(node n) = cast(#loc, getKeywordParameters(n)["src"]);
+// anno NodeType node@nodeType;
+public node setNodeType(node n, NodeType nodeType) = setKeywordParameters(n, ("nodeType": nodeType));
+public NodeType getNodeType(node n) = cast(#NodeType, getKeywordParameters(n)["nodeType"]);
+
+//anno loc Expression@decl;
+// decl is already defined as a keyword field on Expression in analysis::m3::AST

@@ -36,16 +36,16 @@ private ControlFlow createCallSiteFlow(Expression callNode, NodeType nType = Cal
 	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
 	
 	// See if the called method is part of the project.
-	if(callNode@decl in projectMethods) {
+	if(callNode.decl in projectMethods) {
 		callSites += {identifier};
-		calledMethods += callNode@decl;
-		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);
-		callsite = addReturnOutNode(callsite, callNode@decl.file, callNode@typ, callNode@src);
+		calledMethods += callNode.decl;
+		callsite = addArgumentNodes(callsite, callNode.decl.file, callNode.arguments);
+		callsite = addReturnOutNode(callsite, callNode.decl.file, callNode.typ, callNode.src);
 	}
 	// It is not part of the project. Handle it differently.
 	else {
 		callsite = addArgumentNodes(callsite, callNode.name, callNode.arguments);
-		callsite = addReturnOutNode(callsite, callNode.name, callNode@typ, callNode@src);
+		callsite = addReturnOutNode(callsite, callNode.name, callNode.typ, callNode.src);
 	}
 	
 	return callsite;
@@ -56,14 +56,14 @@ private ControlFlow createCallSiteFlow(Statement callNode, NodeType nType = Call
 	ControlFlow callsite = ControlFlow({}, identifier, {identifier});
 	
 	// See if the called method is part of the project.
-	if(callNode@decl in projectMethods) {
+	if(callNode.decl in projectMethods) {
 		callSites += {identifier};
-		calledMethods += callNode@decl;
-		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);
+		calledMethods += callNode.decl;
+		callsite = addArgumentNodes(callsite, callNode.decl.file, callNode.arguments);
 	}
 	// It is not part of the project. Handle it differently.
 	else {
-		callsite = addArgumentNodes(callsite, callNode@decl.file, callNode.arguments);
+		callsite = addArgumentNodes(callsite, callNode.decl.file, callNode.arguments);
 	}
 	
 	return callsite;

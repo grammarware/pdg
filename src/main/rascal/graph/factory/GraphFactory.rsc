@@ -70,7 +70,7 @@ public set[int] filterCallSites(loc origin, MethodData methodData, Intra()) {
 }
 
 public set[int] filterCallSites(loc origin, MethodData methodData, File()) {
- 	return { callSite | callSite <- methodData.callSites, origin.parent.file == resolveIdentifier(methodData, callSite)@decl.parent.file };
+ 	return { callSite | callSite <- methodData.callSites, origin.parent.file == getDecl(resolveIdentifier(methodData, callSite)).parent.file };
 }
 
 public set[int] filterCallSites(loc origin, MethodData methodData, Project()) {

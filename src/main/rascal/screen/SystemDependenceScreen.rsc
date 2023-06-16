@@ -78,7 +78,7 @@ public Figures createSDGBoxes(map[Vertex, node] environment, set[Vertex] vertice
 				text("<vertex.method>:<vertex.identifier>"), 
 				id(vertexIdentifier(vertex)), 
 				size(50), 
-				fillColor(getBoxColor(environment[vertex]@nodeType)), 
+				fillColor(getBoxColor(getNodeType(environment[vertex]))), 
 				onMouseDown(
 					goToSource(
 						getLocation(

@@ -133,16 +133,16 @@ private str process(Statement statement) {
 			return "return";
 		}
 		case \return(expression): {
-			return "return <process(expression@typ)>";
+			return "return <process(expression.typ)>";
 		}
 		case \switch(expression, statements): {
-			return "switch <process(expression@typ)>";
+			return "switch <process(expression.typ)>";
 		}
 		case \synchronizedStatement(Expression lock, Statement body): {
 			return "synchronizedStatement <process(lock)>";
 		}
 		case \throw(expression): {
-			return "throw <process(expression@typ)>";
+			return "throw <process(expression.typ)>";
 		}
 		case \try(body, catchClauses): {
 			return "try-catch";
@@ -189,7 +189,7 @@ private str process(Expression expr) {
     		return "arrayInitializer";
     	}
     	case \assignment(Expression lhs, str operator, Expression rhs): {
-    		return "assignment <process(lhs@typ)> <operator> <process(rhs@typ)>";
+    		return "assignment <process(lhs.typ)> <operator> <process(rhs.typ)>";
     	}
     	case \cast(Type \type, Expression expression): {
     		return "cast <process(\type)>";
@@ -216,7 +216,7 @@ private str process(Expression expr) {
     		return "conditional <process(thenBranch)> <process(elseBranch)>";
     	}
     	case \fieldAccess(bool isSuper, Expression expression, str name): {
-    		return "fieldAccess <process(expression@typ)> <name>";
+    		return "fieldAccess <process(expression.typ)> <name>";
     	}
     	case \fieldAccess(bool isSuper, str name): {
     		return "fieldAccess <name>";
@@ -228,7 +228,7 @@ private str process(Expression expr) {
     		return "methodCall <name>";
     	}
     	case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments): {
-    		return "methodCall <process(receiver@typ)> <name>";
+    		return "methodCall <process(receiver.typ)> <name>";
     	}
     	case \null(): {
     		return "null";
@@ -252,7 +252,7 @@ private str process(Expression expr) {
     		return "variable-init";
     	}
     	case \bracket(Expression expression): {
-    		return "bracket <process(expression@typ)>";
+    		return "bracket <process(expression.typ)>";
     	}
     	case \this(): {
     		return "this";
@@ -267,14 +267,14 @@ private str process(Expression expr) {
     		return process(decl);
     	}
     	case \infix(Expression lhs, str operator, Expression rhs): {
-    		try return "infix <process(lhs@typ)> <operator> <process(rhs@typ)>";
+    		try return "infix <process(lhs.typ)> <operator> <process(rhs.typ)>";
     		catch: return "infix <process(lhs)> <operator> <process(rhs)>";
     	}
     	case \postfix(Expression operand, str operator): {
-    		return "postfix <process(operand@typ)> <operator>";
+    		return "postfix <process(operand.typ)> <operator>";
     	}
     	case \prefix(str operator, Expression operand): {
-    		return "prefix <operator> <process(operand@typ)>";
+    		return "prefix <operator> <process(operand.typ)>";
     	}
    		case \simpleName(str name): {
    			return "simpleName <name>";
@@ -286,7 +286,7 @@ private str process(Expression expr) {
     		return "normalAnnotation <typeName>";
     	}
     	case \memberValuePair(str name, Expression \value): {
-    		return "memberValuePair <process(\value@typ)>";  
+    		return "memberValuePair <process(\value.typ)>";  
     	}     
     	case \singleMemberAnnotation(str typeName, Expression \value): {
     		return "singleMemberAnnotation <typeName>";

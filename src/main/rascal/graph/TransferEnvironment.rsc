@@ -32,7 +32,7 @@ public list[ControlFlow] createParameterNodes(list[Declaration] parameters, str 
 	
 	for(parameter <- parameters) {
 		parameterIn = \expressionStatement(\variable(parameter.name, 0, \simpleName("$method_<methodName>_in_<parameterNumber>")));
-		parameterIn@src = parameter@src;
+		parameterIn.src = parameter.src;
 		
 		int identifier = storeNode(parameterIn, nodeType = Parameter());
 		transferNodes[identifier] = ENTRYNODE;
@@ -46,7 +46,7 @@ public list[ControlFlow] createParameterNodes(list[Declaration] parameters, str 
 
 public ControlFlow createResultNode(ControlFlow returnFlow, str methodName, Expression expression) {
 	Statement resultOut = \expressionStatement(\variable("$<methodName>_result", 0, expression));
-	resultOut@src = expression@src;
+	resultOut.src = expression.src;
 	
 	int identifier = storeNode(resultOut, nodeType = Parameter());
 	ControlFlow resultFlow = ControlFlow({}, identifier, {});
@@ -65,7 +65,7 @@ public ControlFlow addReturnNodes(ControlFlow controlFlow, str methodName, loc s
 				\simpleName("$<methodName>_result")
 			)
 		);
-	returnOut@src = sourceLocation;
+	returnOut.src = sourceLocation;
 	
 	int identifier = storeNode(returnOut, nodeType = Parameter());
 	transferNodes[identifier] = ENTRYNODE;
@@ -87,7 +87,7 @@ public ControlFlow addArgumentNodes(ControlFlow controlFlow, str calledMethod, l
 	
 	for(argument <- arguments) {
 		argumentIn = \expressionStatement(\variable("$method_<calledMethod>_in_<argumentNumber>", 0, argument));
-		argumentIn@src = argument@src;
+		argumentIn.src = argument.src;
 		
 		int identifier = storeNode(argumentIn, nodeType = Parameter());
 		transferNodes[identifier] = controlFlow.entryNode;
@@ -111,7 +111,7 @@ public ControlFlow addReturnOutNode(ControlFlow controlFlow, str calledMethod, n
 				\simpleName("$<calledMethod>_return")
 			)
 		);
-	returnValue@src = sourceLocation;
+	returnValue.src = sourceLocation;
 	
 	int identifier = storeNode(returnValue, nodeType = Parameter());
 	transferNodes[identifier] = controlFlow.entryNode;

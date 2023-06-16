@@ -26,17 +26,17 @@ data CloneData = CloneData(CandidatePairs refactored, CandidatePairs interproced
 
 public bool isIntermediate(map[Vertex, node] environment, Vertex vertex) {
 	if(vertex notin environment 
-		|| (environment[vertex]@nodeType != Normal() && environment[vertex]@nodeType != Global())) {
+		|| (getNodeType(environment[vertex]) != Normal() && getNodeType(environment[vertex]) != Global())) {
 		return true;
 	}
 	
 	switch(environment[vertex]) {
 		case m: \methodCall(_, _, _): {
-			try return m@src.file == "<m@decl.parent.file>.java";
+			try return m.src.file == "<m.decl.parent.file>.java";
 			catch: return false;
 		}
     	case m: \methodCall(_, _, _, _): {
-    		try return m@src.file == "<m@decl.parent.file>.java";
+    		try return m.src.file == "<m.decl.parent.file>.java";
 			catch: return false;
     	}
     	case \constructorCall(isSuper, _, _):

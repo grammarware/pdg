@@ -14,13 +14,13 @@ import graph::\data::GlobalData;
 map[Vertex, node] encodedNodeEnvironment = ();
 			
 public Vertex encodeVertex(MethodData method, int vertex)
-	= Vertex(method.abstractTree@src.file, method.name, vertex);
+	= Vertex(getSrc(method.abstractTree).file, method.name, vertex);
 
 private Vertex encodeVertex(Expression methodCall, int vertex)
-	= Vertex("<methodCall@decl.parent.file>.java", methodCall@decl.file, vertex);
+	= Vertex("<methodCall.decl.parent.file>.java", methodCall.decl.file, vertex);
 
 private Vertex encodeVertex(Statement constructorCall, int vertex)
-	= Vertex("<constructorCall@decl.parent.file>.java", constructorCall@decl.file, vertex);
+	= Vertex("<constructorCall.decl.parent.file>.java", constructorCall.decl.file, vertex);
 
 private map[str, set[Vertex]] encodeDefinitionMap(map[str, set[Vertex]] definitions, MethodData method, DataDependence dataDependence)
 {
@@ -60,12 +60,12 @@ private Graph[Vertex] getGlobalEdges(M3 projectModel) {
 		node globalNode = \simpleName(location.file);
 		
 		try {
-			globalNode@src = resolveLocation(location, projectModel);
+			globalNode = setSrc(globalNode, resolveLocation(location, projectModel));
 		} catch: {
-			globalNode@src = location(0, 0, <0, 0>, <0, 0>);
+			globalNode = setSrc(globalNode, location(0, 0, <0, 0>, <0, 0>));
 		}
 		
-		globalNode@nodeType = Global();
+		globalNode = setNodeType(globalNode, Global());
 		
 		encodedNodeEnvironment[globalVertex] = globalNode;
 		

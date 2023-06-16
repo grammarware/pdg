@@ -11,7 +11,7 @@ import graph::DataStructures;
 
 
 public Highlights addHighlights(Highlights highlights, map[Vertex, node] environment, Flow flow) {	
-	loc file = environment[flow.root]@src;
+	loc file = getSrc(environment[flow.root]);
 	file.offset = 0;
 	file.length = 0;
 	file.begin.line = 0;

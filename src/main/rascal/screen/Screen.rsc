@@ -55,7 +55,7 @@ public str getBoxColor(NodeType nodeType) {
 
 public Figures createBoxes(MethodData methodData) {	
 	return [ box(text("<methodData.name>:<treeNode>"), id("<methodData.name>:<treeNode>"), 
-						size(50), fillColor(getBoxColor(resolveIdentifier(methodData, treeNode)@nodeType)), 
+						size(50), fillColor(getBoxColor(getNodeType(resolveIdentifier(methodData, treeNode)))), 
 						onMouseDown(
 							goToSource(
 								getLocation(

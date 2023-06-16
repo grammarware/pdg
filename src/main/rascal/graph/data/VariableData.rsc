@@ -85,32 +85,32 @@ public loc getDeclarationLoc(str name) {
 public void checkForUse(int identifier, Expression expression) {
 	if(sName: \simpleName(name) := expression) {
 		if(!isParameterVariable(name)) {
-			if(sName@decl.scheme == "java+class") {
+			if(sName.decl.scheme == "java+class") {
 				return;
 			}
-			declarationLocs[name] = sName@decl;
+			declarationLocs[name] = sName.decl;
 		}
 		storeUse(identifier, name);
 	}
 	
 	if(callNode: \methodCall(_, name, _) := expression) {
-		if(callNode@typ != \void()) {
+		if(callNode.typ != \void()) {
 			try {
-				storeUse(identifier, "$method_<callNode@decl.file>_return_<callNode@src.offset>");
+				storeUse(identifier, "$method_<callNode.decl.file>_return_<callNode.src.offset>");
 			}
 			catch: {
-				storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
+				storeUse(identifier, "$method_<name>_return_<callNode.src.offset>");
 			}
 		}
 	}
 	
 	if(callNode: \methodCall(_, _, name, _):= expression) {
-		if(callNode@typ != \void()) {
+		if(callNode.typ != \void()) {
 			try {
-				storeUse(identifier, "$method_<callNode@decl.file>_return_<callNode@src.offset>");
+				storeUse(identifier, "$method_<callNode.decl.file>_return_<callNode.src.offset>");
 			}
 			catch: {
-				storeUse(identifier, "$method_<name>_return_<callNode@src.offset>");
+				storeUse(identifier, "$method_<name>_return_<callNode.src.offset>");
 			}
 		}
 	}

@@ -47,7 +47,7 @@ private tuple[int tries,int catches,int finals] count(Declaration ast) {
     	}
 	}
 	
-	//println("[<ast@src.file>]: Tries = <tryCounter>. Catches = <catchCounter>. Finally = <finallyCounter>.");
+	//println("[<ast.src.file>]: Tries = <tryCounter>. Catches = <catchCounter>. Finally = <finallyCounter>.");
 	
 	return <tryCounter, catchCounter, finallyCounter>;
 }

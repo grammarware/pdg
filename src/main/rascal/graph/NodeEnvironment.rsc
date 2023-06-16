@@ -33,7 +33,7 @@ public map[int, node] getNodeEnvironment() {
 public int storeNode(node treeNode, NodeType nodeType = Normal()) {
 	int identifier = getIdentifier();
 
-	treeNode@nodeType = nodeType;
+	treeNode = setNodeType(treeNode, nodeType);
 	nodeEnvironment[identifier] = treeNode;
 	
 	return identifier;
@@ -93,7 +93,7 @@ public bool isExitNode(node treeNode) {
 }
 
 public bool isPotentialThrow(node treeNode) {
-	if(treeNode@nodeType == Parameter()) {
+	if(getNodeType(treeNode) == Parameter()) {
 		return false;
 	}
 	

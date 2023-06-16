@@ -254,7 +254,7 @@ private void processExpression(int identifier, node tree) {
 			checkForUse(identifier, expression);
 		}
     	case n: \newObject(expr, \type, args, class): {
-			throw "Not implemented: <n@src>";
+			throw "Not implemented: <n.src>";
 		}
 		case \newObject(Expression expr, Type \type, list[Expression] args): {
 			checkForUse(expr);
@@ -286,8 +286,8 @@ private void processExpression(int identifier, node tree) {
 			str variableName = isSuper ? "super.<name>" : name;
 			node fieldNode = \simpleName(variableName);
 			
-			fieldNode@src = n@src;
-			fieldNode@decl = n@decl;
+			fieldNode = setSrc(fieldNode, n.src);
+			fieldNode = setDecl(fieldNode, n.decl);
 			
 			checkForUse(identifier, fieldNode);
 		}

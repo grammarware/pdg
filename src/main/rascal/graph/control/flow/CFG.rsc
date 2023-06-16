@@ -33,8 +33,8 @@ private MethodData createMethodData(node abstractTree) {
 	methodData.nodeEnvironment = getNodeEnvironment();
 	
 	Statement entryNode = Statement::empty();
-	entryNode@nodeType = Entry();
-	entryNode@src = abstractTree@src(0,0,<0,0>,<0,0>);
+	entryNode = setNodeType(entryNode, Entry());
+	entryNode = setSrc(entryNode, getSrc(abstractTree)(0,0,<0,0>,<0,0>));
 	methodData.nodeEnvironment[ENTRYNODE] = entryNode;
 	
 	methodData.parameterNodes = getTransferNodes();
@@ -47,7 +47,7 @@ private MethodData createMethodData(node abstractTree) {
 }
 
 public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constructor(name, parameters, exceptions, impl)) {
-	methodName = methodNode@decl.file;
+	methodName = methodNode.decl.file;
 	
 	initializeEnvironments(projectModel);
 	
@@ -72,7 +72,7 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\constr
 }
 
 public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\method(\return, name, parameters, exceptions, impl)) {
-	methodName = methodNode@decl.file;
+	methodName = methodNode.decl.file;
 	
 	initializeEnvironments(projectModel);
 	
@@ -86,7 +86,7 @@ public GeneratedData createCFG(M3 projectModel, methodNode: Declaration::\method
 	}
 	
 	if(\return != Type::\void()) {
-		controlFlow = addReturnNodes(controlFlow, methodName, methodNode@src);	
+		controlFlow = addReturnNodes(controlFlow, methodName, methodNode.src);	
 	} else {
 		controlFlow.exitNodes += getReturnNodes();
 	}

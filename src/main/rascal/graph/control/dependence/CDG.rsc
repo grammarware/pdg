@@ -61,7 +61,7 @@ public ControlDependence createCDG(MethodData methodData, ControlFlow controlFlo
 	}
 	
 	for(treeNode <- carrier(augmentedGraph) - { STARTNODE, EXITNODE, ENTRYNODE }) {
-		if(treeNode > 0 && resolveIdentifier(methodData, treeNode)@nodeType == Parameter()) {
+		if(treeNode > 0 && getNodeType(resolveIdentifier(methodData, treeNode)) == Parameter()) {
 			controlDependence.graph += { <methodData.parameterNodes[treeNode], treeNode> };
 			continue;
 		}

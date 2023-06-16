@@ -107,7 +107,7 @@ public set[loc] getM3Files(M3 project) {
 }
 
 public loc resolveLocation(loc unresolved, M3 project) {
-	set[loc] declarations = project@declarations[unresolved];
+	set[loc] declarations = project.declarations[unresolved];
 	
 	if(size(declarations) > 1) {
 		throw "Too many declarations for <unresolved>";

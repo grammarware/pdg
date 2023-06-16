@@ -22,7 +22,7 @@ private set[Flow] flowForward(map[Vertex, node] environment, Graph[Vertex] graph
 					, flow.intermediates + { flow.target }
 					, successor
 					, successor in environment 
-						? flow.lineNumbers + environment[successor]@src.begin.line 
+						? flow.lineNumbers + getSrc(environment[successor]).begin.line 
 						: flow.lineNumbers
 					, flow.methodSpan + spanIdentifier(successor)
 				) 
@@ -41,7 +41,7 @@ private set[Flow] getFrontier(map[Vertex, node] environment, Graph[Vertex] graph
 	
 	for(flow <- flows) {
 		if(flow.target in environment) {
-			flow.lineNumbers += { environment[flow.target]@src.begin.line };
+			flow.lineNumbers += { getSrc(environment[flow.target]).begin.line };
 		}
 		
 		if(isIntermediate(environment, flow.target)) {
@@ -58,7 +58,7 @@ private Flow initializeFlow(map[Vertex, node] environment, Vertex root, Vertex n
 	return 	Flow(root
 				, {}
 				, nextNode
-				, { environment[root]@src.begin.line } 
+				, { getSrc(environment[root]).begin.line } 
 				, spanIdentifier(root) + spanIdentifier(nextNode) 
 			);
 }
