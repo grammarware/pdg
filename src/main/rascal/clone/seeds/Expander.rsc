@@ -3,7 +3,6 @@ module clone::seeds::Expander
 
 import Prelude;
 import lang::java::m3::Core;
-import lang::java::jdt::m3::Core;
 import analysis::m3::AST;
 import analysis::m3::Registry;
 

@@ -4,7 +4,7 @@ module graph::system::SDG
 import Prelude;
 import lang::java::m3::AST;
 import analysis::graphs::Graph;
-import lang::java::jdt::m3::Core;
+import lang::java::m3::Core;
 
 import extractors::Project;
 import graph::DataStructures;

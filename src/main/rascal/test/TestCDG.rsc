@@ -4,8 +4,8 @@
 module \test::TestCDG
 
 import Prelude;
-import lang::java::jdt::m3::AST;
-import lang::java::jdt::m3::Core;
+import lang::java::m3::AST;
+import lang::java::m3::Core;
 import analysis::graphs::Graph;
 
 import framework::RTest;

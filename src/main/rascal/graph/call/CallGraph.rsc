@@ -4,7 +4,6 @@ module graph::call::CallGraph
 import Prelude;
 import lang::java::m3::AST;
 import lang::java::m3::Core;
-import lang::java::jdt::m3::Core;
 import analysis::m3::Registry;
 import analysis::graphs::Graph;
 

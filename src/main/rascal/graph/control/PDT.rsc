@@ -12,7 +12,6 @@ module graph::control::PDT
 import Prelude;
 import analysis::graphs::Graph;
 import lang::java::m3::Core;
-import lang::java::jdt::m3::Core;
 
 import graph::DataStructures;
 

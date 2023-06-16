@@ -3,7 +3,7 @@
 module screen::DataDependenceScreen
 
 import Prelude;
-import lang::java::jdt::m3::Core;
+import lang::java::m3::Core;
 import analysis::graphs::Graph;
 import vis::Figure;
 import vis::Render;

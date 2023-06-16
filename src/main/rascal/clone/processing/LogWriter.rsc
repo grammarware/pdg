@@ -4,7 +4,6 @@ module clone::processing::LogWriter
 import Prelude;
 import analysis::m3::Registry;
 import lang::java::m3::Core;
-import lang::java::jdt::m3::Core;
 
 import extractors::Project;
 import extractors::File;

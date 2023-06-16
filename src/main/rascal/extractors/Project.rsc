@@ -5,8 +5,7 @@ import Prelude;
 
 import analysis::m3::Registry;
 import lang::java::m3::Core;
-import lang::java::jdt::m3::AST;
-import lang::java::jdt::m3::Core;
+import lang::java::m3::AST;
 
 /* Caches to reduce IO. */
 private map[loc, M3] M3Cache = ();
