@@ -13,7 +13,7 @@ import extractors::Project;
 import graph::DataStructures;
 import graph::control::flow::CFG;
 
-private M3 projectModel = createM3(|cwd:///../../../JavaTest|);
+private M3 projectModel = createM3(|cwd:///../../../../JavaTest|);
 
 public bool testCFG(str name, expected)
 {	

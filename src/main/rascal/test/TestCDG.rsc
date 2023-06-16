@@ -15,7 +15,7 @@ import graph::control::PDT;
 import graph::control::flow::CFG;
 import graph::control::dependence::CDG;
 
-private M3 projectModel = createM3(|cwd:///../../../JavaTest|);
+private M3 projectModel = createM3(|cwd:///../../../../JavaTest|);
 
 private Graph[int] getMethodCDG(loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);
