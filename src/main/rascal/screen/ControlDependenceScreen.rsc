@@ -20,8 +20,8 @@ import graph::factory::GraphFactory;
 
 @doc{
 	To run a test:
-		displayControlDependenceGraph(|project://JavaTest|, "testPDT");
-		displayControlDependenceGraph(|project://JavaTest|, "testPDT2");
+		displayControlDependenceGraph(|cwd:///../../../JavaTest|, "testPDT");
+		displayControlDependenceGraph(|cwd:///../../../JavaTest|, "testPDT2");
 }
 public void displayControlDependenceGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);

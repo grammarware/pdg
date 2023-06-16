@@ -14,22 +14,11 @@ private map[M3, set[loc]] classCache = ();
 private map[M3, set[loc]] fileCache = ();
 
 @doc {
-	Create a location variable from the given
-	project name.
-	
-	@param (String) projectName -
-		The name of the project.
-	@return (loc) -
-		The constructed location variable.
-}
-public loc createProjectLoc(str projectName) {
-	return |project://<projectName>|;
-}
-
-@doc {
 	Create a M3 model from the given project location
 	and cache it. If it's already cached retrieve it
-	from the cache.
+	from the cache. If the project location contains a
+	pom.xml file, the project is imported as a Maven
+	project. Otherwise it is imported as a directory.
 	
 	@param (loc) project -
 		The project location variable.
@@ -37,13 +26,23 @@ public loc createProjectLoc(str projectName) {
 		The M3 model for the project.
 }
 public M3 createM3(loc project) {	
-	return createM3FromEclipseProject(project);
+	if (project notin M3Cache) {
+		if (exists(project + "pom.xml")) {
+			M3Cache[project] = createM3FromMavenProject(project);
+		} else {
+			M3Cache[project] = createM3FromDirectory(project);
+		}
+	}
+
+	return M3Cache[project];
 }
 
 @doc {
 	Create an AST from the given project location and 
 	cache it. If it's already cached retrieve it from 
-	the cache.
+	the cache. If the project location contains a
+	pom.xml file, the project is imported as a Maven
+	project. Otherwise it is imported as a directory.
 	
 	@param (loc) project -
 		The project location variable.
@@ -54,7 +53,11 @@ public M3 createM3(loc project) {
 }
 public set[Declaration] createProjectAST(loc project, bool collectBindings) {
 	if(project notin ASTCache) {
-		ASTCache[project] = createAstsFromEclipseProject(project, collectBindings);
+		if (exists(project + "pom.xml")) {
+			ASTCache[project] = createAstsFromMavenProject(project, collectBindings);
+		} else {
+			ASTCache[project] = createAstsFromDirectory(project, collectBindings);
+		}
 	}
 	
 	return ASTCache[project];
@@ -121,14 +124,14 @@ public loc resolveLocation(loc unresolved, M3 project) {
 /* =========== *
  * == Tests == *
  * =========== */ 
-public set[loc] getM3MethodsUtil(str projectName) {
-	M3 project = createM3(createProjectLoc(projectName));
+public set[loc] getM3MethodsUtil(loc projectLoc) {
+	M3 project = createM3(projectLoc);
 	
 	return methods(project);
 }
 
-public set[loc] getM3FilesUtil(str projectName) {
-	M3 project = createM3(createProjectLoc(projectName));
+public set[loc] getM3FilesUtil(loc projectLoc) {
+	M3 project = createM3(projectLoc);
 	
 	return files(project);
 }

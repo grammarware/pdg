@@ -16,7 +16,7 @@ import extractors::Project;
 
 @doc{
 	To run a test:
-		displayControlFlowGraph(|project://JavaTest|, "testCDG");
+		displayControlFlowGraph(|cwd:///../../../JavaTest|, "testCDG");
 }
 public void displayControlFlowGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);

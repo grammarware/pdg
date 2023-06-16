@@ -14,7 +14,7 @@ import graph::DataStructures;
 import graph::\data::DDG;
 import graph::control::flow::CFG;
 
-private M3 projectModel = createM3(|project://JavaTest|);
+private M3 projectModel = createM3(|cwd:///../../../JavaTest|);
 
 private Graph[int] getMethodDDG(loc methodLocation) {
 	node methodAST = getMethodASTEclipse(methodLocation, model = projectModel);

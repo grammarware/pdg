@@ -19,9 +19,9 @@ import graph::factory::GraphFactory;
 
 @doc{
 	To run a test:
-		displayPostDominatorTree(|project://JavaTest|, "testPDT");
-		displayPostDominatorTree(|project://JavaTest|, "testPDT2");
-		displayPostDominatorTree(|project://JavaTest|, "testCDG");
+		displayPostDominatorTree(|cwd:///../../../JavaTest|, "testPDT");
+		displayPostDominatorTree(|cwd:///../../../JavaTest|, "testPDT2");
+		displayPostDominatorTree(|cwd:///../../../JavaTest|, "testCDG");
 }
 public void displayPostDominatorTree(loc project, str methodName) {
 	M3 projectModel = createM3(project);

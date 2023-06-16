@@ -19,8 +19,8 @@ import graph::factory::GraphFactory;
 
 @doc{ 
 	To run a test:
-		displayDataDependenceGraph(|project://JavaTest|, "testPDT");
-		displayDataDependenceGraph(|project://JavaTest|, "testPDT2");
+		displayDataDependenceGraph(|cwd:///../../../JavaTest|, "testPDT");
+		displayDataDependenceGraph(|cwd:///../../../JavaTest|, "testPDT2");
 		displayDataDependenceGraph(|project://QL|, "nextToken");
 }
 public void displayDataDependenceGraph(loc project, str methodName) {

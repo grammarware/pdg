@@ -21,7 +21,7 @@ import graph::factory::GraphFactory;
 
 @doc{
 	To run a test:
-		displaySystemDependenceGraph(|project://JavaTest|, "main");
+		displaySystemDependenceGraph(|cwd:///../../../JavaTest|, "main");
 }
 public void displaySystemDependenceGraph(loc project, str methodName) {
 	M3 projectModel = createM3(project);

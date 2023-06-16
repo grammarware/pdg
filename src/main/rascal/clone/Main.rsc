@@ -51,14 +51,12 @@ private void clonesToConsole(CloneData clones) {
 	}
 }
 
-public void findClones(str baseName, str firstProjectName, str secondProjectName) {
+public void findClones(str baseName, loc firstProjectLoc, loc secondProjectLoc) {
 	initializeConsoleLogger();
 	
-	loc projectLocation = createProjectLoc(firstProjectName);
-	ProjectData firstProject = ProjectData(projectLocation, createM3(projectLocation));
+	ProjectData firstProject = ProjectData(firstProjectLoc, createM3(firstProjectLoc));
 	
-	projectLocation = createProjectLoc(secondProjectName);
-	ProjectData secondProject = ProjectData(projectLocation, createM3(projectLocation));
+	ProjectData secondProject = ProjectData(secondProjectLoc, createM3(secondProjectLoc));
 	
 	Projects projects = <firstProject, secondProject>;
 	logInfo("Got M3 models.");

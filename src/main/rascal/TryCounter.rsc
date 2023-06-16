@@ -12,9 +12,7 @@ import lang::java::m3::AST;
 
 import extractors::Project;
 
-public void countTries(str projectName) {
-	loc project = createProjectLoc(projectName);
-	
+public void countTries(loc project) {
 	set[Declaration] asts = createProjectAST(project, false);
 	
 	int tryCounter = 0;
