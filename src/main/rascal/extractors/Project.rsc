@@ -120,6 +120,15 @@ public loc resolveLocation(loc unresolved, M3 project) {
 	return getOneFrom(declarations);
 }
 
+/* Polyfill functions for old APIs that no longer exist. */
+node getMethodASTEclipse(loc methodLoc, M3 model = m3(|unknown:///|)) {
+	set[Declaration] ast = createProjectAST(model.id, true);
+	set[Declaration] methodAst = { d | /Declaration d := ast, d.decl == methodLoc };
+	if ({ oneResult } := methodAst) {
+		return oneResult;
+	}
+	throw "Unexpected number of ASTs returned for <(methodLoc.uri)>";
+}
  
 /* =========== *
  * == Tests == *
