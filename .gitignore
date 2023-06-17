@@ -25,3 +25,4 @@ local.properties
 .texlipse
 results/
 Evaluation data/*
+target/
