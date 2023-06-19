@@ -35,6 +35,24 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+          <exclude>**/*.class</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>.</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>META-INF/RASCAL.MF</include>
+          <include>src/**/*.rsc</include>
+        </includes>
+      </resource>
+    </resources>
+    <sourceDirectory>src/main/rascal</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -55,6 +73,8 @@
           <srcs>
             <src>${project.basedir}/src/main/rascal</src>
           </srcs>
+          <sourceLookup>|lib://pdg/|</sourceLookup>
+          <enableStandardLibrary>true</enableStandardLibrary>
         </configuration>
         <executions>
           <execution>
