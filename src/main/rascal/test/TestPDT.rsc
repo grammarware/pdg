@@ -13,7 +13,7 @@ import graph::DataStructures;
 import graph::control::PDT;
 import graph::control::flow::CFG;
 
-private M3 projectModel = createM3(|cwd:///../../../../JavaTest|);
+private M3 projectModel = createM3(|cwd:///JavaTest|);
 
 public bool testPDT(str name, expected)
 {	
